@@ -2,7 +2,7 @@
 
 Contains the official code examples for the Cinema 4D C++ API.
 
-The code examples provided here are identical to the ones shipped with with [Cinema 4D C++ SDK](https://developers.maxon.net/downloads/). See our [Cinema 4D C++ API Documentation](https://developers.maxon.net/docs/cpp) for written manuals and an API index.
+The provided code examples are identical to the ones shipped with the [Cinema 4D C++ SDK](https://developers.maxon.net/downloads/). See our [Cinema 4D C++ API Documentation](https://developers.maxon.net/docs/cpp) for written manuals and an API index.
 
 To get started with the Cinema 4D C++ API, we recommend reading the [Getting Started: First Steps](https://developers.maxon.net/docs/cpp/2025_0_1/page_maxonapi_getting_started_introduction.html) manual. We also recommend visiting and registering at [developers.maxon.net](https://developers.maxon.net/) to be able to generate plugin identifiers and to participate in our [developer forum](https://developers.maxon.net/forum/).
 
