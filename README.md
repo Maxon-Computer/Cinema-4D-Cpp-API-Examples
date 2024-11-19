@@ -8,7 +8,7 @@ To get started with the Cinema 4D C++ API, we recommend reading the [Getting Sta
 
 ## Content
 
-> Please note that this repository does neither contain the frameworks nor the build tools required to build the code examples. Please use our [Cinema 4D C++ SDK](https://developers.maxon.net/downloads/) for that.
+>  :warning: This repository does neither contain the frameworks nor the build tools required to build the code examples. Please use our [Cinema 4D C++ SDK](https://developers.maxon.net/downloads/) for acquiring a complete build environment.
 
 | File | Description |
 | :- | :- |
