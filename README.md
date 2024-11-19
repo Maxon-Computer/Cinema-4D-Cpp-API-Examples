@@ -10,7 +10,7 @@ To get started with the Cinema 4D C++ API, we recommend reading the [Getting Sta
 
 >  :warning: This repository does neither contain the frameworks nor the build tools required to build the code examples. Please use our [Cinema 4D C++ SDK](https://developers.maxon.net/downloads/) for acquiring a complete build environment.
 
-| File | Description |
+| Directory | Description |
 | :- | :- |
 | plugins/example.main | Provides the majority of examples using the Cinema API. This will be for most users the most important and only relevant example pool. |
 | plugins/example.nodes | Provides examples for interacting with and implementing node systems of the Nodes API as represented by the Nodes Editor in Cinema 4D. Relevant for developers who want to support the Nodes API in their plugins. |
