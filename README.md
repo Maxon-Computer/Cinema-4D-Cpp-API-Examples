@@ -1,12 +1,19 @@
-# cinema4d_cpp_sdk_extended
-The official programming examples for the MAXON Cinema 4D C++ SDK. This repository contains the examples found in the sdk.zip shipped with Cinema 4D, as well as additional examples. 
+# Cinema 4D C++ API Examples 
 
-> :warning: Please note that this repository does not come with frameworks that are required to build the project solutions with Cinema's project tool and subsequently such solutions themselves.
+Contains the official code examples for the Cinema 4D C++ API.
 
-* For more information on the Cinema 4D C++ SDK please visit the official [C++ SDK documentation](https://developers.maxon.net/docs/Cinema4DCPPSDK/html/index.html).
-* A getting starting guide in can be found in the SDK documentation [here](https://developers.maxon.net/docs/Cinema4DCPPSDK/html/page_maxonapi_getting_started_introduction.html).
-* Details about using the Cinema 4D project tool to build the projects files for your comiler/IDE can be found [here](https://developers.maxon.net/docs/Cinema4DCPPSDK/html/page_maxonapi_projecttool.html).
-* Please also consider visiting [Plugin Café](https://plugincafe.maxon.net/) for extended support and bug reporting.
+The provided code examples are identical to the ones shipped with the [Cinema 4D C++ SDK](https://developers.maxon.net/downloads/). See our [Cinema 4D C++ API Documentation](https://developers.maxon.net/docs/cpp) for written manuals and an API index.
 
-Cheers,  
-the MAXON SDK Team
+To get started with the Cinema 4D C++ API, we recommend reading the [Getting Started: First Steps](https://developers.maxon.net/docs/cpp/2025_0_1/page_maxonapi_getting_started_introduction.html) manual. We also recommend visiting and registering at [developers.maxon.net](https://developers.maxon.net/) to be able to generate plugin identifiers and to participate in our [developer forum](https://developers.maxon.net/forum/).
+
+## Content
+
+>  :warning: This repository does neither contain the frameworks nor the build tools required to build the code examples. Please use our [Cinema 4D C++ SDK](https://developers.maxon.net/downloads/) for acquiring a complete build environment.
+
+| Directory | Description |
+| :- | :- |
+| plugins/example.main | Provides the majority of examples using the Cinema API. This will be for most users the most important and only relevant example pool. |
+| plugins/example.nodes | Provides examples for interacting with and implementing node systems of the Nodes API as represented by the Nodes Editor in Cinema 4D. Relevant for developers who want to support the Nodes API in their plugins. |
+| plugins/example.assets | Provides examples for reading, creating, and implementing assets for the Asset Browser of Cinema 4D. |
+| plugins/example.image | Provides examples for reading and writing image data with the Maxon Image API. Currently mostly focused on OCIO and color management. |
+| plugins/example.migration_2024 | Provides examples for migrating plugins using legacy APIs to the Cinema 4D 2024.0.0 API. |
