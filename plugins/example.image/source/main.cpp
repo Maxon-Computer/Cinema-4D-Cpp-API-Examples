@@ -12,15 +12,18 @@
 
 // Forward declaration for image_api_examples_plugin.h
 cinema::Bool RegisterImageApiExamples();
+cinema::Bool RegisterImageLayersAreaExample();
 
 namespace cinema
 {
 
 Bool PluginStart()
 {
-  if (!RegisterImageApiExamples())
-    return false;
-	return true;
+	Bool result = true;
+	result &= RegisterImageApiExamples();
+	result &= RegisterImageLayersAreaExample();
+
+	return result;
 }
 
 void PluginEnd()

@@ -80,7 +80,7 @@ maxon::Result<void> AccessAssetDescriptionData(const maxon::AssetDescription& as
 	// contains most of the descriptive and administrative metadata associated with an asset.
 	const maxon::AssetRepositoryRef assetRepository = assetDescription.GetRepository();
 	const maxon::Id assetRepositoryId = assetDescription.GetRepositoryId();
-	const maxon::AssetMetaData assetMetadata = assetDescription.GetMetaData();
+	const maxon::AssetMetaData& assetMetadata = assetDescription.GetMetaData();
 	ApplicationOutput("\tAsset Repository Id: @", assetRepositoryId);
 	ApplicationOutput("\tAsset Metadata: @", assetMetadata);
 
@@ -133,7 +133,7 @@ maxon::Result<maxon::AssetDescription> AddAssetVersion(
 		return maxon::UnexpectedError(MAXON_SOURCE_LOCATION, 
 			"The repository the asset is attached to is read-only."_s);
 
-	const maxon::AssetMetaData metadata = asset.GetMetaData();
+	const maxon::AssetMetaData& metadata = asset.GetMetaData();
 	const maxon::Id subtype = metadata.Get<
 		decltype(maxon::ASSETMETADATA::SubType)>().GetOrDefault() iferr_return;
 
@@ -416,7 +416,7 @@ maxon::Result<void> IterateAssetMetadata(const maxon::AssetDescription& assetDes
 	iferr_scope;
 
 	// Get the metadata.
-	const maxon::AssetMetaData metadata = assetDescription.GetMetaData();
+	const maxon::AssetMetaData& metadata = assetDescription.GetMetaData();
 
 	// Access all existing entries and iterate over them.
 	using MetaDataTuple = maxon::Tuple<maxon::InternedId, maxon::AssetMetaData::KIND>;
@@ -444,7 +444,7 @@ maxon::Result<void> ReadAssetMetadata(const maxon::AssetDescription& assetDescri
 	ApplicationOutput("Reading Asset Metadata for: @\n", assetDescription);
 
 	// Get the metadata from the asset description.
-	const maxon::AssetMetaData metadata = assetDescription.GetMetaData();
+	const maxon::AssetMetaData& metadata = assetDescription.GetMetaData();
 	// Get the language Cinema 4D is currently running in.
 	const maxon::LanguageRef currentLanguage = maxon::Resource::GetCurrentLanguage();
 

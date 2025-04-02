@@ -316,7 +316,7 @@ maxon::Result<void> LinkMediaAssets(
 			return maxon::OutOfMemoryError(MAXON_SOURCE_LOCATION, "Could not allocate shader."_s);
 
 		material->InsertShader(shader);
-		if (!material->SetParameter(ConstDescID(DescLevel(MATERIAL_COLOR_SHADER)), shader, DESCFLAGS_SET::NONE))
+		if (!material->SetParameter(ConstDescIDLevel(MATERIAL_COLOR_SHADER), shader, DESCFLAGS_SET::NONE))
 			return maxon::IllegalStateError(MAXON_SOURCE_LOCATION, "Could not link shader."_s);
 
 		// Get the asset url and check if it is empty.
@@ -326,7 +326,7 @@ maxon::Result<void> LinkMediaAssets(
 		const Filename file = MaxonConvert(url);
 
 		// Set the asset url as the filename parameter of the bitmap shader.
-		if (!shader->SetParameter(ConstDescID(DescLevel(BITMAPSHADER_FILENAME)), file, DESCFLAGS_SET::NONE))
+		if (!shader->SetParameter(ConstDescIDLevel(BITMAPSHADER_FILENAME), file, DESCFLAGS_SET::NONE))
 			return maxon::IllegalArgumentError(MAXON_SOURCE_LOCATION, "Could not set texture file."_s);
 
 		// Name the material after the asset and insert it into the document.

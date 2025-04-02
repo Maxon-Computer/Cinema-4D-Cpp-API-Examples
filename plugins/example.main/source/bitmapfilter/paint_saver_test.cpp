@@ -51,7 +51,7 @@ static void ExportImage(PaintTexture* tex, BitmapSaverPlugin* bp, COLORMODE colo
 	//	if (suffix!="tif") return;
 
 	GeData d_filename;
-	tex->GetParameter(ConstDescID(DescLevel(ID_PAINTTEXTURE_FILENAME)), d_filename, DESCFLAGS_GET::NONE);
+	tex->GetParameter(ConstDescIDLevel(ID_PAINTTEXTURE_FILENAME), d_filename, DESCFLAGS_GET::NONE);
 
 	Filename fn = d_filename.GetFilename();
 
@@ -91,8 +91,8 @@ static void ExportImage(PaintTexture* tex, BitmapSaverPlugin* bp, COLORMODE colo
 		case PLUGINFLAG_BITMAPSAVER_SUPPORT_16BIT_LAYERS:
 		case PLUGINFLAG_BITMAPSAVER_SUPPORT_32BIT_LAYERS:
 		{
-			copy->SetParameter(ConstDescID(DescLevel(ID_PAINTTEXTURE_FILENAME)), fn, DESCFLAGS_SET::NONE);
-			copy->SetParameter(ConstDescID(DescLevel(ID_PAINTTEXTURE_SAVEFORMAT)), saveformat, DESCFLAGS_SET::NONE);
+			copy->SetParameter(ConstDescIDLevel(ID_PAINTTEXTURE_FILENAME), fn, DESCFLAGS_SET::NONE);
+			copy->SetParameter(ConstDescIDLevel(ID_PAINTTEXTURE_SAVEFORMAT), saveformat, DESCFLAGS_SET::NONE);
 
 			BaseContainer bc;
 			bc.SetInt32(PAINTER_SAVETEXTURE_FLAGS, PAINTER_SAVEBIT_SAVECOPY);

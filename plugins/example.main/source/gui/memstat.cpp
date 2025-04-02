@@ -5,6 +5,7 @@
 #include "main.h"
 #include "maxon/memoizationcache.h"
 #include "maxon/dll.h"
+#include "maxon/parallelfor.h"
 
 using namespace cinema;
 
@@ -12,7 +13,8 @@ class MemStatDialog : public GeDialog
 {
 private:
 	void CheckMaxMemory(Int32 mbblocks);
-
+	void CheckParallelAllocation();
+	
 public:
 	MemStatDialog();
 	virtual Bool CreateLayout();
@@ -46,10 +48,12 @@ enum
 	IDC_MEMORY_TEST_1MB,
 	IDC_MEMORY_TEST_10MB,
 	IDC_MEMORY_TEST_100MB,
+	IDC_MEMORY_TEST_PARALLEL,
 
 	IDC_MEMORY_TEST_1MB_RES,
 	IDC_MEMORY_TEST_10MB_RES,
 	IDC_MEMORY_TEST_100MB_RES,
+	IDC_MEMORY_TEST_PARALLEL_RES,
 
 	IDC_MEMORY_STAT_
 };
@@ -96,6 +100,9 @@ Bool MemStatDialog::CreateLayout()
 
 		AddButton(IDC_MEMORY_TEST_100MB, BFH_FIT, 0, 0, "Test Max Memory Alloc (100 MB)"_s);
 		AddStaticText(IDC_MEMORY_TEST_100MB_RES, BFH_FIT, SizeChr(140), 0, String(), 0);
+
+		AddButton(IDC_MEMORY_TEST_PARALLEL, BFH_FIT, 0, 0, "Test Parallel Memory Allocation"_s);
+		AddStaticText(IDC_MEMORY_TEST_PARALLEL_RES, BFH_FIT, SizeChr(140), 0, String(), 0);
 	}
 	GroupEnd();
 
@@ -235,6 +242,35 @@ void MemStatDialog::CheckMaxMemory(Int32 mbblocks)
 	GeOutString("Max memory allocation: " + memstr, GEMB::OK);
 }
 
+void MemStatDialog::CheckParallelAllocation()
+{
+	iferr_scope_handler
+	{
+		err.DbgStop();
+		return;
+	};
+	maxon::BaseArray<void*> blocks;
+
+	constexpr const Int MAX_CNT = 100000000;
+	blocks.Resize(MAX_CNT) iferr_return;
+	maxon::AtomicInt totalSize;
+
+	// Allocate many small memory blocks concurrently.
+	maxon::ParallelFor::Dynamic(0, MAX_CNT,
+		[&blocks, &totalSize](Int i)
+		{
+			Int size = 31 + (i & 31);
+			blocks[i] = maxon::DefaultAllocator::Alloc(size, MAXON_SOURCE_LOCATION);
+			totalSize.SwapAdd(size);
+		});
+	
+	GeOutString(FormatString("Allocated @ MB", totalSize.LoadRelaxed() / (1024 * 1024)), GEMB::OK);
+
+	// Free memory from a different thread (at least mostly).
+	for (void*& ptr : blocks)
+		maxon::DefaultAllocator::Free(ptr);
+}
+
 Bool MemStatDialog::Command(Int32 id, const BaseContainer& msg)
 {
 	iferr_scope_handler
@@ -264,6 +300,7 @@ Bool MemStatDialog::Command(Int32 id, const BaseContainer& msg)
 		case IDC_MEMORY_TEST_1MB:			CheckMaxMemory(1); break;
 		case IDC_MEMORY_TEST_10MB:		CheckMaxMemory(10); break;
 		case IDC_MEMORY_TEST_100MB:		CheckMaxMemory(100); break;
+		case IDC_MEMORY_TEST_PARALLEL:	CheckParallelAllocation(); break;
 	}
 	return true;
 }

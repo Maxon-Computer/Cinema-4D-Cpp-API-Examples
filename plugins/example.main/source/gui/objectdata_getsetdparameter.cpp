@@ -158,7 +158,7 @@ Bool GetSetDParameterExample::SplineGetDDescription(const GeListNode *node, Desc
 		bcSpline.SetBool(SPLINECONTROL_CUSTOMCOLOR_SET, true); // Default is false
 		bcSpline.SetVector(SPLINECONTROL_CUSTOMCOLOR_COL, Vector(0.6, 1.0, 0.6)); // Value range 0.0 to 1.0
 
-		if (!description->SetParameter(cid, bcSpline, ConstDescID(DescLevel(ID_OBJECTPROPERTIES))))
+		if (!description->SetParameter(cid, bcSpline, ConstDescIDLevel(ID_OBJECTPROPERTIES)))
 			return false;
 	}
 	return true;
@@ -386,7 +386,7 @@ Bool GetSetDParameterExample::GradientGetDDescription(const GeListNode *node, De
 		// Hide the buttons to load and save presets in extended GUI
 		bcGradient.SetBool(GRADIENTPROPERTY_NOPRESETS, true); // Default is false
 
-		if (!description->SetParameter(cid, bcGradient, ConstDescID(DescLevel(ID_OBJECTPROPERTIES))))
+		if (!description->SetParameter(cid, bcGradient, ConstDescIDLevel(ID_OBJECTPROPERTIES)))
 			return false;
 	}
 	return true;
@@ -592,7 +592,7 @@ Bool GetSetDParameterExample::LinkGetDDescription(const GeListNode *node, Descri
 		bcLink.SetInt32(DESC_CUSTOMGUI, CUSTOMGUI_TEXBOX);
 		bcLink.SetInt32(DESC_SHADERLINKFLAG, true);
 
-		if (!description->SetParameter(cid, bcLink, ConstDescID(DescLevel(ID_OBJECTPROPERTIES))))
+		if (!description->SetParameter(cid, bcLink, ConstDescIDLevel(ID_OBJECTPROPERTIES)))
 			return false;
 	}
 	return true;

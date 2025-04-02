@@ -73,15 +73,15 @@ namespace GreekTempleHelpers
 		// Create a slab sizes vector formed by two components taken
 		// from the objSize and the y-component set to baseUnit.
 		const Vector slabSizes(objSize.x, stairUnit, objSize.z);
-		slabPtr->SetParameter(ConstDescID(DescLevel(PRIM_CUBE_LEN)), slabSizes, DESCFLAGS_SET::NONE);
+		slabPtr->SetParameter(ConstDescIDLevel(PRIM_CUBE_LEN), slabSizes, DESCFLAGS_SET::NONE);
 
 		// Assign the segmentation data to the slab object to allow
 		// proper deforming operators to run.
 		if (objSegsPtr)
 		{
-			slabPtr->SetParameter(ConstDescID(DescLevel(PRIM_CUBE_SUBX)), (Int32)objSegsPtr[0], DESCFLAGS_SET::NONE);
-			slabPtr->SetParameter(ConstDescID(DescLevel(PRIM_CUBE_SUBY)), (Int32)objSegsPtr[1], DESCFLAGS_SET::NONE);
-			slabPtr->SetParameter(ConstDescID(DescLevel(PRIM_CUBE_SUBZ)), (Int32)objSegsPtr[2], DESCFLAGS_SET::NONE);
+			slabPtr->SetParameter(ConstDescIDLevel(PRIM_CUBE_SUBX), (Int32)objSegsPtr[0], DESCFLAGS_SET::NONE);
+			slabPtr->SetParameter(ConstDescIDLevel(PRIM_CUBE_SUBY), (Int32)objSegsPtr[1], DESCFLAGS_SET::NONE);
+			slabPtr->SetParameter(ConstDescIDLevel(PRIM_CUBE_SUBZ), (Int32)objSegsPtr[2], DESCFLAGS_SET::NONE);
 		}
 
 		// Position the slab to match the bottom face of the calling object
@@ -120,7 +120,7 @@ namespace GreekTempleHelpers
 			stairInstancePtr->SetRelPos(Vector(0, -objSize.y * 0.5 + stairUnit * (i + 0.5), 0));
 
 			// Set the link in the first instance object.
-			stairInstancePtr->SetParameter(ConstDescID(DescLevel(INSTANCEOBJECT_LINK)), baseLinkData, DESCFLAGS_SET::NONE);
+			stairInstancePtr->SetParameter(ConstDescIDLevel(INSTANCEOBJECT_LINK), baseLinkData, DESCFLAGS_SET::NONE);
 
 			// Note that the inserting process of "released" object should
 			// follow a child->parent direction (before child than parent)
@@ -172,8 +172,8 @@ namespace GreekTempleHelpers
 
 		pBL->SetLink(extrudeRoofGenRelPtr);
 		baseLinkData.SetBaseLink(pBL);
-		roofBooleanSub01Ptr->SetParameter(ConstDescID(DescLevel(INSTANCEOBJECT_LINK)), baseLinkData, DESCFLAGS_SET::NONE);
-		roofBooleanSub02Ptr->SetParameter(ConstDescID(DescLevel(INSTANCEOBJECT_LINK)), baseLinkData, DESCFLAGS_SET::NONE);
+		roofBooleanSub01Ptr->SetParameter(ConstDescIDLevel(INSTANCEOBJECT_LINK), baseLinkData, DESCFLAGS_SET::NONE);
+		roofBooleanSub02Ptr->SetParameter(ConstDescIDLevel(INSTANCEOBJECT_LINK), baseLinkData, DESCFLAGS_SET::NONE);
 
 		// Compute the scale factors in order to leave a reasonable space running around the
 		// roof shape and enough length to perform the boolean subtraction.
@@ -209,8 +209,8 @@ namespace GreekTempleHelpers
 		boolFrontPtr->SetName("RoofFrontBooleanSubOperation"_s);
 
 		// Set the subtract operation for both boolean operators.
-		boolFrontPtr->SetParameter(ConstDescID(DescLevel(BOOLEOBJECT_TYPE)), BOOLEOBJECT_TYPE_SUBTRACT, DESCFLAGS_SET::NONE);
-		boolRearPtr->SetParameter(ConstDescID(DescLevel(BOOLEOBJECT_TYPE)), BOOLEOBJECT_TYPE_SUBTRACT, DESCFLAGS_SET::NONE);
+		boolFrontPtr->SetParameter(ConstDescIDLevel(BOOLEOBJECT_TYPE), BOOLEOBJECT_TYPE_SUBTRACT, DESCFLAGS_SET::NONE);
+		boolRearPtr->SetParameter(ConstDescIDLevel(BOOLEOBJECT_TYPE), BOOLEOBJECT_TYPE_SUBTRACT, DESCFLAGS_SET::NONE);
 
 		// Make the first boolean operation subtracting the first instance from the roof extrusion.
 		extrudeRoofGenRelPtr->InsertUnder(boolFrontPtr);
@@ -257,15 +257,15 @@ namespace GreekTempleHelpers
 		// will be used as extrusion section for the roof.
 
 		const Float triCircumCircleRadius = baseUnit * 3;
-		triangleShapePtr->SetParameter(ConstDescID(DescLevel(PRIM_NSIDE_SIDES)), 3, DESCFLAGS_SET::NONE);
-		triangleShapePtr->SetParameter(ConstDescID(DescLevel(PRIM_NSIDE_RADIUS)), triCircumCircleRadius, DESCFLAGS_SET::NONE);
+		triangleShapePtr->SetParameter(ConstDescIDLevel(PRIM_NSIDE_SIDES), 3, DESCFLAGS_SET::NONE);
+		triangleShapePtr->SetParameter(ConstDescIDLevel(PRIM_NSIDE_RADIUS), triCircumCircleRadius, DESCFLAGS_SET::NONE);
 
 		// Assign the segmentation data to the spline object to allow
 		// proper deforming operators to run.
 		if (objSegsPtr)
 		{
-			triangleShapePtr->SetParameter(ConstDescID(DescLevel(SPLINEOBJECT_INTERPOLATION)), SPLINEOBJECT_INTERPOLATION_UNIFORM, DESCFLAGS_SET::NONE);
-			triangleShapePtr->SetParameter(ConstDescID(DescLevel(SPLINEOBJECT_SUB)), objSegsPtr[1], DESCFLAGS_SET::NONE);
+			triangleShapePtr->SetParameter(ConstDescIDLevel(SPLINEOBJECT_INTERPOLATION), SPLINEOBJECT_INTERPOLATION_UNIFORM, DESCFLAGS_SET::NONE);
+			triangleShapePtr->SetParameter(ConstDescIDLevel(SPLINEOBJECT_SUB), objSegsPtr[1], DESCFLAGS_SET::NONE);
 		}
 
 		// Calculate the length of the triangle side starting from the circle radius.
@@ -280,16 +280,16 @@ namespace GreekTempleHelpers
 		triangleShapePtr.Release()->InsertUnder(extrudeRoofGenPtr);
 
 		// Set the Extrude mode to absolute
-		extrudeRoofGenPtr->SetParameter(ConstDescID(DescLevel(EXTRUDEOBJECT_DIRECTION)), EXTRUDEOBJECT_DIRECTION_ABSOLUTE, DESCFLAGS_SET::NONE);
+		extrudeRoofGenPtr->SetParameter(ConstDescIDLevel(EXTRUDEOBJECT_DIRECTION), EXTRUDEOBJECT_DIRECTION_ABSOLUTE, DESCFLAGS_SET::NONE);
 
 		// Create a translate vector to set the extrusion length of the roof.
 		const Vector extrusionVector = Vector(0, 0, objSize.z);
-		extrudeRoofGenPtr->SetParameter(ConstDescID(DescLevel(EXTRUDEOBJECT_MOVE)), extrusionVector, DESCFLAGS_SET::NONE);
+		extrudeRoofGenPtr->SetParameter(ConstDescIDLevel(EXTRUDEOBJECT_MOVE), extrusionVector, DESCFLAGS_SET::NONE);
 
 		// Assign the segmentation data to the extruded object to allow
 		// proper deforming operators to run.
 		if (objSegsPtr)
-			extrudeRoofGenPtr->SetParameter(ConstDescID(DescLevel(EXTRUDEOBJECT_SUB)), (Int32)objSegsPtr[2], DESCFLAGS_SET::NONE);
+			extrudeRoofGenPtr->SetParameter(ConstDescIDLevel(EXTRUDEOBJECT_SUB), (Int32)objSegsPtr[2], DESCFLAGS_SET::NONE);
 
 		// Translate the roof.
 		extrudeRoofGenPtr->SetRelPos(Vector(0, 0, -objSize.z / 2));
@@ -332,13 +332,13 @@ namespace GreekTempleHelpers
 
 		const Float	 capitalSide	= capitalSideHeightRatio * capitalHeightRatio;
 		const Vector capitalSizes = Vector(capitalSide, capitalHeightRatio, capitalSide);
-		columnCapitalPtr->SetParameter(ConstDescID(DescLevel(PRIM_CUBE_LEN)), capitalSizes, DESCFLAGS_SET::NONE);
-		columnCapitalPtr->SetParameter(ConstDescID(DescLevel(PRIM_CUBE_SUBY)), 8, DESCFLAGS_SET::NONE);
+		columnCapitalPtr->SetParameter(ConstDescIDLevel(PRIM_CUBE_LEN), capitalSizes, DESCFLAGS_SET::NONE);
+		columnCapitalPtr->SetParameter(ConstDescIDLevel(PRIM_CUBE_SUBY), 8, DESCFLAGS_SET::NONE);
 
 		// Assign the segmentation data to the steam, base and capital
 		// to allow proper deforming operators to run
 		if (objSegsPtr)
-			columnCapitalPtr->SetParameter(ConstDescID(DescLevel(PRIM_CUBE_SUBY)), 8 * objSegsPtr[1], DESCFLAGS_SET::NONE);
+			columnCapitalPtr->SetParameter(ConstDescIDLevel(PRIM_CUBE_SUBY), 8 * objSegsPtr[1], DESCFLAGS_SET::NONE);
 
 		// Create two taper modifiers to get the typical look of the column
 		AutoAlloc<BaseObject> capitalTaper(Otaper);
@@ -348,13 +348,13 @@ namespace GreekTempleHelpers
 		// Set modifiers name accordingly to their function
 		capitalTaper->SetName("CapitalTaper"_s);
 
-		capitalTaper->SetParameter(ConstDescID(DescLevel(DEFORMOBJECT_SIZE)), capitalSizes, DESCFLAGS_SET::NONE);
-		capitalTaper->SetParameter(ConstDescID(DescLevel(DEFORMOBJECT_STRENGTH)), -.5, DESCFLAGS_SET::NONE);
-		capitalTaper->SetParameter(ConstDescID(DescLevel(DEFORMOBJECT_CURVATURE)), 1, DESCFLAGS_SET::NONE);
-		capitalTaper->SetParameter(ConstDescID(DescLevel(DEFORMOBJECT_FILLET)), true, DESCFLAGS_SET::NONE);
+		capitalTaper->SetParameter(ConstDescIDLevel(DEFORMOBJECT_SIZE), capitalSizes, DESCFLAGS_SET::NONE);
+		capitalTaper->SetParameter(ConstDescIDLevel(DEFORMOBJECT_STRENGTH), -.5, DESCFLAGS_SET::NONE);
+		capitalTaper->SetParameter(ConstDescIDLevel(DEFORMOBJECT_CURVATURE), 1, DESCFLAGS_SET::NONE);
+		capitalTaper->SetParameter(ConstDescIDLevel(DEFORMOBJECT_FILLET), true, DESCFLAGS_SET::NONE);
 
 		// Hide the deformer cage from the viewport
-		capitalTaper->SetParameter(ConstDescID(DescLevel(ID_BASEOBJECT_VISIBILITY_EDITOR)), OBJECT_OFF, DESCFLAGS_SET::NONE);
+		capitalTaper->SetParameter(ConstDescIDLevel(ID_BASEOBJECT_VISIBILITY_EDITOR), OBJECT_OFF, DESCFLAGS_SET::NONE);
 		capitalTaper.Release()->InsertUnder(columnCapitalPtr);
 
 		columnCapitalRelPtr = columnCapitalPtr.Release();
@@ -388,14 +388,14 @@ namespace GreekTempleHelpers
 		// Define the column base sizes to stick with the height ratio above
 		// and with a proper base radius.
 		const Float baseRadius = baseHeightRatio * baseRadiusHeightRatio;
-		columnBasePtr->SetParameter(ConstDescID(DescLevel(PRIM_CYLINDER_HEIGHT)), baseHeightRatio, DESCFLAGS_SET::NONE);
-		columnBasePtr->SetParameter(ConstDescID(DescLevel(PRIM_CYLINDER_RADIUS)), baseRadius, DESCFLAGS_SET::NONE);
+		columnBasePtr->SetParameter(ConstDescIDLevel(PRIM_CYLINDER_HEIGHT), baseHeightRatio, DESCFLAGS_SET::NONE);
+		columnBasePtr->SetParameter(ConstDescIDLevel(PRIM_CYLINDER_RADIUS), baseRadius, DESCFLAGS_SET::NONE);
 
 
 		// Assign the segmentation data to the steam, base and capital
 		// to allow proper deforming operators to run
 		if (objSegsPtr)
-			columnBasePtr->SetParameter(ConstDescID(DescLevel(PRIM_CYLINDER_HSUB)), objSegsPtr[1], DESCFLAGS_SET::NONE);
+			columnBasePtr->SetParameter(ConstDescIDLevel(PRIM_CYLINDER_HSUB), objSegsPtr[1], DESCFLAGS_SET::NONE);
 
 		columnBaseRelPtr = columnBasePtr.Release();
 
@@ -422,14 +422,14 @@ namespace GreekTempleHelpers
 		columnStemPtr->SetName("ColumnStem"_s);
 
 		const Float stemRadius = stemHeightRatio * stemRadiusHeightRatio;
-		columnStemPtr->SetParameter(ConstDescID(DescLevel(PRIM_CYLINDER_HEIGHT)), stemHeightRatio, DESCFLAGS_SET::NONE);
-		columnStemPtr->SetParameter(ConstDescID(DescLevel(PRIM_CYLINDER_RADIUS)), stemRadius, DESCFLAGS_SET::NONE);
-		columnStemPtr->SetParameter(ConstDescID(DescLevel(PRIM_CYLINDER_SEG)), 16, DESCFLAGS_SET::NONE);
+		columnStemPtr->SetParameter(ConstDescIDLevel(PRIM_CYLINDER_HEIGHT), stemHeightRatio, DESCFLAGS_SET::NONE);
+		columnStemPtr->SetParameter(ConstDescIDLevel(PRIM_CYLINDER_RADIUS), stemRadius, DESCFLAGS_SET::NONE);
+		columnStemPtr->SetParameter(ConstDescIDLevel(PRIM_CYLINDER_SEG), 16, DESCFLAGS_SET::NONE);
 
 		// Assign the segmentation data to the steam, base and capital
 		// to allow proper deforming operators to run
 		if (objSegsPtr)
-			columnStemPtr->SetParameter(ConstDescID(DescLevel(PRIM_CYLINDER_HSUB)), objSegsPtr[1], DESCFLAGS_SET::NONE);
+			columnStemPtr->SetParameter(ConstDescIDLevel(PRIM_CYLINDER_HSUB), objSegsPtr[1], DESCFLAGS_SET::NONE);
 
 		// Create two taper modifiers to get the typical look of the column
 		AutoAlloc<BaseObject> stemTaper(Otaper);
@@ -440,12 +440,12 @@ namespace GreekTempleHelpers
 		stemTaper->SetName("StemTaper"_s);
 
 		const Vector stemTaperSizes = Vector(stemRadius * 2, stemHeightRatio, stemRadius * 2);
-		stemTaper->SetParameter(ConstDescID(DescLevel(DEFORMOBJECT_SIZE)), stemTaperSizes, DESCFLAGS_SET::NONE);
-		stemTaper->SetParameter(ConstDescID(DescLevel(DEFORMOBJECT_STRENGTH)), .15, DESCFLAGS_SET::NONE);
-		stemTaper->SetParameter(ConstDescID(DescLevel(DEFORMOBJECT_CURVATURE)), 0, DESCFLAGS_SET::NONE);
+		stemTaper->SetParameter(ConstDescIDLevel(DEFORMOBJECT_SIZE), stemTaperSizes, DESCFLAGS_SET::NONE);
+		stemTaper->SetParameter(ConstDescIDLevel(DEFORMOBJECT_STRENGTH), .15, DESCFLAGS_SET::NONE);
+		stemTaper->SetParameter(ConstDescIDLevel(DEFORMOBJECT_CURVATURE), 0, DESCFLAGS_SET::NONE);
 
 		// Hide the deformer cage from the viewport
-		stemTaper->SetParameter(ConstDescID(DescLevel(ID_BASEOBJECT_VISIBILITY_EDITOR)), OBJECT_OFF, DESCFLAGS_SET::NONE);
+		stemTaper->SetParameter(ConstDescIDLevel(ID_BASEOBJECT_VISIBILITY_EDITOR), OBJECT_OFF, DESCFLAGS_SET::NONE);
 		stemTaper.Release()->InsertUnder(columnStemPtr);
 
 		columnStemRelPtr = columnStemPtr.Release();
@@ -548,7 +548,7 @@ namespace GreekTempleHelpers
 				columnInstPtr->SetName("Column_" + String::IntToString(i) + "_" + String::IntToString(j));
 
 				// Connect the baseLinkData
-				columnInstPtr->SetParameter(ConstDescID(DescLevel(INSTANCEOBJECT_LINK)), baseLinkData, DESCFLAGS_SET::NONE);
+				columnInstPtr->SetParameter(ConstDescIDLevel(INSTANCEOBJECT_LINK), baseLinkData, DESCFLAGS_SET::NONE);
 
 				// Set the position of the different instances based on a rectangular pattern
 				const Vector currentInstancePos = colPosBL + Vector(i * columnCopiesOffsetX, 0, j * columnCopiesOffsetZ);

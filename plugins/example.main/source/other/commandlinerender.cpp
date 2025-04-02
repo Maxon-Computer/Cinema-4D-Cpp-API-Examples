@@ -341,7 +341,7 @@ void CommandLineRendering(C4DPL_CommandLineArgs* args)
 
 			if (framefrom != NOTOK)
 			{
-				data.SetInt32(RDATA_FRAMESEQUENCE, 0);
+				data.SetInt32(RDATA_FRAMESEQUENCE, RDATA_FRAMESEQUENCE_MANUAL);
 				data.SetTime(RDATA_FRAMEFROM, BaseTime(framefrom, doc->GetFps()));
 				data.SetTime(RDATA_FRAMETO, BaseTime(frameto, doc->GetFps()));
 				data.SetInt32(RDATA_FRAMESTEP, framestep);

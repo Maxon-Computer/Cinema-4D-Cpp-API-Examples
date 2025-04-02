@@ -124,9 +124,8 @@ maxon::Result<void> UpdatePreviewThumbnail(
 	// Get the asset metadata and the existing or default entry of 0.025F for the dot scale. This
 	// custom metadata attribute has been defined in the dots preset asset implementation and will
 	// only be carried by that asset type.
-	maxon::AssetMetaData metadata = assetDescription.GetMetaData();
-	maxon::Float32 oldValue = metadata.Get(
-		maxon::ASSETMETADATA::DOTSPRESET::DOT_SCALE, 0.025F) iferr_return;
+	const maxon::AssetMetaData& metadata = assetDescription.GetMetaData();
+	maxon::Float32 oldValue = metadata.Get(maxon::ASSETMETADATA::DOTSPRESET::DOT_SCALE, 0.025F) iferr_return;
 
 	// The new value clamped to the interval [0.025, 0.1].
 	maxon::Float32 newValue = maxon::ClampValue(oldValue + difference, 0.025F, 0.1F);

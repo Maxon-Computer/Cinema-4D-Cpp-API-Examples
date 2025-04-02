@@ -84,7 +84,7 @@ Bool TakeTestCommmand::Execute(BaseDocument* doc, GeDialog* parentManager)
 
         BaseOverride* overrideNode = newTake->FindOrAddOverrideParam(takeData, cube, did, newValue, mainValue);
         if (overrideNode)
-          overrideNode->UpdateSceneNode(takeData, ConstDescID(DescLevel(PRIM_CUBE_SUBY))); // update the scene node if necesaty, ALWAYS call it at least one time after override a node
+          overrideNode->UpdateSceneNode(takeData, ConstDescIDLevel(PRIM_CUBE_SUBY)); // update the scene node if necesaty, ALWAYS call it at least one time after override a node
 
         // set current the new take if you like
         takeData->SetCurrentTake(newTake);
@@ -234,7 +234,7 @@ Bool TakeTestCommmand::Execute(BaseDocument* doc, GeDialog* parentManager)
           did = ConstDescID(DescLevel(ID_BASEOBJECT_REL_POSITION, DTYPE_VECTOR, 0), DescLevel(VECTOR_X, DTYPE_REAL, 0)); // descid have to be defined like in animations at subdescription level
           newValue = GeData(100.0); // value for new take
           overrideNode = cTake->FindOrAddOverrideParam(takeData, op, did, newValue);
-          overrideNode->UpdateSceneNode(takeData, ConstDescID(DescLevel(ID_BASEOBJECT_REL_POSITION))); // update the scene node if necesaty, ALWAYS call it at least one time after override a node
+          overrideNode->UpdateSceneNode(takeData, ConstDescIDLevel(ID_BASEOBJECT_REL_POSITION)); // update the scene node if necesaty, ALWAYS call it at least one time after override a node
           EventAdd();
         }
       }

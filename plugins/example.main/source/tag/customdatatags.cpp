@@ -20,9 +20,6 @@ class VertexColorDisplayImpl : public Component<VertexColorDisplayImpl, CustomDa
 
 public:
 
-	VertexColorDisplayImpl() {	}
-	~VertexColorDisplayImpl() { Reset();	}
-
 	MAXON_METHOD Result<void> Init(BaseTag* tag)
 	{
 		return OK;
@@ -306,6 +303,10 @@ public:
 
 	VertexFloatDisplayImpl() {	}
 	~VertexFloatDisplayImpl() { Reset();	}
+
+	// Since we define a constructor and a destructor, a copy constructor is created by the compiler.
+	// However the default copy constructor would not work for this class, so we delete it.
+	VertexFloatDisplayImpl& operator=(const VertexFloatDisplayImpl& other) = delete;
 
 	MAXON_METHOD Result<void> Init(BaseTag* tag)
 	{

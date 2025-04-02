@@ -303,6 +303,9 @@ Bool PluginStart()
 	if (!RegisterVertexHandle())
 		return false;
 
+	if (!RegisterAssetContainerObjectData())
+		return false;
+
 	// register a custom description for float custom data tag
 	if (!RegisterCustomDataTagDescription())
 		return false;

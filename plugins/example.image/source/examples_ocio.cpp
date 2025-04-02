@@ -66,10 +66,6 @@ maxon::Result<void> ConvertSceneOrElements(BaseDocument* doc)
 	maxon::HashSet<BaseList2D*> result;
 	converter->ConvertObject(doc, doc, result) iferr_return;
 
-	// When converting a whole document, one should mark it as already converted when the conversion
-	// did succeed.
-	doc->SetParameter(ConstDescID(DescLevel(DOCUMENT_COLOR_MANAGEMENT_OCIO_CONVERTED)), GeData(true), DESCFLAGS_SET::NONE);
-
 	ApplicationOutput("\n@():", MAXON_FUNCTIONNAME);
 	ApplicationOutput("\tConverted @ elements in '@' to OCIO Render space named '@'.",
 		result.GetCount(), doc, renderSpaceName);
@@ -121,16 +117,9 @@ maxon::Result<void> ConvertOcioColors(BaseDocument* doc)
 	// between the color spaces associated with the OCIO configuration of a document, for its 
 	// initialization to succeed, the document must be in OCIO color management mode.
 	OcioConverterRef converter = doc->GetColorConverter();
-	if (!converter)
-	{
-		// Attempt to manually initialize the converter if the default one is not yet available.
-		converter = OcioConverter::Init(doc) iferr_return;
-		if (!converter)
-			return maxon::NullptrError(MAXON_SOURCE_LOCATION, "Could not init OCIO converter for document."_s);
-	}
 
 	// The to be converted color, it has no implicitly defined color space.
-	const maxon::Vector64 colorInput{ 1, 0, 0 };
+	const maxon::Vector64 colorInput{ 1., 0., 0. };
 
 	// Convert the color from sRGB space to render space. With the default OCIO settings of Cinema 
 	// 4D 2023.1, this will convert to ACEScg space. Doing this is only necessary when computation
@@ -300,7 +289,7 @@ maxon::Result<void> GetSetColorManagementSettings(BaseDocument* doc)
 		return maxon::IllegalArgumentError(MAXON_SOURCE_LOCATION,
 			"OCIO configuration does not contain a 'ACES2065 - 1' render space."_s);
 
-	doc->SetParameter(ConstDescID(DescLevel(DOCUMENT_OCIO_RENDER_COLORSPACE)), GeData(id), DESCFLAGS_SET::NONE);
+	doc->SetParameter(ConstDescIDLevel(DOCUMENT_OCIO_RENDER_COLORSPACE), GeData(id), DESCFLAGS_SET::NONE);
 	doc->UpdateOcioColorSpaces();
 	EventAdd();
 
@@ -335,7 +324,7 @@ maxon::Result<void> GetSetColorValuesInOcioDocuments(BaseDocument* doc)
 	// Render space. When for example the default color for objects is being retrieved from a 
 	// document, the value is expressed in Render space.
 	GeData data;
-	doc->GetParameter(ConstDescID(DescLevel(DOCUMENT_DEFAULTMATERIAL_COLOR)), data, DESCFLAGS_GET::NONE);
+	doc->GetParameter(ConstDescIDLevel(DOCUMENT_DEFAULTMATERIAL_COLOR), data, DESCFLAGS_GET::NONE);
 	const Vector defaultColor = data.GetVector();
 	ApplicationOutput("\tdefaultColor(@): @", renderSpace, defaultColor);
 
@@ -362,7 +351,7 @@ maxon::Result<void> GetSetColorValuesInOcioDocuments(BaseDocument* doc)
 	// Analogously, when color values are written, they are interpreted as Render space values by
 	// default, and all other input spaces must be converted first.
 	const Vector color{ 1, 0, 0 };
-	const DescID colorChannel = ConstDescID(DescLevel(MATERIAL_COLOR_COLOR));
+	const DescID colorChannel = ConstDescIDLevel(MATERIAL_COLOR_COLOR);
 
 	// Write the color channel color of m1 as (1, 0, 0) in Render space.
 	m1->SetParameter(colorChannel, GeData(color), DESCFLAGS_SET::NONE);
@@ -626,7 +615,7 @@ maxon::Result<void> OcioNode2025::PreloadTextures()
 	if (!bmp)
 		return maxon::OutOfMemoryError(MAXON_SOURCE_LOCATION, "Could not allocate bitmap."_s);
 
-	if (bmp->Init(Filename(imgUrl.GetUrl())) != IMAGERESULT::OK)
+	if (bmp->Init(MaxonConvert(imgUrl)) != IMAGERESULT::OK)
 		return maxon::UnexpectedError(MAXON_SOURCE_LOCATION, "Could not init bitmap from file."_s);
 
 	// Setting the color profile of the bitmap currently has no impact on drawing operations, if we
@@ -790,10 +779,11 @@ DRAWRESULT OcioNode2025::Draw(BaseObject* op, DRAWPASS drawpass, BaseDraw* bd, B
 
 		// Draws a texture with a label below it, we are going to use this lambda to draw both textures.
 		auto drawTextureWithLabel =
-			[this, &bd, &textureHeight, &texUVs, &topSafeOffset, &leftSafeOffset, &margin]
+			[this, &bd, &textureHeight, &texUVs, &topSafeOffset, &leftSafeOffset]
 			(Int32 i, const DRAW_TEXTUREFLAGS& flags)
 			{
 				// The four points of the rectangle in which we are going to draw the texture.
+				const Int32 margin = 25;
 				const Int32 xa = leftSafeOffset + margin;
 				const Int32 xb = xa + textureHeight;
 				const Int32 ya = topSafeOffset + margin + i * (textureHeight + margin);

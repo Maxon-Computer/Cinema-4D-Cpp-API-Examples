@@ -228,14 +228,14 @@ Bool PickObjectTool::GetDDescription(const BaseDocument* doc, const BaseContaine
 
 		Int32 mode = data.GetInt32(MDATA_PICKOBJECT_MODE);
 
-		bc = description->GetParameterI(ConstDescID(DescLevel(MDATA_PICKOBJECT_CIRCLE_RAD)), nullptr);
+		bc = description->GetParameterI(ConstDescIDLevel(MDATA_PICKOBJECT_CIRCLE_RAD), nullptr);
 		if (bc)
 			bc->SetInt32(DESC_HIDE, mode != MDATA_PICKOBJECT_MODE_CIRCLE);
 
-		bc = description->GetParameterI(ConstDescID(DescLevel(MDATA_PICKOBJECT_RECT_W)), nullptr);
+		bc = description->GetParameterI(ConstDescIDLevel(MDATA_PICKOBJECT_RECT_W), nullptr);
 		if (bc)
 			bc->SetInt32(DESC_HIDE, mode == MDATA_PICKOBJECT_MODE_CIRCLE);
-		bc = description->GetParameterI(ConstDescID(DescLevel(MDATA_PICKOBJECT_RECT_H)), nullptr);
+		bc = description->GetParameterI(ConstDescIDLevel(MDATA_PICKOBJECT_RECT_H), nullptr);
 		if (bc)
 			bc->SetInt32(DESC_HIDE, mode == MDATA_PICKOBJECT_MODE_CIRCLE);
 	}

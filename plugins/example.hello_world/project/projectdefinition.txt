@@ -1,0 +1,26 @@
+// The platforms this project is targeting - can be [Win64;OSX;Linux].
+Platform=Win64;OSX;Linux
+
+// Type of project - can be [Lib;DLL;App], DLL is for (plugin) modules, lib for static libraries,
+// effectively frameworks, and App for standalone applications (not possible for plugins).
+Type=DLL
+
+// The frameworks dependencies of this module. One can only include header files from frameworks
+// which are listed here. The selection here is a good starting point for most projects.
+APIS=\
+asset.framework;\
+cinema.framework;\
+cinema_hybrid.framework;\
+core.framework
+
+// Enable Cinema API features for this module, and then reenable style checks again (because 
+// C4D=true disables them).
+C4D=true
+stylecheck.level=3 
+
+// The ID of the module which is being compiled. One should use the reversed domain notation, derived
+// from a domain name you own, followed by plugin qualifiers, e.g, "net.mycompany.mymodule" or
+// "net.mycompany.mysuite.mymodule". It is important that this ID is unique, as Cinema 4D will
+// not load two modules with the same ID. Please note that Cinema 4D will also not load modules
+// with a "net.maxon" domain, as this domain is reserved for Maxon modules.
+ModuleId=net.maxonexample.hello_world

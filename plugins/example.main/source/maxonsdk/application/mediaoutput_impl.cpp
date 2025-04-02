@@ -31,6 +31,10 @@ public:
 		Finalize();
 	}
 
+	// Since we define a destructor, a copy constructor is created by the compiler.
+	// However the default copy constructor would not work for this class, so we delete it.
+	MaxonSDKImageSaverImpl& operator=(const MaxonSDKImageSaverImpl& other) = delete;
+
 	// ------------------------------------------------------------------------
 	/// Finalizes internal data.
 	// ------------------------------------------------------------------------

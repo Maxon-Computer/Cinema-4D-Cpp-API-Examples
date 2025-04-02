@@ -1036,7 +1036,7 @@ Bool LatticePlaneModifier::GetDEnabling(const GeListNode* node, const DescID& id
 			// Instance a GeData object to store the data from the parameter storing the normal check flag.
 			GeData enableNormalCheckData;
 			// Retrieve the parameter's data.
-			node->GetParameter(ConstDescID(DescLevel(SDK_EXAMPLE_LATTICEPLANEMODIFIER_ENABLENORMALCHK)), enableNormalCheckData, DESCFLAGS_GET::NONE);
+			node->GetParameter(ConstDescIDLevel(SDK_EXAMPLE_LATTICEPLANEMODIFIER_ENABLENORMALCHK), enableNormalCheckData, DESCFLAGS_GET::NONE);
 			// Return accordingly to the data retrieved.
 			return enableNormalCheckData.GetBool();
 			break;

@@ -71,7 +71,7 @@ Bool BlinkerTrack::FillKey(CTrack* track, BaseDocument* doc, BaseList2D* bl, CKe
 {
 	//BaseContainer *data = static_cast<BaseSequence*>(track)->GetDataInstance();
 
-	key->SetParameter(ConstDescID(DescLevel(BLINKERKEY_NUMBER)), 1.0, DESCFLAGS_SET::NONE);
+	key->SetParameter(ConstDescIDLevel(BLINKERKEY_NUMBER), 1.0, DESCFLAGS_SET::NONE);
 
 	return true;
 }
@@ -85,9 +85,9 @@ Bool BlinkerTrack::Animate(const CTrack* track, const CAnimInfo* info, Bool* chg
 	BaseTime t;
 	Float		 p1 = 0.0, p2 = 0.0, number = 0.0;
 
-	if (info->k1 &&	info->k1->GetParameter(ConstDescID(DescLevel(BLINKERKEY_NUMBER)), res, DESCFLAGS_GET::NONE))
+	if (info->k1 &&	info->k1->GetParameter(ConstDescIDLevel(BLINKERKEY_NUMBER), res, DESCFLAGS_GET::NONE))
 		p1 = res.GetFloat();
-	if (info->k2 && info->k2->GetParameter(ConstDescID(DescLevel(BLINKERKEY_NUMBER)), res, DESCFLAGS_GET::NONE))
+	if (info->k2 && info->k2->GetParameter(ConstDescIDLevel(BLINKERKEY_NUMBER), res, DESCFLAGS_GET::NONE))
 		p2 = res.GetFloat();
 
 	if (info->k1 && info->k2)

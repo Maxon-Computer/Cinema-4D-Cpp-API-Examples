@@ -195,7 +195,7 @@ Bool MorphMixerObject::GetDDescription(const GeListNode* node, Description* desc
 			}
 			bc2.SetString(DESC_NAME, pp->GetName());
 			bc2.SetString(DESC_SHORT_NAME, pp->GetName());
-			if (!description->SetParameter(cid, bc2, ConstDescID(DescLevel(ID_OBJECTPROPERTIES))))
+			if (!description->SetParameter(cid, bc2, ConstDescIDLevel(ID_OBJECTPROPERTIES)))
 				return false;
 		}
 		index++;

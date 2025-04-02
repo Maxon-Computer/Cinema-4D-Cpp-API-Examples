@@ -891,7 +891,7 @@ maxon::Result<void> RunLoadMaterialAssets()
 			iferr_scope;
 
 			// Skip over asset that is not matching the search criteria.
-			maxon::AssetMetaData assetMetadata = assetDescription.GetMetaData();
+			const maxon::AssetMetaData& assetMetadata = assetDescription.GetMetaData();
 			maxon::Id assetSubtype = assetMetadata.Get(
 				maxon::ASSETMETADATA::SubType, maxon::Id()) iferr_return;
 

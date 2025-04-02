@@ -563,7 +563,7 @@ maxon::Result<void> FilteredAssetSerach(const maxon::AssetRepositoryRef& reposit
 
 			// Retrieve the asset subtype of the currently yielded asset. See the metadata examples for
 			// details on the asset metadata model.
-			maxon::AssetMetaData assetMetadata = asset.GetMetaData();
+			const maxon::AssetMetaData& assetMetadata = asset.GetMetaData();
 			maxon::Id assetSubtype = assetMetadata.Get(
 				maxon::ASSETMETADATA::SubType, maxon::Id()) iferr_return;
 

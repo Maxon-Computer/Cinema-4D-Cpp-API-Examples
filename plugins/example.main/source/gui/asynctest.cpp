@@ -6,7 +6,6 @@
 #include "c4d.h"
 #include "gradientuserarea.h"
 #include "c4d_symbols.h"
-#include "lib_browser.h"
 #include "main.h"
 
 using namespace cinema;
@@ -489,116 +488,6 @@ Int32 AsyncDialog::Message(const BaseContainer& msg, BaseContainer& result)
 							else
 								string = prefix + str + " (" + String::IntToString(bl->GetType()) + ")";
 						}
-					}
-					else if (type == DRAGTYPE_BROWSER)
-					{
-#if 0
-						SDKBrowserDragInfo* bdi;
-
-						bdi = (SDKBrowserDragInfo*) object;
-						if (bdi)
-						{
-							Int32	cnt;
-
-							cnt = bdi->GetItemCount();
-							if (cnt > 1)
-							{
-								string = prefix + String::IntToString(cnt) + " browser object(s)";
-							}
-							else if (cnt == 1)
-							{
-								SDKBrowserContentNodeRef item;
-								SDKBrowserPluginRef			 plugin;
-
-								item = bdi->GetItem(0);
-								plugin = item->GetPlugin();
-								string = prefix + "browser object " + item->GetName() + " " + plugin->GetTypeName(item, 0, SDKBrowserPluginInterface::SpecificItemType);
-
-								if (item->IsLink())	// is this a link to another node?
-								{
-									SDKBrowserContentNodeRef link;
-
-									link = SDKBrowser::FindNode(item->GetNodeURL(LinkThrough));	// try to find the linked node
-
-									if (link)
-									{
-										item = link;
-										plugin = item->GetPlugin();	// now get the real plugin (you could have used SDKBrowserContentNode::LinkThrough on the original as well);
-									}
-									else
-									{
-										string += " is a dead link";
-									}
-								}
-
-								if (item->GetTypeID() == SDKBrowserContentNode::TypePreset)	// is this some kind of preset?
-								{
-									string += " is a preset";
-
-									if (msg.GetInt32(BFM_DRAG_FINISHED))	// drag finished? Then get the preset data
-									{
-										switch (plugin->GetPluginID())
-										{
-											case	CBPluginTypeObjectPreset:
-											{
-												BaseDocument* doc;
-
-												doc = item->GetObjectPreset();
-												if (doc)
-													BaseDocument::Free(doc);
-												break;
-											}
-											case	CBPluginTypeMaterialPreset:
-											{
-												BaseMaterial* mat;
-
-												mat = item->GetMaterialPreset();
-												if (mat)
-													BaseMaterial::Free(mat);
-												break;
-											}
-											case	CBPluginTypeTagPreset:
-											{
-												BaseTag* tag;
-
-												tag = item->GetTagPreset();
-												if (tag)
-													BaseTag::Free(tag);
-												break;
-											}
-											case	CBPluginTypeRenderDataPreset:
-											{
-												RenderData* rd;
-
-												rd = item->GetRenderDataPreset();
-												if (rd)
-													RenderData::Free(rd);
-												break;
-											}
-											case	CBPluginTypeShaderPreset:
-											{
-												BaseShader* ps;
-
-												ps = item->GetShaderPreset();
-												if (ps)
-													BaseShader::Free(ps);
-												break;
-											}
-											case	CBPluginTypeVideoPostPreset:
-											{
-												BaseVideoPost* vp;
-
-												vp = item->GetVideoPostPreset();
-												if (vp)
-													BaseVideoPost::Free(vp);
-												break;
-											}
-										}
-									}
-								}
-							}
-						}
-#endif
 					}
 					else
 					{

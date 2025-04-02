@@ -92,7 +92,7 @@ Bool SculptDeformer::GetDDescription(const GeListNode *node, Description *descri
 	flags |= DESCFLAGS_DESC::LOADED;
 
 	AutoAlloc<AtomArray> ar;
-	BaseContainer *bc = description->GetParameterI(ConstDescID(DescLevel(SCULPTDEFORMER_MODIFIER)), ar);
+	BaseContainer *bc = description->GetParameterI(ConstDescIDLevel(SCULPTDEFORMER_MODIFIER), ar);
 	if (bc)
 	{
 		BaseContainer mods;

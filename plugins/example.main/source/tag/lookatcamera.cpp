@@ -34,12 +34,12 @@ Bool LookAtCamera::Init(GeListNode* node, Bool isCloneInit)
 	}
 
 	GeData d;
-	if (node->GetParameter(ConstDescID(DescLevel(EXPRESSION_PRIORITY)), d, DESCFLAGS_GET::NONE))
+	if (node->GetParameter(ConstDescIDLevel(EXPRESSION_PRIORITY), d, DESCFLAGS_GET::NONE))
 	{
 		PriorityData* pd = d.GetCustomDataTypeWritable<PriorityData>();
 		if (pd)
 			pd->SetPriorityValue(PRIORITYVALUE_CAMERADEPENDENT, GeData(true));
-		node->SetParameter(ConstDescID(DescLevel(EXPRESSION_PRIORITY)), d, DESCFLAGS_SET::NONE);
+		node->SetParameter(ConstDescIDLevel(EXPRESSION_PRIORITY), d, DESCFLAGS_SET::NONE);
 	}
 
 	return true;

@@ -174,12 +174,11 @@ MAXON_METHOD maxon::Result<maxon::Url> DotsPresetAssetImpl::GeneratePreview(maxo
 
 	// Get the asset description and metadata.
 	maxon::AssetDescription asset = super.GetDescription() iferr_return;
-	maxon::AssetMetaData metadata = asset.GetMetaData();
+	const maxon::AssetMetaData& metadata = asset.GetMetaData();
 
 	// Access the custom metadata attribute for the the dot scale or return a default value of 0.025
 	// when that entry has not been populated.
-	maxon::Float32 dotScale = metadata.Get(
-		maxon::ASSETMETADATA::DOTSPRESET::DOT_SCALE, 0.025F) iferr_return;
+	maxon::Float32 dotScale = metadata.Get(maxon::ASSETMETADATA::DOTSPRESET::DOT_SCALE, 0.025F) iferr_return;
 
 	// Core implementation
 	// Initialize a drawing canvas and render the thumbnail in the requested size.

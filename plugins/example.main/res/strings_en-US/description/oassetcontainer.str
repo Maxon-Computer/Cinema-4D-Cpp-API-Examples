@@ -1,0 +1,9 @@
+STRINGTABLE Oassetcontainer
+{
+	Oassetcontainer								"Asset Container Object";
+
+	ASSETCONTAINER_SELECTION					"Selection";
+	ASSETCONTAINER_SELECTION_NONE			"None";
+	ASSETCONTAINER_SOURCE							"Source";
+	ASSETCONTAINER_ADD								"Add";
+}
