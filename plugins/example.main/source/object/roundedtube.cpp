@@ -468,7 +468,7 @@ DRAWRESULT RoundedTube::Draw(BaseObject* op, DRAWPASS drawpass, BaseDraw* bd, Ba
 	return DRAWRESULT::OK;
 }
 
-// be sure to use a unique ID obtained from www.plugincafe.com
+// be sure to use a unique ID obtained from developers.maxon.net
 #define ID_ROUNDEDTUBEOBJECT 1001157
 
 Bool RegisterRoundedTube()

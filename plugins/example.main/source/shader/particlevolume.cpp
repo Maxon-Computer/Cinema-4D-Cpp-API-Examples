@@ -337,7 +337,7 @@ Bool ParticleVolume::Message(GeListNode* node, Int32 type, void* data)
 }
 
 
-// be sure to use a unique ID obtained from www.plugincafe.com
+// be sure to use a unique ID obtained from developers.maxon.net
 #define ID_PARTICLEVOLUME	1001163
 
 Bool RegisterParticleVolume()

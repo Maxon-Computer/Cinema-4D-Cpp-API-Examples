@@ -121,7 +121,7 @@ EXECUTIONRESULT LookAtCamera::Execute(BaseTag* tag, BaseDocument* doc, BaseObjec
 	return EXECUTIONRESULT::OK;
 }
 
-// be sure to use a unique ID obtained from www.plugincafe.com
+// be sure to use a unique ID obtained from developers.maxon.net
 #define ID_LOOKATCAMERATAG 1001165
 
 Bool RegisterLookAtCamera()

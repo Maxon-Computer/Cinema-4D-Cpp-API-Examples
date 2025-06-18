@@ -69,7 +69,7 @@ Bool MenuTest::Execute(BaseDocument* doc, GeDialog* parentManager)
 
 Bool RegisterMenuTest()
 {
-	// be sure to use a unique ID obtained from www.plugincafe.com
+	// be sure to use a unique ID obtained from developers.maxon.net
 	return RegisterCommandPlugin(1000956, GeLoadString(IDS_MENUTEST), 0, AutoBitmap("icon.tif"_s), "C++ SDK Menu Test Plugin"_s, NewObjClear(MenuTest));
 }
 

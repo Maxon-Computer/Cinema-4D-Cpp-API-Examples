@@ -163,7 +163,7 @@ Bool ColorizeData::RenderEngineCheck(const BaseVideoPost* node, Int32 id) const
 	return true;
 }
 
-// be sure to use a unique ID obtained from www.plugincafe.com
+// be sure to use a unique ID obtained from developers.maxon.net
 #define ID_COLORIZEVIDEOPOST 1000968
 
 Bool RegisterVPTest()

@@ -7,7 +7,7 @@
 #include "lib_modeling.h"
 #include "main.h"
 
-#define SCULPTDRAWPOLYBRUSH_SDK_EXAMPLE 1029861	//You MUST get your own ID from www.plugincafe.com
+#define SCULPTDRAWPOLYBRUSH_SDK_EXAMPLE 1029861	//You MUST get your own ID from developers.maxon.net
 
 using namespace cinema;
 

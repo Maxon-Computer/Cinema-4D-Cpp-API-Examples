@@ -10,7 +10,7 @@ The brush will also use all the symmetry options.
 #include "c4d.h"
 #include "main.h"
 
-#define SCULPTCUBESBRUSH_SDK_EXAMPLE 1029846	//You MUST get your own ID from www.plugincafe.com
+#define SCULPTCUBESBRUSH_SDK_EXAMPLE 1029846	//You MUST get your own ID from developers.maxon.net
 
 using namespace cinema;
 

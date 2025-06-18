@@ -81,7 +81,7 @@ BaseObject* TriangulateData::GetVirtualObjects(BaseObject* op, const HierarchyHe
 	return pp;
 }
 
-// be sure to use a unique ID obtained from www.plugincafe.com
+// be sure to use a unique ID obtained from developers.maxon.net
 #define ID_TRIANGULATEOBJECT 1001159
 
 Bool RegisterTriangulate()

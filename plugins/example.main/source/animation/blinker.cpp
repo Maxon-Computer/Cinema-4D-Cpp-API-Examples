@@ -109,7 +109,7 @@ Bool BlinkerTrack::Animate(const CTrack* track, const CAnimInfo* info, Bool* chg
 	return true;
 }
 
-// be sure to use a unique ID obtained from www.plugincafe.com
+// be sure to use a unique ID obtained from developers.maxon.net
 #define ID_BLINKERANIMATION	1001152
 
 Bool RegisterBlinker()

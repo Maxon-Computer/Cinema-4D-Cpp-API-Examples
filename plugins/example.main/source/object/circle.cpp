@@ -244,7 +244,7 @@ Bool DoubleCircleData::GetDEnabling(const GeListNode* node, const DescID& id, co
 	return true;
 }
 
-// be sure to use a unique ID obtained from www.plugincafe.com
+// be sure to use a unique ID obtained from developers.maxon.net
 #define ID_CIRCLEOBJECT 1001154
 
 Bool RegisterCircle()

@@ -178,7 +178,7 @@ Bool ProgressTest::ExecuteOptionID(BaseDocument* doc, Int32 plugid, Int32 subid,
 
 Bool RegisterProgressTest()
 {
-	// be sure to use a unique ID obtained from www.plugincafe.com
+	// be sure to use a unique ID obtained from developers.maxon.net
 	return RegisterCommandPlugin(1059073, "ProgressTest"_s, PLUGINFLAG_COMMAND_OPTION_DIALOG, nullptr, "C++ SDK Progress Demo"_s, NewObjClear(ProgressTest));
 }
 

@@ -170,7 +170,7 @@ Bool NullSnap::Draw(const SnapStruct& ss, BaseDocument* doc, BaseDraw* bd, BaseD
 
 Bool RegisterSnapDataNullSnap()
 {
-	// A unique plugin ID. You must obtain this from http://www.plugincafe.com.
+	// A unique plugin ID. You must obtain this from developers.maxon.net.
 	const Int32 pluginID = 1033848; 
 	const String help = "Snap to null objects";
 	

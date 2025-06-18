@@ -122,7 +122,7 @@ Bool BitmapData::Message(GeListNode* node, Int32 type, void* msgdat)
 	return true;
 }
 
-// be sure to use a unique ID obtained from www.plugincafe.com
+// be sure to use a unique ID obtained from developers.maxon.net
 #define ID_BITMAPDISTORTION 1001160
 
 Bool RegisterBitmap()

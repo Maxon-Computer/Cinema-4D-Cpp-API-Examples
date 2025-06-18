@@ -206,14 +206,14 @@ maxon::Result<Bool> DropEffector::GetAccessedObjects(const BaseList2D* node, MET
 		{
 			// We'll read matrix and polygon data from the target.
 			// If we supported generators as well (where the polygonal data is in the generator's cache), we'd have to add ACCESSED_OBJECTS_MASK::CACHE.
-			access.MayAccess(target, ACCESSED_OBJECTS_MASK::GLOBAL_MATRIX | ACCESSED_OBJECTS_MASK::VARIABLE_TAG, ACCESSED_OBJECTS_MASK::NONE) yield_return;
+			access.MayAccess2(target, ACCESSED_OBJECTS_MASK::RELATIVE_MATRIX | ACCESSED_OBJECTS_MASK::VARIABLE_TAG, ACCESSED_OBJECTS_MASK::NONE) yield_return;
 		}
 	}
 
 	return true;
 }
 
-// be sure to use a unique ID obtained from www.plugincafe.com
+// be sure to use a unique ID obtained from developers.maxon.net
 #define ID_DROPEFFECTOR 1019571
 
 Bool RegisterDropEffector()

@@ -156,7 +156,7 @@ Vector NoiseEffector::CalcPointColor(const BaseObject* op, const BaseObject* gen
 	return Vector(Noise(globalpos), Noise(globalpos + Vector(20.0)), Noise(globalpos - Vector(20.0)));
 }
 
-// be sure to use a unique ID obtained from www.plugincafe.com
+// be sure to use a unique ID obtained from developers.maxon.net
 #define ID_NOISEEFFECTOR 1019570
 
 Bool RegisterNoiseEffector()

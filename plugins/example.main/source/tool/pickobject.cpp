@@ -50,7 +50,6 @@ Bool PickObjectTool::MouseInput(BaseDocument* doc, BaseContainer& data, BaseDraw
 	Matrix4d				m;
 	const ViewportPixel*const* pix = nullptr;
 	String					str;
-	char ch[200];
 	Bool ret = false;
 	AutoAlloc<C4DObjectList> list;
 	if (!list)
@@ -81,20 +80,15 @@ Bool PickObjectTool::MouseInput(BaseDocument* doc, BaseContainer& data, BaseDraw
 	}
 	if (ret)
 	{
-		snprintf(ch, sizeof(ch), "Picking region from (%d, %d), size (%d, %d)|", xr, yr, wr, hr);
-		str += ch;
+		str += FormatString("Picking region from (@, @), size (@, @)|", xr, yr, wr, hr);
 		for (l = 0; l < list->GetCount(); l++)
-		{
-			snprintf(ch, sizeof(ch), ", z = %.4f|", list->GetZ(l));
-			str += "Found Object " + list->GetObject(l)->GetName() + ch;
-		}
+			str += "Found Object "_s + MaxonConvert(list->GetObject(l)->GetName()) + FormatString(", z = @{.5}|", list->GetZ(l));
 	}
 	else
 	{
-		str	= "PickObject failed";
+		str	= "PickObject failed"_s;
 	}
-	snprintf(ch, sizeof(ch), "|Time: %.2f us", float(timer) * 1000.0f);
-	str += ch;
+	str += FormatString("|Time: @{.2} us", float(timer) * 1000.0f);
 
 	// Enable the following code for an example of GetFrameScreen.
 	/*Float cl, ct, cr, cb, scale;
@@ -126,7 +120,10 @@ Vector PickObjectTool::GetWorldCoordinates(BaseDraw* bd, const maxon::SquareMatr
 	// Apply the inverse view transform and multiply with the view matrix to calculate the world coordinates.
 	maxon::SquareMatrix4d im = ~m;
 
-	pos = (maxon::SquareMatrix4d(bd->GetMg()) * im) * pos;
+	Matrix mg = bd->GetMg();
+	maxon::SquareMatrix4d inverseCameraMatrix(mg);
+	Vector4d posInCameraSpace = im * pos;
+	pos = inverseCameraMatrix * posInCameraSpace;
 	pos.NormalizeW();
 
 	return pos.GetVector3();
@@ -164,8 +161,10 @@ Bool PickObjectTool::GetCursorInfo(BaseDocument* doc, BaseContainer& data, BaseD
 				Vector4d clipCoordinates;
 				Vector v = GetWorldCoordinates(bd, m, x, y, z, sampleLocation, clipCoordinates);
 				clipCoordinates.NormalizeW();
-				str = FormatString("Mouse coordinates: (@, @, @{.6}), normalized clip coordinates: (@{.4}, @{.4}, @{.6}), world coordinates: (@{.4}, @{.4}, @{.4})", 
-					_mouseX, _mouseY, z, clipCoordinates.x, clipCoordinates.y, clipCoordinates.z, v.x, v.y, v.z);
+				const BaseObject* obj = list->GetObject(0);
+				String objName = obj ? obj->GetName() : "(null)"_s;
+				str = FormatString("Mouse coordinates: (@, @, @{.6}), normalized clip coordinates: (@{.4}, @{.4}, @{.6}), world coordinates: (@{.4}, @{.4}, @{.4}), obj: 0x@ (@}", 
+					_mouseX, _mouseY, z, clipCoordinates.x, clipCoordinates.y, clipCoordinates.z, v.x, v.y, v.z, (const void*)obj, objName);
 			}
 			else
 			{

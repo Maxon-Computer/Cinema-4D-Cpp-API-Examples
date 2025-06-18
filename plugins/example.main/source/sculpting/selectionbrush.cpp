@@ -10,7 +10,7 @@ The brush will work with all the symmetry options.
 
 #include "lib_sculpt.h"														//This is only required for the helper IsObjectEnabled(BaseObject *op) function.
 
-#define SCULPTBRUSH_SDK_EXAMPLE_SELECTION 1029669	//You MUST get your own ID from www.plugincafe.com
+#define SCULPTBRUSH_SDK_EXAMPLE_SELECTION 1029669	//You MUST get your own ID from developers.maxon.net
 
 using namespace cinema;
 

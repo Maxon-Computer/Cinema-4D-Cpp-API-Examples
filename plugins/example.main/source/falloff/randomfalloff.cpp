@@ -56,11 +56,11 @@ void RandomFalloff::Sample(const Vector& p, const FalloffDataData& data, Float* 
 
 maxon::Result<Bool> RandomFalloff::GetAccessedObjects(const BaseList2D* op, METHOD_ID method, AccessedObjectsCallback& access) const
 {
-	return access.MayAccess(op, ACCESSED_OBJECTS_MASK::DATA, ACCESSED_OBJECTS_MASK::NONE);
+	return access.MayAccess2(op, ACCESSED_OBJECTS_MASK::DATA, ACCESSED_OBJECTS_MASK::NONE);
 }
 
 
-// be sure to use a unique ID obtained from www.plugincafe.com
+// be sure to use a unique ID obtained from developers.maxon.net
 #define ID_RANDOMFALLOFF 1019569
 
 Bool RegisterRandomFalloff()

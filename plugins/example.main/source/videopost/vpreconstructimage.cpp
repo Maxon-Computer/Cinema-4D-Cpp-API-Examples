@@ -92,7 +92,7 @@ Bool ReconstructData::RenderEngineCheck(const BaseVideoPost* node, Int32 id) con
 	return true;
 }
 
-// be sure to use a unique ID obtained from www.plugincafe.com
+// be sure to use a unique ID obtained from developers.maxon.net
 #define ID_VPRECONSTRUCT 1001054
 
 Bool RegisterVPReconstruct()

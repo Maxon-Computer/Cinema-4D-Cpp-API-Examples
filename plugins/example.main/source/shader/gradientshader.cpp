@@ -245,6 +245,6 @@ Bool RegisterGradient()
 	RegisterIcon(200000141, bmp, 6 * 32, 0, 32, 32, ICONFLAG::COPY);
 	RegisterIcon(200000142, bmp, 7 * 32, 0, 32, 32, ICONFLAG::COPY);
 
-	// be sure to use a unique ID obtained from www.plugincafe.com
+	// be sure to use a unique ID obtained from developers.maxon.net
 	return RegisterShaderPlugin(1001161, GeLoadString(IDS_SDKGRADIENT), 0, SDKGradientClass::Alloc, "Xsdkgradient"_s, 0);
 }

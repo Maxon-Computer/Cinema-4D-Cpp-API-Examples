@@ -347,7 +347,7 @@ maxon::Result<Bool> BoundingBoxObject::GetAccessedObjects(
 			// implementation reads its data container and matrix and writes the cache. If our GVO would
 			// also modify the data container of #op (which is not advisable to do) we would have to 
 			// pass ACCESSED_OBJECTS_MASK::CACHE | ACCESSED_OBJECTS_MASK::DATA for the 3rd argument.
-			access.MayAccess(
+			access.MayAccess2(
 				node,                                                               // Plugin node
 				ACCESSED_OBJECTS_MASK::DATA,                                        // Read access
 				ACCESSED_OBJECTS_MASK::CACHE                                        // Write access
@@ -357,9 +357,9 @@ maxon::Result<Bool> BoundingBoxObject::GetAccessedObjects(
 			// i.e., the first child object #input in GVO. We read the global matrix and the cache of 
 			// #input, but do not write any data. The CACHE read access is a result of us calling 
 			// BaseObject::GetMp() on #input. When unsure about the data access of a method, 
-			// use ::ALL | ::GLOBAL_MATRIX to mark everything as relevant (ALL does not include
+			// use ::ALL | ::RELATIVE_MATRIX to mark everything as relevant (ALL does not include
 			// matrix changes).
-			access.MayAccess(
+			access.MayAccess2(
 				firstChild,                                                          // Child node
 				ACCESSED_OBJECTS_MASK::MATRIX | ACCESSED_OBJECTS_MASK::CACHE,        // Read access
 				ACCESSED_OBJECTS_MASK::NONE                                          // Write access
@@ -371,7 +371,7 @@ maxon::Result<Bool> BoundingBoxObject::GetAccessedObjects(
 		// be static in parallelized methods such as GetVirtualObjects().
 		else
 		{
-			access.MayAccess(
+			access.MayAccess2(
 				node,                                                                // Plugin node
 				ACCESSED_OBJECTS_MASK::NONE,                                         // Read access
 				ACCESSED_OBJECTS_MASK::CACHE                                         // Write access
@@ -409,15 +409,20 @@ maxon::Result<Bool> BoundingBoxObject::GetAccessedObjects(
 			) iferr_return;
 
 			// We then attempt to access a BaseLink at ID 2000. When the link is populated, we mark the 
-			// global matrix and data container of the linked node as relevant data to read.
+			// matrix and data container of the linked node as relevant data to read.
+			// Because we depend not just on the local matrix but on the relative matrix
+			// between our current node and link (the expression ~op->GetMg() * mg in GetVirtualObjects above),
+			// we have to pass RELATIVE_MATRIX instead of just MATRIX. GLOBAL_MATRIX would work as well
+			// but be less efficient, because then C4D can't know that matrix changes to a common parent
+			// of node and link are of no interest to us (as they don't change the relative matrix).
 			GeData data;
 			node->GetParameter(ConstDescID(DescLevel(2000)), data, DESCFLAGS_GET::NONE);
 			const BaseList2D* const link = data.GetLink(node->GetDocument());
 			if (link)
 			{
-				access.MayAccess(
+				access.MayAccess2(
 					link,
-					ACCESSED_OBJECTS_MASK::GLOBAL_MATRIX | ACCESSED_OBJECTS_MASK::DATA,
+					ACCESSED_OBJECTS_MASK::RELATIVE_MATRIX | ACCESSED_OBJECTS_MASK::DATA,
 					ACCESSED_OBJECTS_MASK::NONE) yield_return;
 			}
 		}

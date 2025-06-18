@@ -508,13 +508,13 @@ maxon::Result<Bool> AtomObject::GetAccessedObjects(const BaseList2D* node, METHO
 		case METHOD_ID::GET_VIRTUAL_OBJECTS:
 		{
 			node->GetAccessedObjectsOfFirstChildHierarchy(ACCESSED_OBJECTS_MASK::ALL, ACCESSED_OBJECTS_MASK::CACHE, METHOD_ID::GET_VIRTUAL_OBJECTS_AND_MODIFY_OBJECT, access) yield_return;
-			return access.MayAccess(node, ACCESSED_OBJECTS_MASK::DATA, ACCESSED_OBJECTS_MASK::CACHE);
+			return access.MayAccess2(node, ACCESSED_OBJECTS_MASK::DATA, ACCESSED_OBJECTS_MASK::CACHE);
 		}
 	}
 	return SUPER::GetAccessedObjects(node, method, access);
 }
 
-// be sure to use a unique ID obtained from www.plugincafe.com
+// be sure to use a unique ID obtained from developers.maxon.net
 #define ID_ATOMOBJECT 1001153
 
 //----------------------------------------------------------------------------------------

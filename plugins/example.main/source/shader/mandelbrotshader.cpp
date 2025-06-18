@@ -121,7 +121,7 @@ Vector MandelbrotData::Output(BaseShader* chn, ChannelData* cd)
 	return col;
 }
 
-// be sure to use a unique ID obtained from www.plugincafe.com
+// be sure to use a unique ID obtained from developers.maxon.net
 #define ID_MANDELBROT	1001162
 
 Bool RegisterMandelbrot()

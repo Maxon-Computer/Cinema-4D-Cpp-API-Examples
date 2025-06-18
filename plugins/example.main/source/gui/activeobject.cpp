@@ -1,6 +1,6 @@
 // example code for a menu/manager plugin
 
-// be sure to use a unique ID obtained from www.plugincafe.com
+// be sure to use a unique ID obtained from developers.maxon.net
 #define ID_ACTIVEOBJECT 1000472
 
 #include "activeobject.h"

@@ -83,7 +83,7 @@ void Gravitation::ModifyParticles(BaseObject* op, Particle* ps, BaseParticle* ss
 	}
 }
 
-// be sure to use a unique ID obtained from www.plugincafe.com
+// be sure to use a unique ID obtained from developers.maxon.net
 #define ID_GRAVITATIONOBJECT 1001155
 
 Bool RegisterGravitation()

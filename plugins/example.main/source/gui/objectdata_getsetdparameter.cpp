@@ -8,7 +8,7 @@
 #include "main.h"
 #include "customgui_texbox.h"
 
-// NOTE: Be sure to use a unique ID obtained from www.plugincafe.com!
+// NOTE: Be sure to use a unique ID obtained from developers.maxon.net!
 #define ID_GETSETDPARAMETEREXAMPLE 1035580
 
 #define ID_SPLINE   1000

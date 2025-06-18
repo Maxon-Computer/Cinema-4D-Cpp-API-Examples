@@ -11,7 +11,7 @@ sculpting system what to do for each point on a dab.
 #include "c4d.h"
 #include "main.h"
 
-#define SCULPTPULLBRUSH_SDK_EXAMPLE 1028490	//You MUST get your own ID from www.plugincafe.com
+#define SCULPTPULLBRUSH_SDK_EXAMPLE 1028490	//You MUST get your own ID from developers.maxon.net
 
 using namespace cinema;
 

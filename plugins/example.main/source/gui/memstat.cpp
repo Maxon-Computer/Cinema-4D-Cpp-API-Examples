@@ -1,4 +1,4 @@
-// be sure to use a unique ID obtained from www.plugincafe.com
+// be sure to use a unique ID obtained from developers.maxon.net
 #define ID_MEMSTAT 200000072
 
 #include "c4d.h"

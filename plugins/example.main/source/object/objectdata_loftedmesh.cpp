@@ -15,7 +15,7 @@
 
 using namespace cinema;
 
-// A unique plugin ID. You must obtain this from http://www.plugincafe.com. Use this ID to create new instances of this object.
+// A unique plugin ID. You must obtain this from developers.maxon.net. Use this ID to create new instances of this object.
 static const Int32 ID_SDKEXAMPLE_OBJECTDATA_LOFTEDMESH = 1038749;
 
 namespace LoftedMeshHelpers

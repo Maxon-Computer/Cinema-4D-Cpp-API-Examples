@@ -1,6 +1,6 @@
 // example code for a menu/manager plugin
 
-// be sure to use a unique ID obtained from www.plugincafe.com
+// be sure to use a unique ID obtained from developers.maxon.net
 #define ID_VARIABLE_TAG_DIALOG 450000282
 
 #include <stdio.h>

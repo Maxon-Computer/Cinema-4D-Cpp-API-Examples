@@ -302,6 +302,6 @@ public:
 
 Bool RegisterPGPTest()
 {
-	// be sure to use a unique ID obtained from www.plugincafe.com
+	// be sure to use a unique ID obtained from developers.maxon.net
 	return RegisterCommandPlugin(450000266, GeLoadString(IDS_PGPTEST), 0, nullptr, String("C++ SDK PGP test"), NewObjClear(maxon::PGPTest));
 }

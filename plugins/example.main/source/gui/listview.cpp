@@ -1,6 +1,6 @@
 // example code for usage of listview elements
 
-// be sure to use a unique ID obtained from www.plugincafe.com
+// be sure to use a unique ID obtained from developers.maxon.net
 #define ID_LISTVIEWTEST 1000452
 
 #include "c4d.h"

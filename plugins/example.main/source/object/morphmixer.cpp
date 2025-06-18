@@ -347,7 +347,7 @@ error:
 	return nullptr;
 }
 
-// be sure to use unique IDs obtained from www.plugincafe.com
+// be sure to use unique IDs obtained from developers.maxon.net
 #define ID_MORPHMIXER_OBJECT 1001156
 
 Bool RegisterMorphMixer()
