@@ -1,12 +1,12 @@
 // example code for a menu/manager plugin
 
-// be sure to use a unique ID obtained from developers.maxon.net
-#define ID_VARIABLE_TAG_DIALOG 450000282
-
 #include <stdio.h>
 #include "activeobject.h"
 
 using namespace cinema;
+
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 ID_VARIABLE_TAG_DIALOG = 450000282;
 
 enum
 {
@@ -20,7 +20,7 @@ enum
 	IDC_VARIABLE_TAG_DATA_TREE,
 	IDC_VARIABLE_TAG_COLUMN_WIDTH,
 
-	IDC_MEMORY_STAT_
+	IDC_VARIABLE_TAG_
 };
 
 class VariableTagDataTreeViewFunctions : public TreeViewFunctions
@@ -197,11 +197,10 @@ public:
 		Int32 dataIndex = lineIndex * tagData->numColumns + col;
 		if (dataIndex >= 0 && dataIndex < tagData->dataCount)
 		{
-			Int32 wx, wy, wh, ww;
-			wx = drawinfo->xpos;
-			wy = drawinfo->ypos;
-			ww = drawinfo->width;
-			wh = drawinfo->height;
+			Int32 wx = drawinfo->xpos;
+			Int32 wy = drawinfo->ypos;
+			Int32 ww = drawinfo->width;
+			Int32 wh = drawinfo->height;
 
 			const void* data = (const void*)((UInt)(tagData->data) + dataIndex * tagData->dataSize);
 			drawinfo->frame->DrawSetTextCol(COLOR_TEXT, bgColor);
@@ -292,14 +291,14 @@ public:
 private:
 	void SetTreeLayout();
 
+private:
 	const VariableTag* _tag;
 	VariableTagDataTreeViewFunctions::TagData _tagData;
 	TreeViewCustomGui* _tree = nullptr;
 	VariableTagDataTreeViewFunctions::DATA_TYPE _preferredDataType = VariableTagDataTreeViewFunctions::DATA_TYPE::NONE;
 };
 
-VariableTagDataDialog::VariableTagDataDialog(const VariableTag* tag) :
-	_tag(tag)
+VariableTagDataDialog::VariableTagDataDialog(const VariableTag* tag) : _tag(tag)
 {
 	_tagData.tag = tag;
 	_tagData.type = tag->GetType();
@@ -440,22 +439,25 @@ Bool VariableTagDataDialog::Command(Int32 id, const BaseContainer& msg)
 	switch (id)
 	{
 		case IDC_VARIABLE_TAG_NUM_COLS:
+		{
 			GetInt32(IDC_VARIABLE_TAG_NUM_COLS, _tagData.numColumns);
 			SetTreeLayout();
 			_tree->SetRoot(&_tagData, &g_variableTagDataFunctable, this);
 			_tree->Refresh();
 			break;
-
+		}
 		case IDC_VARIABLE_TAG_NUM_ROWS:
+		{
 			GetInt32(IDC_VARIABLE_TAG_NUM_ROWS, _tagData.numRows);
 			_tree->Refresh();
 			break;
-
+		}
 		case IDC_VARIABLE_TAG_NUM_ROW_OFFSET:
+		{
 			GetInt32(IDC_VARIABLE_TAG_NUM_ROW_OFFSET, _tagData.rowOffset);
 			_tree->Refresh();
 			break;
-
+		}
 		case IDC_VARIABLE_TAG_DATA_FORMAT:
 		{
 			Int32 dataType = 0;
@@ -464,12 +466,12 @@ Bool VariableTagDataDialog::Command(Int32 id, const BaseContainer& msg)
 			_tree->Refresh();
 			break;
 		}
-
 		case IDC_VARIABLE_TAG_COLUMN_WIDTH:
+		{
 			GetInt32(IDC_VARIABLE_TAG_COLUMN_WIDTH, _tagData.columnWidth);
 			_tree->Refresh();
 			break;
-
+		}
 		case IDC_VARIABLE_TAG_FLOAT_PRECISION:
 		{
 			Int32 precision = 0;

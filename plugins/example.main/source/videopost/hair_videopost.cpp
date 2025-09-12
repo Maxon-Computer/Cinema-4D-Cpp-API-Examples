@@ -89,7 +89,8 @@ RENDERRESULT HairSDKVideopost::Execute(BaseVideoPost* node, VideoPostStruct* vps
 }
 
 
-#define ID_HAIR_COLLIDER_EXAMPLE 1018971
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 ID_HAIR_COLLIDER_EXAMPLE = 1018971;
 
 Bool RegisterVideopost()
 {

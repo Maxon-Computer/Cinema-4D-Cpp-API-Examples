@@ -1,10 +1,11 @@
 #include "customdatatags.h"
-#include "customgui_gradient.h"
-#include "c4d_basedraw.h"
 #include "c4d_basedocument.h"
-#include "c4d_tooldata.h"
+#include "c4d_basedraw.h"
 #include "c4d_commanddata.h"
+#include "c4d_general.h"
 #include "c4d_resource.h"
+#include "c4d_tooldata.h"
+#include "customgui_gradient.h"
 
 using namespace cinema;
 
@@ -48,30 +49,32 @@ public:
 		const CustomDataTag* customtag = static_cast<const CustomDataTag*>(tag);
 
 		CUSTOMDATATAG_MODE mode = customtag->GetMode();
-		cds.perPolygonVertexColor = mode == CUSTOMDATATAG_MODE::POLYVERTEX;
+		cds.colorMode = mode == CUSTOMDATATAG_MODE::POLYVERTEX ? DISPLAYCONTROL_MODE::PER_POLYGON_PER_VERTEX : DISPLAYCONTROL_MODE::PER_VERTEX;
 		switch (mode)
 		{
 			case CUSTOMDATATAG_MODE::VERTEX:
 			{
 				Int32 pointCount = ToPoint(op)->GetPointCount();
-				cds.vertex_color = NewMem(maxon::Color32, pointCount) iferr_return;
+				maxon::Color32* vertexColor = NewMem(maxon::Color32, pointCount) iferr_return;
+				cds.vertexColor = vertexColor;
 				for (Int32 vertexIndex = 0; vertexIndex < pointCount; ++vertexIndex)
 				{
 					const ColorA32 col = customtag->GetVertexData<ColorA32>(vertexIndex);
-					cds.vertex_color[vertexIndex] = col.GetColor3();
+					vertexColor[vertexIndex] = col.GetColor3();
 				}
 				break;
 			}
 			case CUSTOMDATATAG_MODE::POLYVERTEX:
 			{
 				Int32 polygonCount = ToPoly(op)->GetPolygonCount();
-				cds.vertex_color = NewMem(maxon::Color32, polygonCount * 4) iferr_return;
+				maxon::Color32* vertexColor = NewMem(maxon::Color32, polygonCount * 4) iferr_return;
+				cds.vertexColor = vertexColor;
 				for (Int32 polygonIndex = 0; polygonIndex < polygonCount; ++polygonIndex)
 				{
 					for (Int32 i = 0; i < 4; ++i)
 					{
 						const ColorA32& color = customtag->GetPolyVertexData<ColorA32>(polygonIndex, i);
-						cds.vertex_color[4 * polygonIndex + i] = color.GetColor3();
+						vertexColor[4 * polygonIndex + i] = color.GetColor3();
 					}
 				}
 				break;
@@ -353,31 +356,32 @@ public:
 		if (_gradient)
 		{
 			CUSTOMDATATAG_MODE mode = customtag->GetMode();
-			cds.perPolygonVertexColor = mode == CUSTOMDATATAG_MODE::POLYVERTEX;
+			cds.colorMode = mode == CUSTOMDATATAG_MODE::POLYVERTEX ? DISPLAYCONTROL_MODE::PER_POLYGON_PER_VERTEX : DISPLAYCONTROL_MODE::PER_VERTEX;
 			switch (mode)
 			{
 				case CUSTOMDATATAG_MODE::VERTEX:
 				{
 					Int32 pointCount = ToPoint(op)->GetPointCount();
-					cds.vertex_color = NewMem(maxon::Color32, pointCount) iferr_return;
+					maxon::Color32* vertexColor = NewMem(maxon::Color32, pointCount) iferr_return;
+					cds.vertexColor = vertexColor;
 					for (Int32 vertexIndex = 0; vertexIndex < pointCount; ++vertexIndex)
 					{
 						const Float w = customtag->GetVertexData<Float>(vertexIndex);
-						cds.vertex_color[vertexIndex] = (maxon::Color32)_gradientRenderData.CalcGradientPixel(w);
+						vertexColor[vertexIndex] = (maxon::Color32)_gradientRenderData.CalcGradientPixel(w);
 					}
 					break;
 				}
 				case CUSTOMDATATAG_MODE::POLYVERTEX:
 				{
 					Int32 polygonCount = ToPoly(op)->GetPolygonCount();
-					cds.vertex_color = NewMem(maxon::Color32, polygonCount * 4) iferr_return;
-
+					maxon::Color32* vertexColor = NewMem(maxon::Color32, polygonCount * 4) iferr_return;
+					cds.vertexColor = vertexColor;
 					for (Int32 polygonIndex = 0; polygonIndex < polygonCount; ++polygonIndex)
 					{
 						for (Int32 i = 0; i < 4; ++i)
 						{
 							const Float& v = customtag->GetPolyVertexData<Float>(polygonIndex, i);
-							cds.vertex_color[4 * polygonIndex + i] = (maxon::Color32)_gradientRenderData.CalcGradientPixel(v);
+							vertexColor[4 * polygonIndex + i] = (maxon::Color32)_gradientRenderData.CalcGradientPixel(v);
 						}
 					}
 					break;

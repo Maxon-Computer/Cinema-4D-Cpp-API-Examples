@@ -13,8 +13,8 @@
 
 using namespace cinema;
 
-/**A unique plugin ID. You must obtain this from developers.maxon.net. Use this ID to create new instances of this object.*/
-static const Int32 ID_SDKEXAMPLE_OBJECTDATA_PLANEBYPOLYGONS = 1038223;
+/// A unique plugin ID. You must obtain this from developers.maxon.net. Use this ID to create new instances of this object.
+static constexpr const Int32 ID_SDKEXAMPLE_OBJECTDATA_PLANEBYPOLYGONS = 1038223;
 
 namespace PlaneByPolygonsHelpers
 {
@@ -131,16 +131,21 @@ public:
 /// @{
 Bool PlaneByPolygons::Init(GeListNode* node, Bool isCloneInit)
 {
-	BaseObject*		 baseObjectPtr = static_cast<BaseObject*>(node);
-	BaseContainer* objectDataPtr = baseObjectPtr->GetDataInstance();
+	if (node == nullptr)
+		return false;
 
-	if (!isCloneInit)
+	if (isCloneInit == false)
 	{
-		objectDataPtr->SetFloat(SDK_EXAMPLE_PLANEBYPOLYGONS_WIDTH, 250);
-		objectDataPtr->SetFloat(SDK_EXAMPLE_PLANEBYPOLYGONS_HEIGHT, 250);
-		objectDataPtr->SetInt32(SDK_EXAMPLE_PLANEBYPOLYGONS_W_SUBD, 1);
-		objectDataPtr->SetInt32(SDK_EXAMPLE_PLANEBYPOLYGONS_H_SUBD, 1);
-		objectDataPtr->SetBool(SDK_EXAMPLE_PLANEBYPOLYGONS_USE_TRIS, false);
+		// Cast the node to the BasObject class.
+		BaseObject* baseObjPtr = static_cast<BaseObject*>(node);
+		// Retrieve the BaseContainer instance bound to the BaseObject instance.
+		BaseContainer& settings = baseObjPtr->GetDataInstanceRef();
+
+		settings.SetFloat(SDK_EXAMPLE_PLANEBYPOLYGONS_WIDTH, 250);
+		settings.SetFloat(SDK_EXAMPLE_PLANEBYPOLYGONS_HEIGHT, 250);
+		settings.SetInt32(SDK_EXAMPLE_PLANEBYPOLYGONS_W_SUBD, 1);
+		settings.SetInt32(SDK_EXAMPLE_PLANEBYPOLYGONS_H_SUBD, 1);
+		settings.SetBool(SDK_EXAMPLE_PLANEBYPOLYGONS_USE_TRIS, false);
 	}
 
 	return true;
@@ -154,12 +159,9 @@ void PlaneByPolygons::GetDimension(const BaseObject* op, Vector* mp, Vector* rad
 	if (!op)
 		return;
 
-	const BaseContainer* objectDataPtr = op->GetDataInstance();
-	if (!objectDataPtr)
-		return;
-
-	Float fWidth	= objectDataPtr->GetFloat(SDK_EXAMPLE_PLANEBYPOLYGONS_WIDTH);
-	Float fHeight = objectDataPtr->GetFloat(SDK_EXAMPLE_PLANEBYPOLYGONS_HEIGHT);
+	const BaseContainer& settings = op->GetDataInstanceRef();
+	Float fWidth	= settings.GetFloat(SDK_EXAMPLE_PLANEBYPOLYGONS_WIDTH);
+	Float fHeight = settings.GetFloat(SDK_EXAMPLE_PLANEBYPOLYGONS_HEIGHT);
 
 	rad->x = fWidth * 0.5;
 	rad->z = fHeight * 0.5;
@@ -174,16 +176,14 @@ BaseObject* PlaneByPolygons::GetVirtualObjects(BaseObject* op, const HierarchyHe
 	if (!isDirty)
 		return op->GetCache();
 
-	BaseContainer* objectDataPtr = op->GetDataInstance();
-	if (!objectDataPtr)
-		return BaseObject::Alloc(Onull);
+	BaseContainer& settings = op->GetDataInstanceRef();
 
 	// Retrieve the value for the object parameters
-	const Float fWidth	 = objectDataPtr->GetFloat(SDK_EXAMPLE_PLANEBYPOLYGONS_WIDTH);
-	const Float fHeight	 = objectDataPtr->GetFloat(SDK_EXAMPLE_PLANEBYPOLYGONS_HEIGHT);
-	const Int32 iWSubds	 = objectDataPtr->GetInt32(SDK_EXAMPLE_PLANEBYPOLYGONS_W_SUBD);
-	const Int32 iHSubds	 = objectDataPtr->GetInt32(SDK_EXAMPLE_PLANEBYPOLYGONS_H_SUBD);
-	const Bool	bUseTris = objectDataPtr->GetBool(SDK_EXAMPLE_PLANEBYPOLYGONS_USE_TRIS);
+	const Float fWidth	 = settings.GetFloat(SDK_EXAMPLE_PLANEBYPOLYGONS_WIDTH);
+	const Float fHeight	 = settings.GetFloat(SDK_EXAMPLE_PLANEBYPOLYGONS_HEIGHT);
+	const Int32 iWSubds	 = settings.GetInt32(SDK_EXAMPLE_PLANEBYPOLYGONS_W_SUBD);
+	const Int32 iHSubds	 = settings.GetInt32(SDK_EXAMPLE_PLANEBYPOLYGONS_H_SUBD);
+	const Bool	bUseTris = settings.GetBool(SDK_EXAMPLE_PLANEBYPOLYGONS_USE_TRIS);
 
 	if (fWidth == 0 || fHeight == 0 || iWSubds == 0 || iHSubds == 0)
 		return BaseObject::Alloc(Onull);

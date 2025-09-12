@@ -23,7 +23,6 @@ public:
 	}
 	
 	// custom methods
-	
 	MAXON_METHOD void SetCustomErrorCode(maxon::Int errorCode)
 	{
 		_errorCode = errorCode;

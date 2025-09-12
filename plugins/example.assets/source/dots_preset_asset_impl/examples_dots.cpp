@@ -17,6 +17,7 @@
 #include "maxon/asset_metaproperties.h"
 #include "maxon/imageurlcache.h"
 #include "maxon/lib_math.h"
+#include "maxon/progress.h"
 
 #include "dots_datatype.h"
 #include "dots_preset_asset.h"
@@ -173,7 +174,7 @@ maxon::Result<void> UpdatePreviewThumbnail(
 	{
 		assetDescription.StoreUrlMetaData(maxon::ASSETMETADATA::ASSET_PREVIEWIMAGEURL,
 			maxon::Url(), maxon::AssetMetaData::KIND::PERSISTENT) iferr_return;
-		maxon::ImageUrlCacheInterface::InvalidateCache(oldPreviewUrl) iferr_return;
+		maxon::AsyncResourceCacheTypes::ImageBaseRefCache().InvalidateCache(oldPreviewUrl) iferr_return;
 	}
 
 	// Update the asset metadata for the new preview url.

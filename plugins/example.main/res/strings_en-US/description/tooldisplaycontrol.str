@@ -1,0 +1,9 @@
+STRINGTABLE ToolDisplaycontrol
+{
+  ToolDisplaycontrol	"C++ SDK - DisplayControl Tool";
+  
+  DISPLAYCONTROLTOOL_MODE			"Mode";
+	PER_OBJECT									"Per object";
+	PER_VERTEX									"Per vertex";
+	PER_VERTEX_PER_POLYGON			"Per vertex per polygon";
+}

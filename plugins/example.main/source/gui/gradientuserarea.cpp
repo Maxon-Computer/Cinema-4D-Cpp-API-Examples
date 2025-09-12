@@ -16,23 +16,20 @@ Vector CalcGradientMix(const Vector& g1, const Vector& g2, Float per, Int32 inte
 	}
 }
 
-static Vector CalcGradientPixel(Float y, SDKGradient* g, Int32 count, Int32 interpol)
+static Vector CalcGradientPixel(Float y, const maxon::Block<SDKGradient>& g, Int32 interpol)
 {
-	Int32	i;
-	Float	delta;
-
-	i = 0;
-	while (i + 1 < count && y >= g[i + 1].pos)
+	Int32 i = 0;
+	while (i + 1 < g.GetCount() && y >= g[i + 1].pos)
 		i++;
 
-	if (i + 1 < count && y >= g[i].pos)
+	if (i + 1 < g.GetCount() && y >= g[i].pos)
 	{
-		delta = g[i + 1].pos - g[i].pos;
+		Float delta = g[i + 1].pos - g[i].pos;
 		if (delta == 0.0)
 			return g[i].col;
 		return CalcGradientMix(g[i].col, g[i + 1].col, (y - g[i].pos) / delta, interpol);
 	}
-	else if (i < count)
+	else if (i < g.GetCount())
 	{
 		return g[i].col;
 	}
@@ -44,35 +41,42 @@ static Vector CalcGradientPixel(Float y, SDKGradient* g, Int32 count, Int32 inte
 
 SDKGradientGadget::SDKGradientGadget()
 {
-	col = BaseBitmap::Alloc();
+	_col = BaseBitmap::Alloc();
 }
 
 SDKGradientGadget::~SDKGradientGadget()
 {
-	BaseBitmap::Free(col);
 }
 
-#define BOXRAD 4
+static constexpr const Int32 BOXRAD = 4;
 
-void SDKGradientGadget::Init(GeUserArea* a_ua, SDKGradient* a_g, Int32* a_count, Int32* a_interpol, Int32 a_maxgrad)
+void SDKGradientGadget::Init(GeUserArea* a_ua, Int32 interpol, Int32 maxgrad)
 {
-	ua = a_ua;
-	maxgrad = a_maxgrad;
-	g	= a_g;
-	count	= a_count;
-	interpol = a_interpol;
-	active = *a_count - 1;
+	if (_g.Resize(2) == maxon::FAILED)
+		return;
+
+	_g[0].pos = 0.0;
+	_g[0].id = 0;
+	_g[0].col = Vector(1.0, 1.0, 0.0);
+	_g[1].id = 1;
+	_g[1].col = Vector(1.0, 0.0, 0.0);
+	_g[1].pos = 1.0;
+
+	_ua = a_ua;
+	_maxgrad = maxgrad;
+	_interpol = interpol;
+	_active = Int32(_g.GetCount() - 1);
 }
 
 Bool SDKGradientGadget::InitDim(Int32 bw, Int32 bh)
 {
-	if (!col)
+	if (!_col)
 		return false;
-	iw = bw; ih = bh;
-	xmin = iw - ih * 3 / 2;
-	if (xmin <= 50)
-		xmin = 50;
-	if (col->Init(iw, ih, 24) != IMAGERESULT::OK)
+	_iw = bw; _ih = bh;
+	_xmin = _iw - _ih * 3 / 2;
+	if (_xmin <= 50)
+		_xmin = 50;
+	if (_col->Init(_iw, _ih, 24) != IMAGERESULT::OK)
 		return false;
 	CalcImage();
 	return true;
@@ -80,68 +84,70 @@ Bool SDKGradientGadget::InitDim(Int32 bw, Int32 bh)
 
 void SDKGradientGadget::SetPosition(Float per)
 {
-	if (active < 0 || active >= *count)
+	if (_active < 0 || _active >= _g.GetCount())
 		return;
 	per = Clamp01(per);
 
-	SDKGradient gg = g[active];
-	RemoveBox(active);
-	active = InsertBox(gg.col, per, gg.id);
+	SDKGradient gg = _g[_active];
+	_g.Erase(_active) iferr_cannot_fail("num must be valid");
+	_active = InsertBox(gg.col, per, gg.id);
 
 	CalcImage();
 }
 
 Bool SDKGradientGadget::GetPosition(Float* per)
 {
-	if (!count || active < 0 || active >= *count)
+	if (_active < 0 || _active >= _g.GetCount())
 		return false;
-	*per = g[active].pos;
+	*per = _g[_active].pos;
 	return true;
 }
 
 Bool SDKGradientGadget::MouseDown(Int32 x, Int32 y, Bool dbl)
 {
-	if (x < 0 || y < 0 || x >= iw || y >= ih)
+	if (x < 0 || y < 0 || x >= _iw || y >= _ih)
 		return false;
 
-	Int32	i, xp, yp, num;
-	Float	per;
-	Bool	move = false;
-
-	for (i = 0; i < *count; i++)
+	Int32 i = 0;
+	for (i = 0; i < _g.GetCount(); i++)
 	{
+		Int32 xp, yp;
 		GetBoxPosition(i, &xp, &yp);
 		if (x >= xp - BOXRAD && x <= xp + BOXRAD && y >= yp - BOXRAD && y <= yp + BOXRAD)
 			break;
 	}
 
-	if (i < *count || ((x >= xmin && y >= BOXRAD && y < ih - BOXRAD && *count + 1 <= maxgrad) && !dbl))
+	Bool	move = false;
+	if (i < _g.GetCount() || ((x >= _xmin && y >= BOXRAD && y < _ih - BOXRAD && _g.GetCount() + 1 <= _maxgrad) && !dbl))
 	{
-		move = i < *count;
+		move = i < _g.GetCount();
 
+		Int32 num = 0;
+		Int32 xp, yp;
 		if (move || dbl)
 		{
-			dragcol = g[i].col;
+			_dragcol = _g[i].col;
 			num	= i;
 			GetBoxPosition(i, &xp, &yp);
 		}
 		else
 		{
-			per = YtoP(y);
-			dragcol = CalcGradientPixel(per, g, *count, *interpol);
-			num	 = InsertBox(dragcol, per, FindID());
+			Float per = YtoP(y);
+			_dragcol = CalcGradientPixel(per, _g, _interpol);
+			num	 = InsertBox(_dragcol, per, FindID());
 			xp	 = x; yp = y;
 			move = true;
 		}
-		active = num;
+		
+		_active = num;
 
-		dragx	 = xp - x;
-		dragy	 = yp - y;
-		dragid = g[num].id;
+		_dragx	 = xp - x;
+		_dragy	 = yp - y;
+		_dragid = _g[num].id;
 
 		if (dbl)
 		{
-			GeChooseColor(&g[num].col, 0);
+			GeChooseColor(&_g[num].col, 0);
 			move = false;
 		}
 
@@ -153,88 +159,72 @@ Bool SDKGradientGadget::MouseDown(Int32 x, Int32 y, Bool dbl)
 
 void SDKGradientGadget::MouseDrag(Int32 x, Int32 y)
 {
-	x += dragx;
-	y += dragy;
+	x += _dragx;
+	y += _dragy;
 
 	Float per;
-	if (active != -1 && Abs(YtoP(y) - g[active].pos) < 1.0 / Float(ih - 2 * BOXRAD - 1))
+	if (_active != -1 && Abs(YtoP(y) - _g[_active].pos) < 1.0 / Float(_ih - 2 * BOXRAD - 1))
 		return;
 
 	per = Truncate(YtoP(y) * 1000.0 + 0.5) * 0.001;
 	per = Clamp01(per);
-	if (active != -1)
-		RemoveBox(active);
+	if (_active != -1 && _g.GetCount() > 2)
+		_g.Erase(_active) iferr_cannot_fail("num must be valid");
 
-	if (x >= 0 && x < iw && y >= -25 && y <= ih + 25)
-		active = InsertBox(dragcol, per, dragid);
+	if (x >= 0 && x < _iw && y >= -25 && y <= _ih + 25)
+		_active = InsertBox(_dragcol, per, _dragid);
 	else
-		active = -1;
+		_active = -1;
 
 	CalcImage();
 }
 
 Float SDKGradientGadget::YtoP(Int32 y)
 {
-	return 1.0 - (y - BOXRAD) / Float(ih - 2 * BOXRAD - 1);
+	return 1.0 - (y - BOXRAD) / Float(_ih - 2 * BOXRAD - 1);
 }
 
 Int32 SDKGradientGadget::PtoY(Float pos)
 {
-	return BOXRAD + Int32((1.0 - pos) * Float(ih - 2 * BOXRAD - 1) + 0.01);
+	return BOXRAD + Int32((1.0 - pos) * Float(_ih - 2 * BOXRAD - 1) + 0.01);
 }
 
 void SDKGradientGadget::GetBoxPosition(Int32 num, Int32* x, Int32* y)
 {
-	Int32	 i, j, temp, yi, ys, mask, pos = 0;
-	UChar* field = nullptr;
-	Int32* sort	 = nullptr;
+	iferr_scope_handler { err.CritStop(); return; };
+	maxon::BaseArray<UChar> field;
+	maxon::BaseArray<Int32> sort;
 
-	if (ih > 0)
-	{
-		iferr (field = NewMemClear(UChar, ih))
-			return;
-	}
-	if (!field)
+	if (_ih <= 0 || _maxgrad <= 0)
 		return;
+	
+	field.Resize(_ih) iferr_return;
+	sort.Resize(_maxgrad) iferr_return;
 
-	if (maxgrad > 0)
-	{
-		iferr (sort = NewMemClear(Int32, maxgrad))
-		{
-			DeleteMem(field); return;
-		}
-	}
-	if (!sort)
-	{
-		DeleteMem(field); return;
-	}
+	*x = _xmin - BOXRAD - 6;
+	*y = PtoY(_g[num].pos);
 
-	*x = xmin - BOXRAD - 6;
-	*y = PtoY(g[num].pos);
-
-	for (i = 0; i < *count; i++)
+	for (Int32 i = 0; i < _g.GetCount(); i++)
 		sort[i] = i;
 
 	// bubble sort
-	for (i = 0; i < *count - 1; i++)
+	for (Int32 i = 0; i < _g.GetCount() - 1; i++)
 	{
-		for (j = i + 1; j < *count; j++)
+		for (Int32 j = i + 1; j < _g.GetCount(); j++)
 		{
-			if (g[sort[i]].id > g[sort[j]].id)
-			{
-				temp = sort[i]; sort[i] = sort[j]; sort[j] = temp;
-			}
+			if (_g[sort[i]].id > _g[sort[j]].id)
+				Swap(sort[i], sort[j]);
 		}
 	}
 
-	for (i = 0; i < *count; i++)
+	Int32	 pos = 0;
+	for (Int32 i = 0; i < _g.GetCount(); i++)
 	{
-		j = sort[i];
+		Int32 j = sort[i];
+		Int32 ys = PtoY(_g[j].pos);
 
-		ys = PtoY(g[j].pos);
-
-		mask = 0;
-		for (yi = ys - BOXRAD; yi <= ys + BOXRAD; yi++)
+		Int32 mask = 0;
+		for (Int32 yi = ys - BOXRAD; yi <= ys + BOXRAD; yi++)
 			mask |= field[yi];
 
 		if (!(mask & 1))
@@ -251,130 +241,102 @@ void SDKGradientGadget::GetBoxPosition(Int32 num, Int32* x, Int32* y)
 		if (j == num)
 			break;
 
-		for (yi = ys - BOXRAD; yi <= ys + BOXRAD; yi++)
+		for (Int32 yi = ys - BOXRAD; yi <= ys + BOXRAD; yi++)
 			field[yi] |= 1 << pos;
 	}
-
-	DeleteMem(sort);
-	DeleteMem(field);
 
 	*x -= (2 * BOXRAD + 1) * pos;
 }
 
 Int32 SDKGradientGadget::FindID()
 {
-	Int32 i, id;
-	Char* used = nullptr;
-	if (maxgrad > 0)
+	iferr_scope_handler { err.CritStop(); return 0; };
+	maxon::BaseArray<Char> used;
+	
+	used.Resize(_maxgrad) iferr_return;
+	for (Int32 i = 0; i < _g.GetCount(); i++)
+		used[_g[i].id] = true;
+
+	for (Int32 id = 0; id < _maxgrad; id++)
 	{
-		iferr (used = NewMemClear(Char, maxgrad))
-			return 0;
-	}
-	if (!used)
-		return 0;
-
-	for (i = 0; i < *count; i++)
-		used[g[i].id] = true;
-
-	for (id = 0; id < maxgrad; id++)
 		if (!used[id])
-			break;
+			return id;
+	}
 
-	if (id >= maxgrad)
-		id = 0;		// safety check
-
-	DeleteMem(used);
-	return id;
+	return 0;
 }
 
 Int32 SDKGradientGadget::InsertBox(Vector color, Float per, Int32 id)
 {
-	Int32 i, num = 0;
-
-	while ((num < *count) && (per > g[num].pos))
+	Int num = 0;
+	while ((num < _g.GetCount()) && (per > _g[num].pos))
 		num++;
 
-	for (i = *count; i >= num + 1; i--)
-		g[i] = g[i - 1];
+	if (_g.Insert(num, color, per, id) == maxon::FAILED)
+		return 0;
 
-	g[num].col = color;
-	g[num].pos = per;
-	g[num].id	 = id;
-
-	count[0]++;
-	return num;
-}
-
-void SDKGradientGadget::RemoveBox(Int32 num)
-{
-	Int32 i;
-
-	for (i = num; i < *count - 1; i++)
-		g[i] = g[i + 1];
-
-	count[0]--;
+	return Int32(num);
 }
 
 void SDKGradientGadget::CalcImage()
 {
-	if (!col)
+	if (_col == nullptr || _ua == nullptr)
 		return;
 
-	Int32	 i, x, y, pass;
-	UInt16 rr, gg, bb;
-	Vector v;
+	_ua->DrawSetPen(COLOR_BG);
+	_ua->FillBitmapBackground(_col, 0, 0);
 
-	ua->DrawSetPen(COLOR_BG);
-	ua->FillBitmapBackground(col, 0, 0);
-
-	for (pass = 0; pass < 3; pass++)
+	Int32 x = 0;
+	Int32 y = 0;
+	for (Int32 pass = 0; pass < 3; pass++)
 	{
-		for (i = 0; i < *count; i++)
+		for (Int32 i = 0; i < _g.GetCount(); i++)
 		{
 			if (pass == 0)
 			{
 				GetBoxPosition(i, &x, &y);
-				col->SetPen(0, 0, 0);
+				_col->SetPen(0, 0, 0);
 				if (x >= 0)
-					col->Line(x, y, xmin - 1, y);
+					_col->Line(x, y, _xmin - 1, y);
 			}
 			else
 			{
-				if ((pass == 2) != (i == active))
+				if ((pass == 2) != (i == _active))
 					continue;
 
 				GetBoxPosition(i, &x, &y);
 
-				rr = UInt16(g[i].col.x * COLORTOINT_MULTIPLIER);
-				gg = UInt16(g[i].col.y * COLORTOINT_MULTIPLIER);
-				bb = UInt16(g[i].col.z * COLORTOINT_MULTIPLIER);
+				UInt16 rr = UInt16(_g[i].col.x * COLORTOINT_MULTIPLIER);
+				UInt16 gg = UInt16(_g[i].col.y * COLORTOINT_MULTIPLIER);
+				UInt16 bb = UInt16(_g[i].col.z * COLORTOINT_MULTIPLIER);
 
 				if (pass == 2)
-					col->SetPen(255, 255, 255);
+					_col->SetPen(255, 255, 255);
 				else
-					col->SetPen(0, 0, 0);
+					_col->SetPen(0, 0, 0);
 
 				if (x - BOXRAD > 0)
 				{
-					col->Line(x - BOXRAD, y + BOXRAD, x + BOXRAD, y + BOXRAD);
-					col->Line(x + BOXRAD, y - BOXRAD, x + BOXRAD, y + BOXRAD);
-					col->Line(x - BOXRAD, y - BOXRAD, x + BOXRAD, y - BOXRAD);
-					col->Line(x - BOXRAD, y - BOXRAD, x - BOXRAD, y + BOXRAD);
+					_col->Line(x - BOXRAD, y + BOXRAD, x + BOXRAD, y + BOXRAD);
+					_col->Line(x + BOXRAD, y - BOXRAD, x + BOXRAD, y + BOXRAD);
+					_col->Line(x - BOXRAD, y - BOXRAD, x + BOXRAD, y - BOXRAD);
+					_col->Line(x - BOXRAD, y - BOXRAD, x - BOXRAD, y + BOXRAD);
 
-					col->Clear(x - BOXRAD + 1, y - BOXRAD + 1, x + BOXRAD - 1, y + BOXRAD - 1, rr, gg, bb);
+					_col->Clear(x - BOXRAD + 1, y - BOXRAD + 1, x + BOXRAD - 1, y + BOXRAD - 1, rr, gg, bb);
 				}
 			}
 		}
 	}
 
-	for (y = BOXRAD; y < ih - BOXRAD; y++)
+	Vector v;
+	for (y = BOXRAD; y < _ih - BOXRAD; y++)
 	{
-		v	 = CalcGradientPixel(YtoP(y), g, *count, *interpol);
-		rr = UInt16(v.x * COLORTOINT_MULTIPLIER);
-		gg = UInt16(v.y * COLORTOINT_MULTIPLIER);
-		bb = UInt16(v.z * COLORTOINT_MULTIPLIER);
-		col->SetPen(rr, gg, bb);
-		col->Line(xmin, y, iw - 1, y);
+		v	= CalcGradientPixel(YtoP(y), _g, _interpol);
+		UInt16 rr = UInt16(v.x * COLORTOINT_MULTIPLIER);
+		UInt16 gg = UInt16(v.y * COLORTOINT_MULTIPLIER);
+		UInt16 bb = UInt16(v.z * COLORTOINT_MULTIPLIER);
+		_col->SetPen(rr, gg, bb);
+		_col->Line(_xmin, y, _iw - 1, y);
 	}
 }
 

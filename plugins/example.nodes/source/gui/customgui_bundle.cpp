@@ -7,8 +7,10 @@ using namespace cinema;
 namespace maxonsdk
 {
 
-#define BUNDLEGUIDATA_ID 1053658
-#define BUNDLEGUI_RESOURCE_SYMBOL "BUNDLEGUI"
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+// static constexpr const Int32 BUNDLEGUIDATA_ID = 1053658;
+
+static constexpr const Char* BUNDLEGUI_RESOURCE_SYMBOL = "BUNDLEGUI";
 
 namespace GADGET_ID
 {
@@ -20,7 +22,7 @@ namespace GADGET_ID
 } // namespace GADGET_ID
 
 CustomProperty g_bundleGuiProps[] = { { CUSTOMTYPE::END, 0, "" } };
-static Int32 g_resourceDataTypeTable[] = { BUNDLEGUI_ID };
+static Int32 g_resourceDataTypeTableBundle[] = { BUNDLEGUI_ID };
 
 Int32 BundleGuiData::GetId()
 {
@@ -53,8 +55,8 @@ CustomProperty* BundleGuiData::GetProperties()
 }
 Int32 BundleGuiData::GetResourceDataType(Int32*& table)
 {
-	table = g_resourceDataTypeTable;
-	return sizeof(g_resourceDataTypeTable) / sizeof(Int32);
+	table = g_resourceDataTypeTableBundle;
+	return sizeof(g_resourceDataTypeTableBundle) / sizeof(Int32);
 }
 
 BaseCustomGuiLib g_bundleGuiLib;

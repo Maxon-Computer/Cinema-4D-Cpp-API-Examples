@@ -7,7 +7,7 @@
 
 using namespace cinema;
 
-#define MAXTARGETS 100
+static constexpr const Int32 MAXTARGETS = 100;
 
 class MorphMixerObject : public ObjectData
 {
@@ -86,7 +86,7 @@ void MorphMixerObject::MagpieImport(BaseObject* op)
 	if (!f.FileSelect(FILESELECTTYPE::ANYTHING, FILESELECT::LOAD, GeLoadString(IDS_MORPHSELECT)))
 		return;
 
-	AutoAlloc<BaseFile> bf;
+	auto bf = maxon::UniqueRef<BaseFile>::Create() iferr_ignore("Error is handled manually");
 	if (!bf || !bf->Open(f))
 		goto error;
 
@@ -347,8 +347,8 @@ error:
 	return nullptr;
 }
 
-// be sure to use unique IDs obtained from developers.maxon.net
-#define ID_MORPHMIXER_OBJECT 1001156
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 ID_MORPHMIXER_OBJECT = 1001156;
 
 Bool RegisterMorphMixer()
 {

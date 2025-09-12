@@ -8,14 +8,15 @@
 #include "main.h"
 #include "customgui_texbox.h"
 
-// NOTE: Be sure to use a unique ID obtained from developers.maxon.net!
-#define ID_GETSETDPARAMETEREXAMPLE 1035580
-
-#define ID_SPLINE   1000
-#define ID_GRADIENT 1001
-#define ID_LINK     1002
 
 using namespace cinema;
+
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 ID_GETSETDPARAMETEREXAMPLE = 1035580;
+
+static constexpr const Int32 ID_SPLINE  = 1000;
+static constexpr const Int32 ID_GRADIENT = 1001;
+static constexpr const Int32 ID_LINK = 1002;
 
 static const Int32 SPLINE_SC_KNOT_POS_X = 0; // Float
 static const Int32 SPLINE_SC_KNOT_POS_Y = 1; // Float
@@ -65,21 +66,21 @@ public:
 	static NodeData* Alloc() { return NewObjClear(GetSetDParameterExample); }
 
 private:
-	void SplineInit(BaseContainer* const data);
+	void SplineInit(BaseContainer& data);
 	Bool SplineGetDDescription(const GeListNode *node, Description *description, DESCFLAGS_DESC &flags, const DescID* const singleid) const;
-	Bool SplineGetDParameter(const GeListNode* node, const DescID& id, GeData& t_data, DESCFLAGS_GET& flags, const BaseContainer* data) const;
-	Bool SplineSetDParameter(GeListNode* node, const DescID& id, const GeData& t_data, DESCFLAGS_SET& flags, BaseContainer* const data);
+	Bool SplineGetDParameter(const GeListNode* node, const DescID& id, GeData& t_data, DESCFLAGS_GET& flags, const BaseContainer& data) const;
+	Bool SplineSetDParameter(GeListNode* node, const DescID& id, const GeData& t_data, DESCFLAGS_SET& flags, BaseContainer& data);
 
-	void GradientInit(BaseContainer* const data);
+	void GradientInit(BaseContainer& data);
 	Bool GradientGetDDescription(const GeListNode *node, Description *description, DESCFLAGS_DESC &flags, const DescID* const singleid) const;
-	Bool GradientGetDParameter(const GeListNode* node, const DescID& id, GeData& t_data, DESCFLAGS_GET& flags, const BaseContainer* data) const;
-	Bool GradientSetDParameter(GeListNode* node, const DescID& id, const GeData& t_data, DESCFLAGS_SET& flags, BaseContainer* const data);
+	Bool GradientGetDParameter(const GeListNode* node, const DescID& id, GeData& t_data, DESCFLAGS_GET& flags, const BaseContainer& data) const;
+	Bool GradientSetDParameter(GeListNode* node, const DescID& id, const GeData& t_data, DESCFLAGS_SET& flags, BaseContainer& data);
 	Bool GradientFindKnot(const Gradient* gradient, Int32 knotIdx, maxon::GradientKnot& knot, Int32& idx) const;
 
-	void LinkInit(BaseContainer* const data);
+	void LinkInit(BaseContainer& data);
 	Bool LinkGetDDescription(const GeListNode *node, Description *description, DESCFLAGS_DESC &flags, const DescID* const singleid) const;
-	Bool LinkGetDParameter(const GeListNode* node, const DescID& id, GeData& t_data, DESCFLAGS_GET& flags, const BaseContainer* data) const;
-	Bool LinkSetDParameter(GeListNode* node, const DescID& id, const GeData& t_data, DESCFLAGS_SET& flags, BaseContainer* const data);
+	Bool LinkGetDParameter(const GeListNode* node, const DescID& id, GeData& t_data, DESCFLAGS_GET& flags, const BaseContainer& data) const;
+	Bool LinkSetDParameter(GeListNode* node, const DescID& id, const GeData& t_data, DESCFLAGS_SET& flags, BaseContainer& data);
 	void LinkGetVirtualObjectsTest(BaseObject* const op);
 };
 
@@ -87,7 +88,7 @@ private:
 //
 // Spline
 //
-void GetSetDParameterExample::SplineInit(BaseContainer* const data)
+void GetSetDParameterExample::SplineInit(BaseContainer& data)
 {
 	// Initialize spline description
 	GeData spline(CUSTOMDATATYPE_SPLINE, DEFAULTVALUE);
@@ -102,7 +103,7 @@ void GetSetDParameterExample::SplineInit(BaseContainer* const data)
 		knot = spd->GetKnot(1);
 		knot->vPos = Vector(0.8, 0.8, 0.0);
 	}
-	data->SetData(ID_SPLINE, spline);
+	data.SetData(ID_SPLINE, spline);
 }
 
 Bool GetSetDParameterExample::SplineGetDDescription(const GeListNode *node, Description *description, DESCFLAGS_DESC &flags, const DescID* const singleid) const
@@ -164,11 +165,11 @@ Bool GetSetDParameterExample::SplineGetDDescription(const GeListNode *node, Desc
 	return true;
 }
 
-Bool GetSetDParameterExample::SplineGetDParameter(const GeListNode* node, const DescID& id, GeData& t_data, DESCFLAGS_GET& flags, const BaseContainer* data) const
+Bool GetSetDParameterExample::SplineGetDParameter(const GeListNode* node, const DescID& id, GeData& t_data, DESCFLAGS_GET& flags, const BaseContainer& data) const
 {
 	if (id[1].id == 0)  // if second level id is zero, the complete custom datatype is requested
 	{
-		const GeData d = data->GetData(id[0].id);
+		const GeData d = data.GetData(id[0].id);
 		const SplineData* const spd = d.GetCustomDataType<SplineData>();
 
 		t_data.SetCustomDataType(*spd);
@@ -190,7 +191,7 @@ Bool GetSetDParameterExample::SplineGetDParameter(const GeListNode* node, const 
 
 		// Now, get the SplineData, in order to access it directly.
 		// As mentioned before, there's no real need to do so, but you could...
-		const GeData d = data->GetData(id[0].id);
+		const GeData d = data.GetData(id[0].id);
 		const SplineData* const spd = d.GetCustomDataType<SplineData>();
 
 		DebugAssert((knotIdx >= 0) && (knotIdx < spd->GetKnotCount()), "WRONG KNOT INDEX");
@@ -243,7 +244,7 @@ Bool GetSetDParameterExample::SplineGetDParameter(const GeListNode* node, const 
 	return SUPER::GetDParameter(node, id, t_data, flags);
 }
 
-Bool GetSetDParameterExample::SplineSetDParameter(GeListNode* node, const DescID& id, const GeData& t_data, DESCFLAGS_SET& flags, BaseContainer* const data)
+Bool GetSetDParameterExample::SplineSetDParameter(GeListNode* node, const DescID& id, const GeData& t_data, DESCFLAGS_SET& flags, BaseContainer& data)
 {
 	if (id[1].id == 0)
 	{
@@ -252,7 +253,7 @@ Bool GetSetDParameterExample::SplineSetDParameter(GeListNode* node, const DescID
 		GeData d;
 
 		d.SetCustomDataType(*spd);
-		data->SetData(id[0].id, d);  // store in container
+		data.SetData(id[0].id, d);  // store in container
 		flags |= DESCFLAGS_SET::PARAM_SET;
 	}
 	else if (id[1].id == SPLINE_SC_TENSION)
@@ -270,7 +271,7 @@ Bool GetSetDParameterExample::SplineSetDParameter(GeListNode* node, const DescID
 
 		// Now, get the SplineData, in order to access it directly.
 		// As mentioned before, there's no real need to do so, but you could...
-		GeData d = data->GetData(id[0].id);
+		GeData d = data.GetData(id[0].id);
 		SplineData* const spd = d.GetCustomDataTypeWritable<SplineData>();
 
 		DebugAssert((knotIdx >= 0) && (knotIdx < spd->GetKnotCount()), "WRONG KNOT INDEX");
@@ -331,7 +332,7 @@ Bool GetSetDParameterExample::SplineSetDParameter(GeListNode* node, const DescID
 					knot->lFlagsSettings &= ~FLAG_KNOT_T_LOCK_L;
 				break;
 		}
-		data->SetData(id[0].id, d);  // store changed spline in container
+		data.SetData(id[0].id, d);  // store changed spline in container
 		flags |= DESCFLAGS_SET::PARAM_SET;
 	}
 	return SUPER::SetDParameter(node, id, t_data, flags);
@@ -340,7 +341,7 @@ Bool GetSetDParameterExample::SplineSetDParameter(GeListNode* node, const DescID
 //
 // Gradient
 //
-void GetSetDParameterExample::GradientInit(BaseContainer* const data)
+void GetSetDParameterExample::GradientInit(BaseContainer& data)
 {
 	// Initialize color gradient description with a simple black/white gradient
 	GeData gradientData(CUSTOMDATATYPE_GRADIENT, DEFAULTVALUE);
@@ -359,7 +360,7 @@ void GetSetDParameterExample::GradientInit(BaseContainer* const data)
 		gradientKnot.index = 1;
 		gradient->InsertKnot(gradientKnot);
 	}
-	data->SetData(ID_GRADIENT, gradientData);
+	data.SetData(ID_GRADIENT, gradientData);
 }
 
 Bool GetSetDParameterExample::GradientGetDDescription(const GeListNode *node, Description *description, DESCFLAGS_DESC &flags, const DescID* const singleid) const
@@ -392,11 +393,11 @@ Bool GetSetDParameterExample::GradientGetDDescription(const GeListNode *node, De
 	return true;
 }
 
-Bool GetSetDParameterExample::GradientGetDParameter(const GeListNode* node, const DescID& id, GeData& t_data, DESCFLAGS_GET& flags, const BaseContainer* data) const
+Bool GetSetDParameterExample::GradientGetDParameter(const GeListNode* node, const DescID& id, GeData& t_data, DESCFLAGS_GET& flags, const BaseContainer& data) const
 {
 	// Get the Gradient, in order to access it directly.
 	// As mentioned before, there's no real need to do so, but you could...
-	GeData d = data->GetData(id[0].id);
+	GeData d = data.GetData(id[0].id);
 	const Gradient* gradient = d.GetCustomDataType<Gradient>();
 
 	if (id[1].id == 0)  // if second level id is zero, the complete custom datatype is requested
@@ -468,7 +469,7 @@ Bool GetSetDParameterExample::GradientGetDParameter(const GeListNode* node, cons
 	return SUPER::GetDParameter(node, id, t_data, flags);
 }
 
-Bool GetSetDParameterExample::GradientSetDParameter(GeListNode* node, const DescID& id, const GeData& t_data, DESCFLAGS_SET& flags, BaseContainer* const data)
+Bool GetSetDParameterExample::GradientSetDParameter(GeListNode* node, const DescID& id, const GeData& t_data, DESCFLAGS_SET& flags, BaseContainer& data)
 {
 	if (id[1].id == 0)
 	{
@@ -477,14 +478,14 @@ Bool GetSetDParameterExample::GradientSetDParameter(GeListNode* node, const Desc
 		GeData d;
 
 		d.SetCustomDataType(*gradient);
-		data->SetData(id[0].id, d);  // store in container
+		data.SetData(id[0].id, d);  // store in container
 		flags |= DESCFLAGS_SET::PARAM_SET;
 	}
 	else if (id[1].id >= GRADIENT_SC_KNOT_BASE)
 	{
 		// Get the Gradient, in order to access it directly.
 		// As mentioned before, there's no real need to do so, but you could...
-		GeData d = data->GetData(id[0].id);
+		GeData d = data.GetData(id[0].id);
 		Gradient* gradient = d.GetCustomDataTypeWritable<Gradient>();
 
 		// First check, if a knot of an alpha gradient is addressed
@@ -546,7 +547,7 @@ Bool GetSetDParameterExample::GradientSetDParameter(GeListNode* node, const Desc
 				
 		}
 		gradient->SetKnot(idx, knot);
-		data->SetData(id[0].id, d);  // store changed gradient in container
+		data.SetData(id[0].id, d);  // store changed gradient in container
 		flags |= DESCFLAGS_SET::PARAM_SET;
 	}
 	return SUPER::SetDParameter(node, id, t_data, flags);
@@ -571,10 +572,10 @@ Bool GetSetDParameterExample::GradientFindKnot(const Gradient* gradient, Int32 k
 //
 // Link
 //
-void GetSetDParameterExample::LinkInit(BaseContainer* const data)
+void GetSetDParameterExample::LinkInit(BaseContainer& data)
 {
 	// Initialize link
-	data->SetLink(ID_LINK, nullptr);
+	data.SetLink(ID_LINK, nullptr);
 }
 
 Bool GetSetDParameterExample::LinkGetDDescription(const GeListNode *node, Description *description, DESCFLAGS_DESC &flags, const DescID* const singleid) const
@@ -598,9 +599,9 @@ Bool GetSetDParameterExample::LinkGetDDescription(const GeListNode *node, Descri
 	return true;
 }
 
-Bool GetSetDParameterExample::LinkGetDParameter(const GeListNode* node, const DescID& id, GeData& t_data, DESCFLAGS_GET& flags, const BaseContainer* data) const
+Bool GetSetDParameterExample::LinkGetDParameter(const GeListNode* node, const DescID& id, GeData& t_data, DESCFLAGS_GET& flags, const BaseContainer& data) const
 {
-	const GeData d = data->GetData(id[0].id);
+	const GeData d = data.GetData(id[0].id);
 
 	if (d.GetType() == DA_NIL) // If the link does not get properly initialized, you need to take care for this situation
 	{
@@ -633,25 +634,25 @@ Bool GetSetDParameterExample::LinkGetDParameter(const GeListNode* node, const De
 	return SUPER::GetDParameter(node, id, t_data, flags);
 }
 
-Bool GetSetDParameterExample::LinkSetDParameter(GeListNode* node, const DescID& id, const GeData& t_data, DESCFLAGS_SET& flags, BaseContainer* const data)
+Bool GetSetDParameterExample::LinkSetDParameter(GeListNode* node, const DescID& id, const GeData& t_data, DESCFLAGS_SET& flags, BaseContainer& data)
 {
 	const BaseLink* bl = t_data.GetBaseLink();
 	GeData d;
 
 	d.SetBaseLink(*bl);
-	data->SetData(id[0].id, d);  // store in container
+	data.SetData(id[0].id, d);  // store in container
 	flags |= DESCFLAGS_SET::PARAM_SET;
 	return SUPER::SetDParameter(node, id, t_data, flags);
 }
 
 void GetSetDParameterExample::LinkGetVirtualObjectsTest(BaseObject* const op)
 {
-	BaseContainer* bc = op->GetDataInstance();
+	const BaseContainer& bc = op->GetDataInstanceRef();
 
 	// For demonstration purposes, the link is accessed in two different ways:
 
 	// a) Using the BaseLink
-	const BaseLink* bl = bc->GetBaseLink(ID_LINK);
+	const BaseLink* bl = bc.GetBaseLink(ID_LINK);
 
 	if (bl)
 	{
@@ -664,7 +665,7 @@ void GetSetDParameterExample::LinkGetVirtualObjectsTest(BaseObject* const op)
 	}
 
 	// b) Using directly GetLink()
-	BaseList2D* bl2d = bc->GetLink(ID_LINK, op->GetDocument());
+	BaseList2D* bl2d = bc.GetLink(ID_LINK, op->GetDocument());
 
 	if (bl2d)
 		ApplicationOutput("Via GetLink(): " + bl2d->GetName());
@@ -677,7 +678,7 @@ void GetSetDParameterExample::LinkGetVirtualObjectsTest(BaseObject* const op)
 //
 Bool GetSetDParameterExample::Init(GeListNode* node, Bool isCloneInit)
 {
-	BaseContainer* const data = static_cast<BaseMaterial*>(node)->GetDataInstance();
+	BaseContainer& data = static_cast<BaseMaterial*>(node)->GetDataInstanceRef();
 	if (!isCloneInit)
 	{
 		SplineInit(data);
@@ -709,7 +710,7 @@ Bool GetSetDParameterExample::GetDDescription(const GeListNode *node, Descriptio
 
 Bool GetSetDParameterExample::GetDParameter(const GeListNode* node, const DescID& id, GeData& t_data, DESCFLAGS_GET& flags) const
 {
-	const BaseContainer* const data = static_cast<const BaseObject*>(node)->GetDataInstance();
+	const BaseContainer& data = static_cast<const BaseObject*>(node)->GetDataInstanceRef();
 
 	// This implementation is rather useless and is for demonstration purposes, only.
 	// Instead of reading the parameters manually, you could always call
@@ -740,7 +741,7 @@ Bool GetSetDParameterExample::GetDParameter(const GeListNode* node, const DescID
 
 Bool GetSetDParameterExample::SetDParameter(GeListNode* node, const DescID& id, const GeData& t_data, DESCFLAGS_SET& flags)
 {
-	BaseContainer* const data = static_cast<BaseObject*>(node)->GetDataInstance();
+	BaseContainer& data = static_cast<BaseObject*>(node)->GetDataInstanceRef();
 
 	// This implementation is rather useless and is for demonstration purposes, only.
 	// Instead of setting the parameters manually, you could always call

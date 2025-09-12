@@ -26,6 +26,7 @@
 #include "maxon/atomictypes.h"
 #include "maxon/spinlock.h"
 #include "maxon/weakrawptr.h"
+#include "maxon/thread.h"
 
 #include "c4d_symbols.h"
 #include "oboundingbox.h"

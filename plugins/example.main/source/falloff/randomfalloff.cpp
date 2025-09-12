@@ -59,9 +59,8 @@ maxon::Result<Bool> RandomFalloff::GetAccessedObjects(const BaseList2D* op, METH
 	return access.MayAccess2(op, ACCESSED_OBJECTS_MASK::DATA, ACCESSED_OBJECTS_MASK::NONE);
 }
 
-
-// be sure to use a unique ID obtained from developers.maxon.net
-#define ID_RANDOMFALLOFF 1019569
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 ID_RANDOMFALLOFF = 1019569;
 
 Bool RegisterRandomFalloff()
 {

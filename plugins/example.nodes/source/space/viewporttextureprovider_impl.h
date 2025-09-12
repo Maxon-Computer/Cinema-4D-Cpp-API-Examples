@@ -1,8 +1,8 @@
 #ifndef VIEWPORTTEXTUREPROVIDER_IMPL_H__
 #define VIEWPORTTEXTUREPROVIDER_IMPL_H__
 
+#include "maxon/array.h"
 #include "maxon/previewimageprovider.h"
-#include "thumbnailgenerator_impl.h"
 
 namespace maxonsdk
 {

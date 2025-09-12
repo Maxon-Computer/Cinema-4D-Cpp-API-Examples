@@ -1,14 +1,13 @@
 // example code for a sub dialog
 
-// be sure to use a unique ID obtained from developers.maxon.net
-#define ID_SUBDIALOGTEST 1000454
-
 #include "c4d.h"
 #include "c4d_symbols.h"
 #include "main.h"
 
 using namespace cinema;
 
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 ID_SUBDIALOGTEST = 1000454;
 
 class MySubDialog1 : public SubDialog
 {
@@ -70,13 +69,9 @@ class MySubDialog1 : public SubDialog
 
 class MySubDialog2 : public SubDialog
 {
-	BaseContainer weights;
-	Bool					weights_saved;
-
 public:
 	MySubDialog2()
 	{
-		weights_saved = false;
 	}
 
 	virtual Bool CreateLayout()
@@ -97,24 +92,24 @@ public:
 
 		AddEditNumberArrows(1006, BFH_SCALEFIT);
 
-		if (!weights_saved)
+		if (!_weightsSaved)
 		{
 			// set the columns
-			weights.SetInt32(GROUPWEIGHTS_PERCENT_W_CNT, 3);				// number of rows - has to be equal to the given layout
-			weights.SetFloat(GROUPWEIGHTS_PERCENT_W_VAL + 0, 1);		// weight for col 1
-			weights.SetFloat(GROUPWEIGHTS_PERCENT_W_VAL + 1, -250);	// FIXED weight for col 2
-			weights.SetFloat(GROUPWEIGHTS_PERCENT_W_VAL + 2, 1);		// weight for col 1
+			_weights.SetInt32(GROUPWEIGHTS_PERCENT_W_CNT, 3);				// number of rows - has to be equal to the given layout
+			_weights.SetFloat(GROUPWEIGHTS_PERCENT_W_VAL + 0, 1);		// weight for col 1
+			_weights.SetFloat(GROUPWEIGHTS_PERCENT_W_VAL + 1, -250);	// FIXED weight for col 2
+			_weights.SetFloat(GROUPWEIGHTS_PERCENT_W_VAL + 2, 1);		// weight for col 1
 
 			// set the rows
-			weights.SetInt32(GROUPWEIGHTS_PERCENT_H_CNT, 4);					// number of rows - has to be equal to the given layout
-			weights.SetFloat(GROUPWEIGHTS_PERCENT_H_VAL + 0, -1.0);		// weight for row 1
-			weights.SetFloat(GROUPWEIGHTS_PERCENT_H_VAL + 1, -150.0);	// FIXED weight for row 2
-			weights.SetFloat(GROUPWEIGHTS_PERCENT_H_VAL + 2, 60.0);		// weight for row 3
-			weights.SetFloat(GROUPWEIGHTS_PERCENT_H_VAL + 3, 0.0);		// weight for row 4
-			weights_saved = true;
+			_weights.SetInt32(GROUPWEIGHTS_PERCENT_H_CNT, 4);					// number of rows - has to be equal to the given layout
+			_weights.SetFloat(GROUPWEIGHTS_PERCENT_H_VAL + 0, -1.0);		// weight for row 1
+			_weights.SetFloat(GROUPWEIGHTS_PERCENT_H_VAL + 1, -150.0);	// FIXED weight for row 2
+			_weights.SetFloat(GROUPWEIGHTS_PERCENT_H_VAL + 2, 60.0);		// weight for row 3
+			_weights.SetFloat(GROUPWEIGHTS_PERCENT_H_VAL + 3, 0.0);		// weight for row 4
+			_weightsSaved = true;
 		}
 
-		GroupWeightsLoad(999, weights);
+		GroupWeightsLoad(999, _weights);
 
 		GroupEnd();
 		return true;
@@ -126,7 +121,7 @@ public:
 			case BFM_WEIGHTS_CHANGED:
 				// if the weights change because of user interaction you will get notified
 				if (msg.GetInt32(BFM_WEIGHTS_CHANGED) == 999)
-					GroupWeightsSave(999, weights);
+					GroupWeightsSave(999, _weights);
 				break;
 		}
 		return SubDialog::Message(msg, result);
@@ -140,46 +135,42 @@ public:
 	{
 		return true;
 	}
+
+private:
+	BaseContainer _weights;
+	Bool _weightsSaved = false;
 };
 
 
 class MainDialog : public GeDialog
 {
-private:
-	MySubDialog1 subdialog1;
-	MySubDialog2 subdialog2;
-	SubDialog*	 lastdlg;
-
 public:
-	MainDialog();
-	virtual ~MainDialog();
+	MainDialog() { }
+	virtual ~MainDialog() { }
 
 	virtual Bool CreateLayout();
 	virtual Bool InitValues();
 	virtual Bool Command(Int32 id, const BaseContainer& msg);
 	virtual Int32 Message(const BaseContainer& msg, BaseContainer& result);
+
+private:
+	MySubDialog1 _subdialog1;
+	MySubDialog2 _subdialog2;
+	SubDialog* _lastdlg = nullptr;
 };
-
-MainDialog::MainDialog()
-{
-	lastdlg = nullptr;
-}
-
-MainDialog::~MainDialog()
-{
-}
 
 Bool MainDialog::CreateLayout()
 {
 	// first call the parent instance
 	Bool res = GeDialog::CreateLayout();
 
-	res = LoadDialogResource(DLG_SUBDIALOG, nullptr, 0);
+	if (res)
+		res = LoadDialogResource(DLG_SUBDIALOG, nullptr, 0);
 
 	if (res)
 	{
-		AttachSubDialog(&subdialog1, GADGET_SUBDIALOG);
-		lastdlg = &subdialog1;
+		AttachSubDialog(&_subdialog1, GADGET_SUBDIALOG);
+		_lastdlg = &_subdialog1;
 	}
 
 	return res;
@@ -199,22 +190,25 @@ Bool MainDialog::Command(Int32 id, const BaseContainer& msg)
 	switch (id)
 	{
 		case GADGET_SUB1:
-			if (!lastdlg || !lastdlg->CheckClose())
+		{
+			if (!_lastdlg || !_lastdlg->CheckClose())
 			{
-				AttachSubDialog(&subdialog1, GADGET_SUBDIALOG);
+				AttachSubDialog(&_subdialog1, GADGET_SUBDIALOG);
 				LayoutChanged(GADGET_SUBDIALOG);
-				lastdlg = &subdialog1;
+				_lastdlg = &_subdialog1;
 			}
 			break;
-
+		}
 		case GADGET_SUB2:
-			if (!lastdlg || !lastdlg->CheckClose())
+		{
+			if (!_lastdlg || !_lastdlg->CheckClose())
 			{
-				AttachSubDialog(&subdialog2, GADGET_SUBDIALOG);
+				AttachSubDialog(&_subdialog2, GADGET_SUBDIALOG);
 				LayoutChanged(GADGET_SUBDIALOG);
-				lastdlg = &subdialog2;
+				_lastdlg = &_subdialog2;
 			}
 			break;
+		}
 	}
 	return true;
 }
@@ -230,13 +224,13 @@ Int32 MainDialog::Message(const BaseContainer& msg, BaseContainer& result)
 
 class SubDialogTest : public CommandData
 {
-private:
-	MainDialog dlg;
-
 public:
 	virtual Bool Execute(BaseDocument* doc, GeDialog* parentManager);
 	virtual Int32 GetState(BaseDocument* doc, GeDialog* parentManager);
 	virtual Bool RestoreLayout(void* secret);
+
+private:
+	MainDialog _dlg;
 };
 
 Int32 SubDialogTest::GetState(BaseDocument* doc, GeDialog* parentManager)
@@ -246,12 +240,12 @@ Int32 SubDialogTest::GetState(BaseDocument* doc, GeDialog* parentManager)
 
 Bool SubDialogTest::Execute(BaseDocument* doc, GeDialog* parentManager)
 {
-	return dlg.Open(DLG_TYPE::ASYNC, ID_SUBDIALOGTEST, -1, -1);
+	return _dlg.Open(DLG_TYPE::ASYNC, ID_SUBDIALOGTEST, -1, -1);
 }
 
 Bool SubDialogTest::RestoreLayout(void* secret)
 {
-	return dlg.RestoreLayout(ID_SUBDIALOGTEST, 0, secret);
+	return _dlg.RestoreLayout(ID_SUBDIALOGTEST, 0, secret);
 }
 
 Bool RegisterSubDialog()

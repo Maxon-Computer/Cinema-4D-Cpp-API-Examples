@@ -104,9 +104,8 @@ Bool HairStylingTag::Message(GeListNode* node, Int32 type, void* data)
 	return SUPER::Message(node, type, data);
 }
 
-//////////////////////////////////////////////////////////////////////////
-
-#define ID_HAIR_STYLING_EXAMPLE 1018980
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 ID_HAIR_STYLING_EXAMPLE = 1018980;
 
 Bool RegisterStylingTag()
 {

@@ -6,7 +6,8 @@
 
 using namespace cinema;
 
-static const Int32 ID_SCULPT_BRUSH_PULL_MODIFIER = 1030505;
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 ID_SCULPT_BRUSH_PULL_MODIFIER = 1030505;
 
 class SculptDeformer : public ObjectData
 {
@@ -167,7 +168,8 @@ Bool SculptDeformer::Init(GeListNode* node, Bool isCloneInit)
 	return true;
 }
 
-#define ID_SCULPTDEFORMER 1030705
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 ID_SCULPTDEFORMER = 1030705;
 
 Bool RegisterSculptDeformer()
 {

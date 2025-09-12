@@ -3,10 +3,10 @@
 #include "main.h"
 #include "dexample.h"
 
-#define DATATYPE_DEFAULTLONG	 1000
-#define DATATYPE_DEFAULTSTRING 1001
-
 using namespace cinema;
+
+static constexpr const Int32 DATATYPE_DEFAULTLONG	= 1000;
+static constexpr const Int32 DATATYPE_DEFAULTSTRING = 1001;
 
 CustomProperty g_dataTypeProps[] =
 {
@@ -19,21 +19,21 @@ class ExampleDataType
 {
 };
 
-#define CUSTOMDATATYPE_EXAMPLE 123123123
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 CUSTOMDATATYPE_EXAMPLE = 123123123;
 
 class iExampleDataType : public iCustomDataType<ExampleDataType, CUSTOMDATATYPE_EXAMPLE>
 {
+public:
+	iExampleDataType() = default;
+
+private:
 	friend class ExampleDataTypeClass;
 
-	Int32	 ldata;
+	Int32	 ldata = 0;
 	String sdata;
 	Vector vdata;
 
-public:
-	iExampleDataType()
-	{
-		ldata = 0;
-	}
 };
 
 Int32 g_convfrom[] =

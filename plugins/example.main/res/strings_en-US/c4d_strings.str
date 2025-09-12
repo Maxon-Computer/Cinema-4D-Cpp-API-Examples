@@ -70,6 +70,7 @@ STRINGTABLE
 	IDS_SCULPTBRUSH_SPLINETOOL "C++ SDK - Sculpt Spline Brush Tool";
 	IDS_PICKOBJECT_SDK		"C++ SDK - Pick Object Tool";
 	IDS_HELP_PICKOBJECT_SDK	"Demonstrates how to use ViewportSelect::PickObject";
+	IDS_DISPLAY_CONTROL_TOOL	"C++ SDK - DisplayControl Tool";
 
 	IDS_LAYER_SHADER_BROWSER      "C++ SDK - Layer Shader Browser";
 
@@ -115,6 +116,7 @@ STRINGTABLE
 	IDS_OBJECTDATA_GETSETDPARAMETEREXAMPLE "C++ SDK - Get-/SetDParameter Example Object";
 	IDS_OBJECTDATA_HYPERFILEEXAMPLE "C++ SDK - HyperFile Example Object";
 
+	IDS_OBJECTDATA_CIRCLESHAPE "C++ SDK - Circle Shape Generator Example";
 	IDS_OBJECTDATA_GREEKTEMPLE "C++ SDK - Greek Temple Generator Example";
 	IDS_OBJECTDATA_HEARTSHAPE "C++ SDK - Heart Shape Generator Example";
 	IDS_OBJECTDATA_LATTICEPLANE "C++ SDK - Lattice Plane Modifier Example";

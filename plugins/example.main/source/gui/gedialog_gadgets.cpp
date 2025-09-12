@@ -14,28 +14,28 @@
 #include "customgui_datetime.h"
 #include "customgui_quicktab.h"
 
-#define ID_MENU_COMMAND 500
-#define ID_COMBOBOX 1100
-#define ID_BUTTON 1101
-#define ID_CONSOLE 1102
-#define ID_DYNAMIC_GROUP 2000
-#define ID_DYMAMIC_GADGET 1500
-
-// defines for QuickTab example
-#define QUICKTAB_NUM_TABS 4  // max 100
-
-// some more IDs for QuickTab example
-#define ID_QUICKTAB_GROUP                     3000
-#define ID_QUICKTAB_SUBDIALOGS                3100
-#define ID_QUICKTAB_SUBDIALOG_TITLE           3200
-#define ID_QUICKTAB_SUBDIALOG_MAIN_GROUP      3300
-#define ID_QUICKTAB_SUBDIALOG_SUBGROUP_TITLE  3400
-#define ID_QUICKTAB_SUBDIALOG_SUBGROUP        3500
-#define ID_QUICKTAB_SUBDIALOG_SUBGROUP_TEXT   3600
-
 using namespace cinema;
 
-enum DIALOGELEMENTS
+static constexpr Int32 ID_MENU_COMMAND = 500;
+static constexpr Int32 ID_COMBOBOX = 1100;
+static constexpr Int32 ID_BUTTON = 1101;
+static constexpr Int32 ID_CONSOLE = 1102;
+static constexpr Int32 ID_DYNAMIC_GROUP = 2000;
+static constexpr Int32 ID_DYMAMIC_GADGET = 1500;
+
+// defines for QuickTab example
+static constexpr Int32 QUICKTAB_NUM_TABS = 4; // max 100
+
+// some more IDs for QuickTab example
+static constexpr Int32 ID_QUICKTAB_GROUP = 3000;
+static constexpr Int32 ID_QUICKTAB_SUBDIALOGS = 3100;
+static constexpr Int32 ID_QUICKTAB_SUBDIALOG_TITLE = 3200;
+static constexpr Int32 ID_QUICKTAB_SUBDIALOG_MAIN_GROUP = 3300;
+static constexpr Int32 ID_QUICKTAB_SUBDIALOG_SUBGROUP_TITLE = 3400;
+static constexpr Int32 ID_QUICKTAB_SUBDIALOG_SUBGROUP = 3500;
+static constexpr Int32 ID_QUICKTAB_SUBDIALOG_SUBGROUP_TEXT = 3600;
+
+enum DIALOGELEMENTSGADGETS
 {
 	CHECKBOX = 0,
 	BUTTON,
@@ -138,23 +138,17 @@ Bool ExampleSubDialog::CreateLayout()
 //---------------------------
 class QuickTabSubDialog: public SubDialog
 {
-private:
-	Bool _flagSubgroupClosed;  // this flag is used to track the "folded state" of the subgroup
-	QuickTabCustomGui* _quickTabSubgroup;
-
 public:
-	Int32 _dialogIdx;
-
-	QuickTabSubDialog();
+	QuickTabSubDialog() { }
 	virtual Bool CreateLayout();
   virtual Bool Command(Int32 id, const BaseContainer & msg);
 
+public:
+	Int32 _dialogIdx;
+private:
+	Bool _flagSubgroupClosed = false;  // this flag is used to track the "folded state" of the subgroup
+	QuickTabCustomGui* _quickTabSubgroup = nullptr;
 };
-
-QuickTabSubDialog::QuickTabSubDialog()
-{
-	_flagSubgroupClosed = false;
-}
 
 Bool QuickTabSubDialog::CreateLayout()
 {
@@ -217,12 +211,28 @@ Bool QuickTabSubDialog::Command(Int32 id, const BaseContainer & msg)
 //---------------------------
 class ExampleDialog: public GeDialog
 {
+public:
+	ExampleDialog() { }
+	virtual ~ExampleDialog();
+
+	virtual Bool CreateLayout();
+	virtual Bool Command(Int32 id, const BaseContainer & msg);
+	virtual Bool CoreMessage(Int32 id, const BaseContainer &msg);
+
+private:
+	void UpdateDialog();
+	void EnableButton(const int selection);
+	void AddDynamicElement(const int selection);
+	void ReadData();
+	void DataToConsole(const int id);
+	void HandleQuickTabCommand();
+
 private:
 
 	// Xpresso Node GUI data
-	GvShape*				_shape;
-	GvShape*				_group;
-	GvNodeGUI*			_nodeGUI;
+	GvShape* _shape = nullptr;
+	GvShape* _group = nullptr;
+	GvNodeGUI* _nodeGUI = nullptr;
 
 	// Subdialog
 	ExampleSubDialog _subDialog;
@@ -231,34 +241,10 @@ private:
 	ExampleUserArea _userArea;
 
 	// QuickTab
-	QuickTabCustomGui* _quickTabGUI;
+	QuickTabCustomGui* _quickTabGUI = nullptr;
 	QuickTabSubDialog _quickTabSubDialogs[QUICKTAB_NUM_TABS];
 
-	Int32 _lastcoremsg_change;
-
-public:
-
-	ExampleDialog();
-	virtual ~ExampleDialog();
-
-	virtual Bool CreateLayout();
-	virtual Bool Command(Int32 id, const BaseContainer & msg);
-	virtual Bool CoreMessage(Int32 id, const BaseContainer &msg);
-
-private:
-
-	void UpdateDialog();
-	void EnableButton(const int selection);
-	void AddDynamicElement(const int selection);
-	void ReadData();
-	void DataToConsole(const int id);
-	void HandleQuickTabCommand();
-};
-
-ExampleDialog::ExampleDialog()
-{
-	_nodeGUI = nullptr;
-	_lastcoremsg_change = NOTOK;
+	Int32 _lastcoremsg_change = NOTOK;
 };
 
 ExampleDialog::~ExampleDialog()
@@ -305,48 +291,48 @@ Bool ExampleDialog::CreateLayout()
 
 	AddComboBox(ID_COMBOBOX, BFH_SCALEFIT, 100, 10, false, true);
 
-		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTS::CHECKBOX, "Checkbox"_s);
-		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTS::BUTTON, "Button"_s);
-		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTS::STATIC_TEXT, "Static Text"_s);
-		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTS::EDIT_TEXT, "Edit Text"_s);
-		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTS::MULTILINE_TEXT, "Multiline Text"_s);
-		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTS::EDIT_NUMBER, "Edit Number"_s);
-		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTS::EDIT_NUMBER_ARROWS, "Edit Number Arrows"_s);
-		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTS::EDIT_SLIDER, "Edit Slider"_s);
-		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTS::SLIDER, "Slider"_s);
-		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTS::COLORFIELD, "Colorfield"_s);
-		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTS::COLOR_CHOOSER, "Color Chooser"_s);
-		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTS::RADIO_BUTTON, "Radio Button"_s);
-		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTS::RADIO_TEXT, "Radio Text"_s);
-		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTS::RADIO_GROUP, "Radio Group"_s);
-		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTS::COMBO_BOX, "Combo Box"_s);
-		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTS::COMBO_BUTTON, "Combo Button"_s);
-		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTS::POPUP_BUTTON, "Popup Botton"_s);
+		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTSGADGETS::CHECKBOX, "Checkbox"_s);
+		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTSGADGETS::BUTTON, "Button"_s);
+		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTSGADGETS::STATIC_TEXT, "Static Text"_s);
+		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTSGADGETS::EDIT_TEXT, "Edit Text"_s);
+		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTSGADGETS::MULTILINE_TEXT, "Multiline Text"_s);
+		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTSGADGETS::EDIT_NUMBER, "Edit Number"_s);
+		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTSGADGETS::EDIT_NUMBER_ARROWS, "Edit Number Arrows"_s);
+		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTSGADGETS::EDIT_SLIDER, "Edit Slider"_s);
+		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTSGADGETS::SLIDER, "Slider"_s);
+		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTSGADGETS::COLORFIELD, "Colorfield"_s);
+		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTSGADGETS::COLOR_CHOOSER, "Color Chooser"_s);
+		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTSGADGETS::RADIO_BUTTON, "Radio Button"_s);
+		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTSGADGETS::RADIO_TEXT, "Radio Text"_s);
+		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTSGADGETS::RADIO_GROUP, "Radio Group"_s);
+		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTSGADGETS::COMBO_BOX, "Combo Box"_s);
+		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTSGADGETS::COMBO_BUTTON, "Combo Button"_s);
+		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTSGADGETS::POPUP_BUTTON, "Popup Botton"_s);
 
 		AddChild(ID_COMBOBOX, -1, "..."_s);
 
-		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTS::CUSTOM_GUI_SPLINE, "CustomGUI Spline"_s);
-		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTS::CUSTOM_GUI_GRADIENT, "CustomGUI Gradient"_s);
-		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTS::CUSTOM_GUI_PRIORITY, "CustomGUI Priority"_s);
-		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTS::CUSTOM_GUI_DESCRIPTION, "CustomGUI Description"_s);
-		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTS::CUSTOM_GUI_BITMAPBUTTON, "CustomGUI BitmapButton"_s);
-		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTS::CUSTOM_GUI_HYPERLINK, "CustomGUI Hyperlink"_s);
-		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTS::CUSTOM_GUI_INEXCLUDE, "CustomGUI InExclude"_s);
-		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTS::CUSTOM_GUI_LINKBOX, "CustomGUI Linkbox"_s);
-		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTS::CUSTOM_GUI_DATETIME, "CustomGUI DateTime"_s);
-		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTS::CUSTOM_GUI_QUICKTAB, "CustomGUI QuickTab"_s);
+		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTSGADGETS::CUSTOM_GUI_SPLINE, "CustomGUI Spline"_s);
+		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTSGADGETS::CUSTOM_GUI_GRADIENT, "CustomGUI Gradient"_s);
+		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTSGADGETS::CUSTOM_GUI_PRIORITY, "CustomGUI Priority"_s);
+		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTSGADGETS::CUSTOM_GUI_DESCRIPTION, "CustomGUI Description"_s);
+		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTSGADGETS::CUSTOM_GUI_BITMAPBUTTON, "CustomGUI BitmapButton"_s);
+		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTSGADGETS::CUSTOM_GUI_HYPERLINK, "CustomGUI Hyperlink"_s);
+		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTSGADGETS::CUSTOM_GUI_INEXCLUDE, "CustomGUI InExclude"_s);
+		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTSGADGETS::CUSTOM_GUI_LINKBOX, "CustomGUI Linkbox"_s);
+		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTSGADGETS::CUSTOM_GUI_DATETIME, "CustomGUI DateTime"_s);
+		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTSGADGETS::CUSTOM_GUI_QUICKTAB, "CustomGUI QuickTab"_s);
 
 		AddChild(ID_COMBOBOX, -1, "..."_s);
 
-		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTS::NODEGUI, "Node GUI"_s);
+		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTSGADGETS::NODEGUI, "Node GUI"_s);
 
 		AddChild(ID_COMBOBOX, -1, "..."_s);
 
-		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTS::SCROLLGROUP, "Scrollgroup"_s);
-		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTS::TABGROUPS, "Tabgroups"_s);
-		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTS::SUBDIALOG, "Subdialog"_s);
-		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTS::USERAREA, "Userarea"_s);
-		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTS::DIALOGGROUP, "Dialog Group"_s);
+		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTSGADGETS::SCROLLGROUP, "Scrollgroup"_s);
+		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTSGADGETS::TABGROUPS, "Tabgroups"_s);
+		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTSGADGETS::SUBDIALOG, "Subdialog"_s);
+		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTSGADGETS::USERAREA, "Userarea"_s);
+		AddChild(ID_COMBOBOX, (Int32)DIALOGELEMENTSGADGETS::DIALOGGROUP, "Dialog Group"_s);
 
 		// Button
 
@@ -431,7 +417,7 @@ Bool ExampleDialog::Command(Int32 id, const BaseContainer & msg)
 		{
 			Int32 selection = -1;
 			GetInt32(ID_COMBOBOX, selection);
-			if (selection == (Int32)DIALOGELEMENTS::CUSTOM_GUI_QUICKTAB)
+			if (selection == (Int32)DIALOGELEMENTSGADGETS::CUSTOM_GUI_QUICKTAB)
 				HandleQuickTabCommand();
 			break;
 		}
@@ -477,27 +463,27 @@ void ExampleDialog::EnableButton(const int selection)
 {
 	switch (selection)
 	{
-		case DIALOGELEMENTS::CHECKBOX:
-		case DIALOGELEMENTS::EDIT_TEXT:
-		case DIALOGELEMENTS::MULTILINE_TEXT:
-		case DIALOGELEMENTS::COLORFIELD:
-		case DIALOGELEMENTS::COLOR_CHOOSER:
-		case DIALOGELEMENTS::RADIO_GROUP:
-		case DIALOGELEMENTS::COMBO_BOX:
-		case DIALOGELEMENTS::COMBO_BUTTON:
-		case DIALOGELEMENTS::RADIO_BUTTON:
-		case DIALOGELEMENTS::RADIO_TEXT:
-		case DIALOGELEMENTS::EDIT_NUMBER:
-		case DIALOGELEMENTS::EDIT_NUMBER_ARROWS:
-		case DIALOGELEMENTS::EDIT_SLIDER:
-		case DIALOGELEMENTS::SLIDER:
-		case DIALOGELEMENTS::CUSTOM_GUI_GRADIENT:
-		case DIALOGELEMENTS::CUSTOM_GUI_SPLINE:
-		case DIALOGELEMENTS::CUSTOM_GUI_PRIORITY:
-		case DIALOGELEMENTS::CUSTOM_GUI_INEXCLUDE:
-		case DIALOGELEMENTS::CUSTOM_GUI_DESCRIPTION:
-		case DIALOGELEMENTS::CUSTOM_GUI_LINKBOX:
-		case DIALOGELEMENTS::CUSTOM_GUI_DATETIME:
+		case DIALOGELEMENTSGADGETS::CHECKBOX:
+		case DIALOGELEMENTSGADGETS::EDIT_TEXT:
+		case DIALOGELEMENTSGADGETS::MULTILINE_TEXT:
+		case DIALOGELEMENTSGADGETS::COLORFIELD:
+		case DIALOGELEMENTSGADGETS::COLOR_CHOOSER:
+		case DIALOGELEMENTSGADGETS::RADIO_GROUP:
+		case DIALOGELEMENTSGADGETS::COMBO_BOX:
+		case DIALOGELEMENTSGADGETS::COMBO_BUTTON:
+		case DIALOGELEMENTSGADGETS::RADIO_BUTTON:
+		case DIALOGELEMENTSGADGETS::RADIO_TEXT:
+		case DIALOGELEMENTSGADGETS::EDIT_NUMBER:
+		case DIALOGELEMENTSGADGETS::EDIT_NUMBER_ARROWS:
+		case DIALOGELEMENTSGADGETS::EDIT_SLIDER:
+		case DIALOGELEMENTSGADGETS::SLIDER:
+		case DIALOGELEMENTSGADGETS::CUSTOM_GUI_GRADIENT:
+		case DIALOGELEMENTSGADGETS::CUSTOM_GUI_SPLINE:
+		case DIALOGELEMENTSGADGETS::CUSTOM_GUI_PRIORITY:
+		case DIALOGELEMENTSGADGETS::CUSTOM_GUI_INEXCLUDE:
+		case DIALOGELEMENTSGADGETS::CUSTOM_GUI_DESCRIPTION:
+		case DIALOGELEMENTSGADGETS::CUSTOM_GUI_LINKBOX:
+		case DIALOGELEMENTSGADGETS::CUSTOM_GUI_DATETIME:
 			Enable(ID_BUTTON, true);
 			break;
 
@@ -516,42 +502,42 @@ void ExampleDialog::AddDynamicElement(const int selection)
 	switch (selection)
 	{
 		// Checkbox
-		case DIALOGELEMENTS::CHECKBOX:
+		case DIALOGELEMENTSGADGETS::CHECKBOX:
 		{
 			AddCheckbox(ID_DYMAMIC_GADGET, BFH_SCALEFIT | BFV_TOP, 0, 10, "Checkbox"_s);
 			break;
 		}
 
 		// Button
-		case DIALOGELEMENTS::BUTTON:
+		case DIALOGELEMENTSGADGETS::BUTTON:
 		{
 			AddButton(ID_DYMAMIC_GADGET, BFH_SCALEFIT | BFV_TOP, 0, 10, "Button"_s);
 			break;
 		}
 
 		// StaticText
-		case DIALOGELEMENTS::STATIC_TEXT:
+		case DIALOGELEMENTSGADGETS::STATIC_TEXT:
 		{
 			AddStaticText(ID_DYMAMIC_GADGET, BFH_SCALEFIT | BFV_TOP, 0, 20, "Static Text"_s, BORDER_ROUND);
 			break;
 		}
 
 		// EditText
-		case DIALOGELEMENTS::EDIT_TEXT:
+		case DIALOGELEMENTSGADGETS::EDIT_TEXT:
 		{
 			AddEditText(ID_DYMAMIC_GADGET, BFH_SCALEFIT, 0, 10, 0);
 			break;
 		}
 
 		// MultiLineEditText
-		case DIALOGELEMENTS::MULTILINE_TEXT:
+		case DIALOGELEMENTSGADGETS::MULTILINE_TEXT:
 		{
 			AddMultiLineEditText(ID_DYMAMIC_GADGET, BFH_SCALEFIT | BFV_SCALEFIT, 0, 200, DR_MULTILINE_STATUSBAR | DR_MULTILINE_HIGHLIGHTLINE | DR_MULTILINE_WORDWRAP | DR_MULTILINE_MONOSPACED);
 			break;
 		}
 
 		// EditNumber
-		case DIALOGELEMENTS::EDIT_NUMBER:
+		case DIALOGELEMENTSGADGETS::EDIT_NUMBER:
 		{
 			AddEditNumber(ID_DYMAMIC_GADGET, BFH_LEFT, 80, 10);
 			SetFloat(ID_DYMAMIC_GADGET, 123.45);
@@ -559,7 +545,7 @@ void ExampleDialog::AddDynamicElement(const int selection)
 		}
 
 		// EditNumberArrows
-		case DIALOGELEMENTS::EDIT_NUMBER_ARROWS:
+		case DIALOGELEMENTSGADGETS::EDIT_NUMBER_ARROWS:
 		{
 			AddEditNumberArrows(ID_DYMAMIC_GADGET, BFH_LEFT, 70, 10);
 			SetFloat(ID_DYMAMIC_GADGET, 123.45);
@@ -567,7 +553,7 @@ void ExampleDialog::AddDynamicElement(const int selection)
 		}
 
 		// EditSlider
-		case DIALOGELEMENTS::EDIT_SLIDER:
+		case DIALOGELEMENTSGADGETS::EDIT_SLIDER:
 		{
 			AddEditSlider(ID_DYMAMIC_GADGET, BFH_SCALEFIT, 0, 10);
 			SetPercent(ID_DYMAMIC_GADGET, 0.5);
@@ -575,7 +561,7 @@ void ExampleDialog::AddDynamicElement(const int selection)
 		}
 
 		// Slider
-		case DIALOGELEMENTS::SLIDER:
+		case DIALOGELEMENTSGADGETS::SLIDER:
 		{
 			AddSlider(ID_DYMAMIC_GADGET, BFH_SCALEFIT, 0, 10);
 			SetPercent(ID_DYMAMIC_GADGET, 0.5);
@@ -583,7 +569,7 @@ void ExampleDialog::AddDynamicElement(const int selection)
 		}
 
 		// ColorField
-		case DIALOGELEMENTS::COLORFIELD:
+		case DIALOGELEMENTSGADGETS::COLORFIELD:
 		{
 			AddColorField(ID_DYMAMIC_GADGET, BFH_LEFT, 20, 20, DR_COLORFIELD_ICC_BASEDOC);
 			SetColorField(ID_DYMAMIC_GADGET, Vector(0, 0, 1), 1.0, 1.0, DR_COLORFIELD_NO_BRIGHTNESS);
@@ -591,14 +577,14 @@ void ExampleDialog::AddDynamicElement(const int selection)
 		}
 
 		// RadioButton
-		case DIALOGELEMENTS::RADIO_BUTTON:
+		case DIALOGELEMENTSGADGETS::RADIO_BUTTON:
 		{
 			AddRadioButton(ID_DYMAMIC_GADGET, BFH_LEFT, 200, 20, String("RadioButton"));
 			break;
 		}
 
 		// ColorChooser
-		case DIALOGELEMENTS::COLOR_CHOOSER:
+		case DIALOGELEMENTSGADGETS::COLOR_CHOOSER:
 		{
 			AddColorChooser(ID_DYMAMIC_GADGET, BFH_LEFT, 40, 20, DR_COLORFIELD_ICC_BASEDOC);
 			SetColorField(ID_DYMAMIC_GADGET, Vector(0, 0, 1), 1.0, 1.0, DR_COLORFIELD_NO_BRIGHTNESS);
@@ -606,14 +592,14 @@ void ExampleDialog::AddDynamicElement(const int selection)
 		}
 
 		// RadioText
-		case DIALOGELEMENTS::RADIO_TEXT:
+		case DIALOGELEMENTSGADGETS::RADIO_TEXT:
 		{
 			AddRadioText(ID_DYMAMIC_GADGET, BFH_LEFT, 100, 10, "RadioText"_s);
 			break;
 		}
 
 		// RadioGroup
-		case DIALOGELEMENTS::RADIO_GROUP:
+		case DIALOGELEMENTSGADGETS::RADIO_GROUP:
 		{
 			AddRadioGroup(ID_DYMAMIC_GADGET, BFH_LEFT, 1);
 				AddChild(ID_DYMAMIC_GADGET, 0, "Child 0"_s);
@@ -623,7 +609,7 @@ void ExampleDialog::AddDynamicElement(const int selection)
 		}
 
 		// ComboBox
-		case DIALOGELEMENTS::COMBO_BOX:
+		case DIALOGELEMENTSGADGETS::COMBO_BOX:
 		{
 			AddComboBox(ID_DYMAMIC_GADGET, BFH_LEFT, 100, 10, false);
 				AddChild(ID_DYMAMIC_GADGET, 0, "Child 0"_s);
@@ -633,7 +619,7 @@ void ExampleDialog::AddDynamicElement(const int selection)
 		}
 
 		// ComboButton
-		case DIALOGELEMENTS::COMBO_BUTTON:
+		case DIALOGELEMENTSGADGETS::COMBO_BUTTON:
 		{
 			AddComboButton(ID_DYMAMIC_GADGET, BFH_LEFT, 100, 10, false);
 				AddChild(ID_DYMAMIC_GADGET, 0, "Child 0"_s);
@@ -643,7 +629,7 @@ void ExampleDialog::AddDynamicElement(const int selection)
 		}
 
 		// PopupButton
-		case DIALOGELEMENTS::POPUP_BUTTON:
+		case DIALOGELEMENTSGADGETS::POPUP_BUTTON:
 		{
 			AddPopupButton(ID_DYMAMIC_GADGET, BFH_LEFT, 10, 10);
 				AddChild(ID_DYMAMIC_GADGET, 0, "Child 0"_s);
@@ -653,7 +639,7 @@ void ExampleDialog::AddDynamicElement(const int selection)
 		}
 
 		// SplineCustomGui
-		case DIALOGELEMENTS::CUSTOM_GUI_SPLINE:
+		case DIALOGELEMENTSGADGETS::CUSTOM_GUI_SPLINE:
 		{
 			BaseContainer settings;
 			settings.SetBool(SPLINECONTROL_GRID_H, true);
@@ -667,8 +653,7 @@ void ExampleDialog::AddDynamicElement(const int selection)
 
 			if (splineGUI != nullptr)
 			{
-				SplineData* splineData = SplineData::Alloc();
-
+				maxon::UniqueRef<SplineData> splineData = SplineData::Alloc();
 				if (splineData != nullptr)
 				{
 					// set data
@@ -677,14 +662,14 @@ void ExampleDialog::AddDynamicElement(const int selection)
 					splineData->InsertKnot(50, 100);
 
 					// add data
-					splineGUI->SetSpline(splineData);
+					splineGUI->SetSpline(splineData.Disconnect());
 				}
 			}
 			break;
 		}
 
 		// GradientCustomGui
-		case DIALOGELEMENTS::CUSTOM_GUI_GRADIENT:
+		case DIALOGELEMENTSGADGETS::CUSTOM_GUI_GRADIENT:
 		{
 			GradientCustomGui* gradientGUI = (GradientCustomGui*)AddCustomGui(ID_DYMAMIC_GADGET, CUSTOMGUI_GRADIENT, "Gradient"_s, BFH_SCALEFIT, 100, 20, BaseContainer());
 
@@ -713,14 +698,14 @@ void ExampleDialog::AddDynamicElement(const int selection)
 		}
 
 		// PriorityCustomGui
-		case DIALOGELEMENTS::CUSTOM_GUI_PRIORITY:
+		case DIALOGELEMENTSGADGETS::CUSTOM_GUI_PRIORITY:
 		{
 			AddCustomGui(ID_DYMAMIC_GADGET, CUSTOMGUI_PRIORITY, String(), BFH_SCALEFIT, 100, 20, BaseContainer());
 			break;
 		}
 
 		// DescriptionCustomGui
-		case DIALOGELEMENTS::CUSTOM_GUI_DESCRIPTION:
+		case DIALOGELEMENTSGADGETS::CUSTOM_GUI_DESCRIPTION:
 		{
 			BaseObject* activeObject = GetActiveDocument()->GetActiveObject();
 
@@ -742,7 +727,7 @@ void ExampleDialog::AddDynamicElement(const int selection)
 		}
 
 		// BitmapButtonCustomGui
-		case DIALOGELEMENTS::CUSTOM_GUI_BITMAPBUTTON:
+		case DIALOGELEMENTSGADGETS::CUSTOM_GUI_BITMAPBUTTON:
 		{
 			BaseContainer settings;
 			settings.SetBool(BITMAPBUTTON_BUTTON, true);
@@ -762,7 +747,7 @@ void ExampleDialog::AddDynamicElement(const int selection)
 		}
 
 		// HyperLinkCustomGui
-		case DIALOGELEMENTS::CUSTOM_GUI_HYPERLINK:
+		case DIALOGELEMENTSGADGETS::CUSTOM_GUI_HYPERLINK:
 		{
 			BaseContainer settings;
 			settings.SetBool(HYPERLINK_IS_LINK, true);
@@ -780,7 +765,7 @@ void ExampleDialog::AddDynamicElement(const int selection)
 		}
 
 		// InExcludeCustomGui
-		case DIALOGELEMENTS::CUSTOM_GUI_INEXCLUDE:
+		case DIALOGELEMENTSGADGETS::CUSTOM_GUI_INEXCLUDE:
 		{
 			// list of accepted elements
 			// in this case only accept objects
@@ -812,7 +797,7 @@ void ExampleDialog::AddDynamicElement(const int selection)
 		}
 
 		// LinkBoxGui
-		case DIALOGELEMENTS::CUSTOM_GUI_LINKBOX:
+		case DIALOGELEMENTSGADGETS::CUSTOM_GUI_LINKBOX:
 		{
 			// list of accepted elements
 			// in this case only accept objects
@@ -834,7 +819,7 @@ void ExampleDialog::AddDynamicElement(const int selection)
 		}
 
 		// DateTimeControl
-		case DIALOGELEMENTS::CUSTOM_GUI_DATETIME:
+		case DIALOGELEMENTSGADGETS::CUSTOM_GUI_DATETIME:
 		{
 			// create
 			DateTimeControl* dateTimeGUI = (DateTimeControl*)AddCustomGui(ID_DYMAMIC_GADGET, DATETIME_GUI, String(), BFH_SCALEFIT | BFV_SCALEFIT, 100, 50, BaseContainer());
@@ -850,7 +835,7 @@ void ExampleDialog::AddDynamicElement(const int selection)
 		}
 
 		// QuickTab
-		case DIALOGELEMENTS::CUSTOM_GUI_QUICKTAB:
+		case DIALOGELEMENTSGADGETS::CUSTOM_GUI_QUICKTAB:
 		{
 			// create
 			_quickTabGUI = static_cast<QuickTabCustomGui*>(AddCustomGui(ID_DYMAMIC_GADGET, CUSTOMGUI_QUICKTAB, String(), BFH_SCALEFIT | BFV_TOP, 100, 5, BaseContainer()));
@@ -890,7 +875,7 @@ void ExampleDialog::AddDynamicElement(const int selection)
 		}
 
 		// GvNodeGUI
-		case DIALOGELEMENTS::NODEGUI:
+		case DIALOGELEMENTSGADGETS::NODEGUI:
 		{
 			if (_nodeGUI == nullptr)
 			{
@@ -919,7 +904,7 @@ void ExampleDialog::AddDynamicElement(const int selection)
 						GroupBegin(ID_DYMAMIC_GADGET + 100, BFH_SCALEFIT | BFV_SCALEFIT, 1, 0, String(), BFV_BORDERGROUP_FOLD_OPEN, 400, 200);
 
 						AddUserArea(ID_DYMAMIC_GADGET, BFH_SCALEFIT | BFV_SCALEFIT, 400, 200);
-						AttachUserArea(*_nodeGUI->GetUserArea(), ID_DYMAMIC_GADGET, USERAREAFLAGS::TABSTOP | USERAREAFLAGS::HANDLEFOCUS);
+						AttachUserArea(*_nodeGUI->GetUserArea(), ID_DYMAMIC_GADGET, USERAREAFLAGS::TABSTOP);
 
 						GroupEnd();
 					}
@@ -937,7 +922,7 @@ void ExampleDialog::AddDynamicElement(const int selection)
 		}
 
 		// ScrollGroup
-		case DIALOGELEMENTS::SCROLLGROUP:
+		case DIALOGELEMENTSGADGETS::SCROLLGROUP:
 		{
 			ScrollGroupBegin(ID_DYMAMIC_GADGET, BFH_SCALEFIT | BFV_SCALEFIT, SCROLLGROUP_VERT | SCROLLGROUP_NOBLIT | SCROLLGROUP_STATUSBAR | SCROLLGROUP_STATUSBAR_EXT_GROUP, 400, 200);
 
@@ -962,7 +947,7 @@ void ExampleDialog::AddDynamicElement(const int selection)
 		}
 
 		// TabGroup
-		case DIALOGELEMENTS::TABGROUPS:
+		case DIALOGELEMENTSGADGETS::TABGROUPS:
 		{
 			TabGroupBegin(ID_DYMAMIC_GADGET, BFH_SCALEFIT | BFV_SCALEFIT);
 
@@ -983,7 +968,7 @@ void ExampleDialog::AddDynamicElement(const int selection)
 		}
 
 		// SubDialog
-		case DIALOGELEMENTS::SUBDIALOG:
+		case DIALOGELEMENTSGADGETS::SUBDIALOG:
 		{
 			AddSubDialog(ID_DYMAMIC_GADGET, BFH_SCALEFIT | BFV_SCALEFIT);
 			AttachSubDialog(&_subDialog, ID_DYMAMIC_GADGET);
@@ -991,7 +976,7 @@ void ExampleDialog::AddDynamicElement(const int selection)
 		}
 
 		// GeUserArea
-		case DIALOGELEMENTS::USERAREA:
+		case DIALOGELEMENTSGADGETS::USERAREA:
 		{
 			AddUserArea(ID_DYMAMIC_GADGET, BFH_SCALEFIT | BFV_SCALEFIT, 400, 300);
 			AttachUserArea(_userArea, ID_DYMAMIC_GADGET);
@@ -999,7 +984,7 @@ void ExampleDialog::AddDynamicElement(const int selection)
 		}
 
 		// DlgGroup
-		case DIALOGELEMENTS::DIALOGGROUP:
+		case DIALOGELEMENTSGADGETS::DIALOGGROUP:
 		{
 			AddDlgGroup(DLG_OK | DLG_CANCEL);
 			break;
@@ -1041,9 +1026,9 @@ void ExampleDialog::DataToConsole(const int id)
 		// Checkbox
 		// RadioButton
 		// RadioText
-		case DIALOGELEMENTS::CHECKBOX:
-		case DIALOGELEMENTS::RADIO_BUTTON:
-		case DIALOGELEMENTS::RADIO_TEXT:
+		case DIALOGELEMENTSGADGETS::CHECKBOX:
+		case DIALOGELEMENTSGADGETS::RADIO_BUTTON:
+		case DIALOGELEMENTSGADGETS::RADIO_TEXT:
 		{
 			Bool checked;
 
@@ -1059,8 +1044,8 @@ void ExampleDialog::DataToConsole(const int id)
 
 		// EditText
 		// MultiLineEditText
-		case DIALOGELEMENTS::EDIT_TEXT:
-		case DIALOGELEMENTS::MULTILINE_TEXT:
+		case DIALOGELEMENTSGADGETS::EDIT_TEXT:
+		case DIALOGELEMENTSGADGETS::MULTILINE_TEXT:
 		{
 			String text;
 
@@ -1071,8 +1056,8 @@ void ExampleDialog::DataToConsole(const int id)
 
 		// EditNumber
 		// EditNumberArrows
-		case DIALOGELEMENTS::EDIT_NUMBER:
-		case DIALOGELEMENTS::EDIT_NUMBER_ARROWS:
+		case DIALOGELEMENTSGADGETS::EDIT_NUMBER:
+		case DIALOGELEMENTSGADGETS::EDIT_NUMBER_ARROWS:
 		{
 			Float value;
 
@@ -1083,8 +1068,8 @@ void ExampleDialog::DataToConsole(const int id)
 
 		// EditSlider
 		// Slider
-		case DIALOGELEMENTS::EDIT_SLIDER:
-		case DIALOGELEMENTS::SLIDER:
+		case DIALOGELEMENTSGADGETS::EDIT_SLIDER:
+		case DIALOGELEMENTSGADGETS::SLIDER:
 		{
 			Float value;
 
@@ -1095,8 +1080,8 @@ void ExampleDialog::DataToConsole(const int id)
 
 		// ColorField
 		// ColorChooser
-		case DIALOGELEMENTS::COLORFIELD:
-		case DIALOGELEMENTS::COLOR_CHOOSER:
+		case DIALOGELEMENTSGADGETS::COLORFIELD:
+		case DIALOGELEMENTSGADGETS::COLOR_CHOOSER:
 		{
 			Vector color;
 			Float brightness;
@@ -1109,9 +1094,9 @@ void ExampleDialog::DataToConsole(const int id)
 		// RadioGroup
 		// ComboBox
 		// ComboButton
-		case DIALOGELEMENTS::RADIO_GROUP:
-		case DIALOGELEMENTS::COMBO_BOX:
-		case DIALOGELEMENTS::COMBO_BUTTON:
+		case DIALOGELEMENTSGADGETS::RADIO_GROUP:
+		case DIALOGELEMENTSGADGETS::COMBO_BOX:
+		case DIALOGELEMENTSGADGETS::COMBO_BUTTON:
 		{
 			Int32 selection = -1;
 
@@ -1121,7 +1106,7 @@ void ExampleDialog::DataToConsole(const int id)
 		}
 
 		// SplineCustomGui
-		case DIALOGELEMENTS::CUSTOM_GUI_SPLINE:
+		case DIALOGELEMENTSGADGETS::CUSTOM_GUI_SPLINE:
 		{
 			SplineCustomGui* splineGUI = (SplineCustomGui*)FindCustomGui(ID_DYMAMIC_GADGET, CUSTOMGUI_SPLINE);
 
@@ -1151,7 +1136,7 @@ void ExampleDialog::DataToConsole(const int id)
 		}
 
 		// GradientCustomGui
-		case DIALOGELEMENTS::CUSTOM_GUI_GRADIENT:
+		case DIALOGELEMENTSGADGETS::CUSTOM_GUI_GRADIENT:
 		{
 			GradientCustomGui* gradientGUI = (GradientCustomGui*)FindCustomGui(ID_DYMAMIC_GADGET, CUSTOMGUI_GRADIENT);
 
@@ -1182,7 +1167,7 @@ void ExampleDialog::DataToConsole(const int id)
 		}
 
 		// PriorityCustomGui
-		case DIALOGELEMENTS::CUSTOM_GUI_PRIORITY:
+		case DIALOGELEMENTSGADGETS::CUSTOM_GUI_PRIORITY:
 		{
 			PriorityCustomGui* priorityGUI = (PriorityCustomGui*)FindCustomGui(ID_DYMAMIC_GADGET, CUSTOMGUI_PRIORITY);
 
@@ -1196,7 +1181,7 @@ void ExampleDialog::DataToConsole(const int id)
 		}
 
 		// DescriptionCustomGui
-		case DIALOGELEMENTS::CUSTOM_GUI_DESCRIPTION:
+		case DIALOGELEMENTSGADGETS::CUSTOM_GUI_DESCRIPTION:
 		{
 			StopAllThreads();
 
@@ -1265,7 +1250,7 @@ void ExampleDialog::DataToConsole(const int id)
 		}
 
 		// InExcludeCustomGui
-		case DIALOGELEMENTS::CUSTOM_GUI_INEXCLUDE:
+		case DIALOGELEMENTSGADGETS::CUSTOM_GUI_INEXCLUDE:
 		{
 			StopAllThreads();
 
@@ -1302,7 +1287,7 @@ void ExampleDialog::DataToConsole(const int id)
 		}
 
 		// LinkBoxGui
-		case DIALOGELEMENTS::CUSTOM_GUI_LINKBOX:
+		case DIALOGELEMENTSGADGETS::CUSTOM_GUI_LINKBOX:
 		{
 			StopAllThreads();
 
@@ -1324,7 +1309,7 @@ void ExampleDialog::DataToConsole(const int id)
 		}
 
 		// DateTimeControl
-		case DIALOGELEMENTS::CUSTOM_GUI_DATETIME:
+		case DIALOGELEMENTSGADGETS::CUSTOM_GUI_DATETIME:
 		{
 			DateTimeControl* dateTimeGUI = (DateTimeControl*)FindCustomGui(ID_DYMAMIC_GADGET, DATETIME_GUI);
 
@@ -1354,6 +1339,7 @@ Bool ExampleDialog::CoreMessage(Int32 id, const BaseContainer &msg)
 	{
 		case EVMSG_CHANGE:
 		case EVMSG_DOCUMENTRECALCULATED:
+		{
 			if (CheckCoreMessage(msg, &_lastcoremsg_change))
 			{
 				// if the Node GUI is displayed, redraw
@@ -1361,20 +1347,21 @@ Bool ExampleDialog::CoreMessage(Int32 id, const BaseContainer &msg)
 				Int32 selection = -1;
 				GetInt32(ID_COMBOBOX, selection);
 
-				if (selection == (Int32)DIALOGELEMENTS::NODEGUI && _nodeGUI != nullptr)
+				if (selection == (Int32)DIALOGELEMENTSGADGETS::NODEGUI && _nodeGUI != nullptr)
 				{
 					_nodeGUI->Redraw();
 				}
 			}
 			break;
+		}
 	}
 
 	return GeDialog::CoreMessage(id, msg);
 };
 
 
-
-#define ID_SDK_EXAMPLE_DIALOG_COMMAND 1035350 ///< Command ID
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 ID_SDK_EXAMPLE_DIALOG_COMMAND = 1035350; ///< Command ID
 
 //---------------------------
 /// The command plugin to open the example dialog
@@ -1384,7 +1371,6 @@ class OpenExampleDialogCommand: public CommandData
 	INSTANCEOF(OpenExampleDialogCommand, CommandData)
 
 public:
-
 	virtual Bool Execute(BaseDocument* doc, GeDialog* parentManager);
 	virtual Bool RestoreLayout(void* secret);
 
@@ -1392,7 +1378,6 @@ public:
 
 private:
 	ExampleDialog _dialog;
-
 };
 
 Bool OpenExampleDialogCommand::Execute(BaseDocument* doc, GeDialog* parentManager)

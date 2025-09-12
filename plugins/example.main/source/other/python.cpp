@@ -1,3 +1,5 @@
+#define MAXON_UNITY_BUILD_EXCLUDE
+
 #include "maxon/vm.h"
 #include "maxon/cpython.h"
 #include "maxon/blockarray.h"
@@ -56,9 +58,12 @@ public:
 	}
 };
 
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 PYTHON_REGEX_COMMAND_ID = 8436385;
+
 Bool RegisterPythonRegexCommand()
 {
-	if (!RegisterCommandPlugin(8436385, "Python Execution Example"_s, 0, nullptr, "Sends a string to Python and executes a regex operation on it"_s, NewObjClear(PythonRegexCommand)))
+	if (!RegisterCommandPlugin(PYTHON_REGEX_COMMAND_ID, "Python Execution Example"_s, 0, nullptr, "Sends a string to Python and executes a regex operation on it"_s, NewObjClear(PythonRegexCommand)))
 		return false;
 
 	return true;

@@ -14,8 +14,8 @@
 
 using namespace cinema;
 
-/**A unique plugin ID. You must obtain this from developers.maxon.net. Use this ID to create new instances of this object.*/
-static const Int32 ID_SDKEXAMPLE_OBJECTDATA_RULEDMESH = 1038251;
+/// A unique plugin ID. You must obtain this from developers.maxon.net. Use this ID to create new instances of this object.
+static constexpr const Int32 ID_SDKEXAMPLE_OBJECTDATA_RULEDMESH = 1038251;
 
 namespace RuledMeshHelpers
 {
@@ -241,25 +241,19 @@ Bool RuledMesh::Init(GeListNode* node, Bool isCloneInit)
 	if (!node)
 		return false;
 
-	// Cast the node to the BasObject class.
-	BaseObject* baseObjPtr = static_cast<BaseObject*>(node);
-
-	// Retrieve the BaseContainer instance binded to the BaseObject instance.
-	BaseContainer* bcPtr = baseObjPtr->GetDataInstance();
-
-	// Check the BaseContainer instance pointer.
-	if (!bcPtr)
-		return false;
-
 	if (!isCloneInit)
 	{
+		// Cast the node to the BasObject class.
+		BaseObject* baseObjPtr = static_cast<BaseObject*>(node);
+		// Retrieve the BaseContainer instance bound to the BaseObject instance.
+		BaseContainer& bc = baseObjPtr->GetDataInstanceRef();
 		// Set the values for the different parameters of the generator.
-		bcPtr->SetInt32(SDK_EXAMPLE_RULEDMESH_S_STEPS, 5);
-		bcPtr->SetInt32(SDK_EXAMPLE_RULEDMESH_T_STEPS, 5);
-		bcPtr->SetBool(SDK_EXAMPLE_RULEDMESH_FLIP_FIRST, false);
-		bcPtr->SetBool(SDK_EXAMPLE_RULEDMESH_FLIP_SECOND, false);
-		bcPtr->SetInt32(SDK_EXAMPLE_RULEDMESH_PARAM_FIRST, SDK_EXAMPLE_RULEDMESH_PARAM_NATURAL);
-		bcPtr->SetInt32(SDK_EXAMPLE_RULEDMESH_PARAM_SECOND, SDK_EXAMPLE_RULEDMESH_PARAM_NATURAL);
+		bc.SetInt32(SDK_EXAMPLE_RULEDMESH_S_STEPS, 5);
+		bc.SetInt32(SDK_EXAMPLE_RULEDMESH_T_STEPS, 5);
+		bc.SetBool(SDK_EXAMPLE_RULEDMESH_FLIP_FIRST, false);
+		bc.SetBool(SDK_EXAMPLE_RULEDMESH_FLIP_SECOND, false);
+		bc.SetInt32(SDK_EXAMPLE_RULEDMESH_PARAM_FIRST, SDK_EXAMPLE_RULEDMESH_PARAM_NATURAL);
+		bc.SetInt32(SDK_EXAMPLE_RULEDMESH_PARAM_SECOND, SDK_EXAMPLE_RULEDMESH_PARAM_NATURAL);
 	}
 
 	return true;
@@ -312,22 +306,18 @@ BaseObject* RuledMesh::GetVirtualObjects(BaseObject* op, const HierarchyHelp* hh
 		return op->GetCache();
 
 	// Retrieve the BaseContainer associated check it
-	BaseContainer* bcPtr = op->GetDataInstance();
-	if (!bcPtr)
-	{
-		FreeResources() iferr_ignore("FreeResource has found nothing to free.");
-		return BaseObject::Alloc(Onull);
-	}
+	BaseContainer& bc = op->GetDataInstanceRef();
+
 	// Retrieve the number of subdivisions which every of the two splines will be subdivided in.
-	const Int32 stepsS = bcPtr->GetInt32(SDK_EXAMPLE_RULEDMESH_S_STEPS);
-	const Int32 stepsT = bcPtr->GetInt32(SDK_EXAMPLE_RULEDMESH_T_STEPS);
+	const Int32 stepsS = bc.GetInt32(SDK_EXAMPLE_RULEDMESH_S_STEPS);
+	const Int32 stepsT = bc.GetInt32(SDK_EXAMPLE_RULEDMESH_T_STEPS);
 
 	// Retrieve the flip flags for the two curves
-	const Bool flipFirst	= bcPtr->GetBool(SDK_EXAMPLE_RULEDMESH_FLIP_FIRST);
-	const Bool flipSecond = bcPtr->GetBool(SDK_EXAMPLE_RULEDMESH_FLIP_SECOND);
+	const Bool flipFirst	= bc.GetBool(SDK_EXAMPLE_RULEDMESH_FLIP_FIRST);
+	const Bool flipSecond = bc.GetBool(SDK_EXAMPLE_RULEDMESH_FLIP_SECOND);
 
-	const Int32 paramFirst	= bcPtr->GetInt32(SDK_EXAMPLE_RULEDMESH_PARAM_FIRST);
-	const Int32 paramSecond = bcPtr->GetInt32(SDK_EXAMPLE_RULEDMESH_PARAM_SECOND);
+	const Int32 paramFirst	= bc.GetInt32(SDK_EXAMPLE_RULEDMESH_PARAM_FIRST);
+	const Int32 paramSecond = bc.GetInt32(SDK_EXAMPLE_RULEDMESH_PARAM_SECOND);
 
 	AllocateSplineHelpers() iferr_return;
 

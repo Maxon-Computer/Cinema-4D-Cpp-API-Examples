@@ -157,9 +157,8 @@ DRAWRESULT HairDeformerObject::Draw(BaseObject* op, DRAWPASS drawpass, BaseDraw*
 	return DRAWRESULT::SKIP;
 }
 
-//////////////////////////////////////////////////////////////////////////
-
-#define ID_HAIR_DEFOMER_EXAMPLE 1018960
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 ID_HAIR_DEFOMER_EXAMPLE = 1018960;
 
 Bool RegisterDeformerObject()
 {

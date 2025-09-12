@@ -70,6 +70,8 @@ public:
 		return MAXON_HASHCODE(_index);
 	}
 
+	static constexpr Bool TriviallyHashable() { return true; }
+
 	cinema::Int32 _privateBuffer = 0;
 	cinema::Int32 _index = NOTOK; // this is the point index.
 };

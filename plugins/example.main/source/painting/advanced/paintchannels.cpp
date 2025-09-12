@@ -1,15 +1,8 @@
+#include "c4d.h"
 #include "paintchannels.h"
 #include "paintundo.h"
 
 using namespace cinema;
-
-PaintChannels::PaintChannels() : channel(nullptr)
-{
-}
-
-PaintChannels::~PaintChannels()
-{
-}
 
 Bool PaintChannels::Init()
 {
@@ -26,10 +19,14 @@ void PaintChannels::UpdateBitmaps()
 		channel->UpdateRefresh(minmax[0], minmax[1], minmax[2], minmax[3], UPDATE_STD);
 }
 
-void PaintChannels::SetupPoly_Pixel(BrushDabData *dab, const CPolygon &p, const UVWStruct &polyUVs, const Vector *polyPoints)
+void PaintChannels::SetupPoly_Pixel(BrushDabData* dab, const CPolygon &p, const UVWStruct &polyUVs, const Vector* polyPoints)
 {
 	if (channel)
 	{
+		BaseDocument* doc = GetActiveDocument();
+		if (doc == nullptr)
+			return;
+
 		Int32 w = channel->GetBw();
 		Int32 h = channel->GetBh();
 
@@ -42,13 +39,13 @@ void PaintChannels::SetupPoly_Pixel(BrushDabData *dab, const CPolygon &p, const 
 		Float32 dX = (Float32)(polyUVs.d.x * w);
 		Float32 dY = (Float32)(polyUVs.d.y * h);
 
-		PaintUndoSystem *pPaintSystem = GetPaintUndoSystem(GetActiveDocument());
+		PaintUndoSystem *pPaintSystem = GetPaintUndoSystem(doc);
 		if (pPaintSystem)
 		{
-			pPaintSystem->AddUndoRedo(channel, (int)aX, (int)aY);
-			pPaintSystem->AddUndoRedo(channel, (int)bX, (int)bY);
-			pPaintSystem->AddUndoRedo(channel, (int)cX, (int)cY);
-			pPaintSystem->AddUndoRedo(channel, (int)dX, (int)dY);
+			pPaintSystem->AddUndoRedo(*channel, (int)aX, (int)aY);
+			pPaintSystem->AddUndoRedo(*channel, (int)bX, (int)bY);
+			pPaintSystem->AddUndoRedo(*channel, (int)cX, (int)cY);
+			pPaintSystem->AddUndoRedo(*channel, (int)dX, (int)dY);
 		}
 
 		minmax[0] = maxon::Min(minmax[0], maxon::Min((Int32)aX, maxon::Min((Int32)bX, (Int32)cX)));
@@ -92,7 +89,7 @@ void PaintChannels::SetupPoly_Pixel(BrushDabData *dab, const CPolygon &p, const 
 }
 
 
-void PaintChannels::SetupPoly_Bary(BrushDabData *dab, const CPolygon &p, const UVWStruct &polyUVs, const Vector *polyPoints)
+void PaintChannels::SetupPoly_Bary(BrushDabData* dab, const CPolygon &p, const UVWStruct &polyUVs, const Vector* polyPoints)
 {
 	SetupPoly_Pixel(dab, p, polyUVs, polyPoints);
 	if (channel)

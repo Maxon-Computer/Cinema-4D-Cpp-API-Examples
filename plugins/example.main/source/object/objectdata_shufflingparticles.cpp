@@ -14,8 +14,8 @@
 
 using namespace cinema;
 
-/**A unique plugin ID. You must obtain this from developers.maxon.net. Use this ID to create new instances of this object.*/
-static const Int32 ID_SDKEXAMPLE_OBJECTDATA_SHUFFLINGPARTICLES = 1038238;
+/// A unique plugin ID. You must obtain this from developers.maxon.net. Use this ID to create new instances of this object.
+static constexpr const Int32 ID_SDKEXAMPLE_OBJECTDATA_SHUFFLINGPARTICLES = 1038238;
 
 namespace ShufflingParticlesHelpers
 {
@@ -122,22 +122,16 @@ Bool ShufflingParticles::Init(GeListNode* node, Bool isCloneInit)
 	if (!node)
 		return false;
 
-	// Retrieve the BaseContainer object belonging to the generator.
-	BaseObject* baseObjectPtr = static_cast<BaseObject*>(node);
-
-	BaseContainer* bcPtr = baseObjectPtr->GetDataInstance();
-
-	if (!bcPtr)
-		return false;
-
 	if (!isCloneInit)
 	{
+		BaseObject* baseObjectPtr = static_cast<BaseObject*>(node);
+		BaseContainer& bc = baseObjectPtr->GetDataInstanceRef();
 		// Fill the retrieve BaseContainer object with initial values.
-		bcPtr->SetInt32(SDK_EXAMPLE_SHUFFLINGPARTICLES_SEED, 1);
-		bcPtr->SetInt32(SDK_EXAMPLE_SHUFFLINGPARTICLES_STRENGTH, 50);
-		bcPtr->SetFloat(SDK_EXAMPLE_SHUFFLINGPARTICLES_SIZE_X, 100);
-		bcPtr->SetFloat(SDK_EXAMPLE_SHUFFLINGPARTICLES_SIZE_Y, 100);
-		bcPtr->SetFloat(SDK_EXAMPLE_SHUFFLINGPARTICLES_SIZE_Z, 100);
+		bc.SetInt32(SDK_EXAMPLE_SHUFFLINGPARTICLES_SEED, 1);
+		bc.SetInt32(SDK_EXAMPLE_SHUFFLINGPARTICLES_STRENGTH, 50);
+		bc.SetFloat(SDK_EXAMPLE_SHUFFLINGPARTICLES_SIZE_X, 100);
+		bc.SetFloat(SDK_EXAMPLE_SHUFFLINGPARTICLES_SIZE_Y, 100);
+		bc.SetFloat(SDK_EXAMPLE_SHUFFLINGPARTICLES_SIZE_Z, 100);
 	}
 
 	return true;
@@ -184,14 +178,12 @@ void ShufflingParticles::GetDimension(const BaseObject* op, Vector* mp, Vector* 
 	mp->z = objGlobalOffset.z;
 
 	// Retrieve the BaseContainer object belonging to the generator.
-	const BaseContainer* bcPtr = op->GetDataInstance();
-	if (!bcPtr)
-		return;
+	const BaseContainer& bc = op->GetDataInstanceRef();
 
 	// Set radius values accordingly to arbitrary default value (they won't be used).
-	rad->x = bcPtr->GetFloat(SDK_EXAMPLE_SHUFFLINGPARTICLES_SIZE_X);
-	rad->y = bcPtr->GetFloat(SDK_EXAMPLE_SHUFFLINGPARTICLES_SIZE_Y);
-	rad->z = bcPtr->GetFloat(SDK_EXAMPLE_SHUFFLINGPARTICLES_SIZE_Z);
+	rad->x = bc.GetFloat(SDK_EXAMPLE_SHUFFLINGPARTICLES_SIZE_X);
+	rad->y = bc.GetFloat(SDK_EXAMPLE_SHUFFLINGPARTICLES_SIZE_Y);
+	rad->z = bc.GetFloat(SDK_EXAMPLE_SHUFFLINGPARTICLES_SIZE_Z);
 }
 
 void ShufflingParticles::ModifyParticles(BaseObject* op, Particle* pp, BaseParticle* ss, Int32 pcnt, Float diff)
@@ -200,20 +192,16 @@ void ShufflingParticles::ModifyParticles(BaseObject* op, Particle* pp, BaseParti
 	if (!op || !pp || !ss)
 		return;
 
-	BaseContainer* bcPtr = op->GetDataInstance();
-
-	// Check the retrieved BaseContainer instance belonging to the particle modifier.
-	if (!bcPtr)
-		return;
+	const BaseContainer& bc = op->GetDataInstanceRef();
 
 	// Retrieve the particles modifiers parameters value
-	const Int32 seedValue = bcPtr->GetInt32(SDK_EXAMPLE_SHUFFLINGPARTICLES_SEED);
-	const Int32 strengthValue = bcPtr->GetInt32(SDK_EXAMPLE_SHUFFLINGPARTICLES_STRENGTH);
+	const Int32 seedValue = bc.GetInt32(SDK_EXAMPLE_SHUFFLINGPARTICLES_SEED);
+	const Int32 strengthValue = bc.GetInt32(SDK_EXAMPLE_SHUFFLINGPARTICLES_STRENGTH);
 
 	// Retrieve the particles modifier sizes.
-	const Float	 sizeX = bcPtr->GetFloat(SDK_EXAMPLE_SHUFFLINGPARTICLES_SIZE_X);
-	const Float	 sizeY = bcPtr->GetFloat(SDK_EXAMPLE_SHUFFLINGPARTICLES_SIZE_Y);
-	const Float	 sizeZ = bcPtr->GetFloat(SDK_EXAMPLE_SHUFFLINGPARTICLES_SIZE_Z);
+	const Float	 sizeX = bc.GetFloat(SDK_EXAMPLE_SHUFFLINGPARTICLES_SIZE_X);
+	const Float	 sizeY = bc.GetFloat(SDK_EXAMPLE_SHUFFLINGPARTICLES_SIZE_Y);
+	const Float	 sizeZ = bc.GetFloat(SDK_EXAMPLE_SHUFFLINGPARTICLES_SIZE_Z);
 	const Vector partModSizes(sizeX, sizeY, sizeZ);
 
 	// Retrieve the particles modifier world transformation matrix and its inverse.

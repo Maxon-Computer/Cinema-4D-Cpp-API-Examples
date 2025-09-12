@@ -75,9 +75,8 @@ Vector HairSDKShader::Output(BaseShader* sh, ChannelData* sd)
 	return Vector();
 }
 
-//////////////////////////////////////////////////////////////////////////
-
-#define ID_HAIR_SHADER_EXAMPLE 1018969
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 ID_HAIR_SHADER_EXAMPLE = 1018969;
 
 Bool RegisterShader()
 {

@@ -11,9 +11,11 @@ sculpting system what to do for each point on a dab.
 #include "c4d.h"
 #include "main.h"
 
-#define SCULPTPULLBRUSH_SDK_EXAMPLE 1028490	//You MUST get your own ID from developers.maxon.net
-
 using namespace cinema;
+
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 SCULPTPULLBRUSH_SDK_EXAMPLE = 1028490;
+
 
 class ExampleSculptPullBrush : public SculptBrushToolData
 {

@@ -3,9 +3,10 @@
 #include "c4d.h"
 #include "main.h"
 
-#define ID_SCULPT_BRUSH_TWIST 1030250
-
 using namespace cinema;
+
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 ID_SCULPT_BRUSH_TWIST = 1030250;
 
 class SculptBrushTwist : public SculptBrushToolData
 {

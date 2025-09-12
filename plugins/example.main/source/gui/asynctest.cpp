@@ -1,14 +1,14 @@
 // example code for a menu/manager plugin
 
-// be sure to use a unique ID obtained from developers.maxon.net
-#define ID_ASYNCTEST 1000955
-
 #include "c4d.h"
 #include "gradientuserarea.h"
 #include "c4d_symbols.h"
 #include "main.h"
 
 using namespace cinema;
+
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 ID_ASYNCTEST = 1000955;
 
 enum
 {
@@ -19,18 +19,12 @@ enum
 	GROUP_DYNAMIC,
 	GROUP_SCROLL,
 
-	GADGET_DRAG = 6000,
-
-	_dummy
+	GADGET_DRAG = 6000
 };
 
 class SDKGradientArea : public GeUserArea
 {
 public:
-	SDKGradientGadget ggtmp;
-	SDKGradient				grad[MAXGRADIENT];
-	Int32							count, interpolation, type;
-
 	SDKGradientArea();
 
 	virtual Bool Init();
@@ -38,27 +32,19 @@ public:
 	virtual void Sized(Int32 w, Int32 h);
 	virtual void DrawMsg(Int32 x1, Int32 y1, Int32 x2, Int32 y2, const BaseContainer& msg);
 	virtual Bool InputEvent(const BaseContainer& msg);
+
+public:
+	SDKGradientGadget _ggtmp;
+	Int32 _type = 0;
 };
 
 SDKGradientArea::SDKGradientArea()
 {
-	Int32 i;
-	for (i = 0; i < MAXGRADIENT; i++)
-		grad[i].id = i;
-
-	grad[0].col = Vector(1.0, 1.0, 0.0);
-	grad[1].col = Vector(1.0, 0.0, 0.0);
-	grad[0].pos = 0.0;
-	grad[1].pos = 1.0;
-
-	count = 2;
-	interpolation = 4;
-	type = 0;
 }
 
 Bool SDKGradientArea::Init()
 {
-	ggtmp.Init(this, grad, &count, &interpolation, MAXGRADIENT);
+	_ggtmp.Init(this, 4, (Int32)MAXGRADIENT);
 	return true;
 }
 
@@ -71,7 +57,7 @@ Bool SDKGradientArea::GetMinSize(Int32& w, Int32& h)
 
 void SDKGradientArea::Sized(Int32 w, Int32 h)
 {
-	ggtmp.InitDim(w, h);
+	_ggtmp.InitDim(w, h);
 }
 
 void SDKGradientArea::DrawMsg(Int32 x1, Int32 y1, Int32 x2, Int32 y2, const BaseContainer& msg)
@@ -81,11 +67,11 @@ void SDKGradientArea::DrawMsg(Int32 x1, Int32 y1, Int32 x2, Int32 y2, const Base
 	if (reason == BFM_GOTFOCUS || reason == BFM_LOSTFOCUS)
 		return;
 
-	if (!ggtmp.col)
+	if (!_ggtmp._col)
 		return;
-	Int32 w = ggtmp.col->GetBw();
-	Int32 h = ggtmp.col->GetBh();
-	DrawBitmap(ggtmp.col, 0, 0, w, h, 0, 0, w, h, 0);
+	Int32 w = _ggtmp._col->GetBw();
+	Int32 h = _ggtmp._col->GetBh();
+	DrawBitmap(_ggtmp._col, 0, 0, w, h, 0, 0, w, h, 0);
 }
 
 Bool SDKGradientArea::InputEvent(const BaseContainer& msg)
@@ -100,13 +86,12 @@ Bool SDKGradientArea::InputEvent(const BaseContainer& msg)
 
 		if (chn == BFM_INPUT_MOUSELEFT)
 		{
-			Int32 mxn, myn;
 			Int32 mx = msg.GetInt32(BFM_INPUT_X);
 			Int32 my = msg.GetInt32(BFM_INPUT_Y);
 			Bool	dc = msg.GetBool(BFM_INPUT_DOUBLECLICK);
 			Global2Local(&mx, &my);
 
-			if (ggtmp.MouseDown(mx, my, dc))
+			if (_ggtmp.MouseDown(mx, my, dc))
 			{
 				BaseContainer z;
 				while (GetInputState(BFM_INPUT_MOUSE, BFM_INPUT_MOUSELEFT, z))
@@ -114,12 +99,12 @@ Bool SDKGradientArea::InputEvent(const BaseContainer& msg)
 					if (z.GetInt32(BFM_INPUT_VALUE) == 0)
 						break;
 
-					mxn = z.GetInt32(BFM_INPUT_X);
-					myn = z.GetInt32(BFM_INPUT_Y);
+					Int32 mxn = z.GetInt32(BFM_INPUT_X);
+					Int32 myn = z.GetInt32(BFM_INPUT_Y);
 					Global2Local(&mxn, &myn);
 
 					mx = mxn; my = myn;
-					ggtmp.MouseDrag(mx, my);
+					_ggtmp.MouseDrag(mx, my);
 					Redraw();
 					action.SetInt32(BFM_ACTION_INDRAG, true);
 					SendParentMessage(action);
@@ -132,12 +117,12 @@ Bool SDKGradientArea::InputEvent(const BaseContainer& msg)
 		}
 		else if (chn == BFM_INPUT_MOUSEWHEEL)
 		{
-			Float per;
-			if (ggtmp.GetPosition(&per))
+			Float per = 0.0;
+			if (_ggtmp.GetPosition(&per))
 			{
 				per += msg.GetFloat(BFM_INPUT_VSCROLL) / 120.0 * 0.01;
 				per	 = Clamp01(per);
-				ggtmp.SetPosition(per);
+				_ggtmp.SetPosition(per);
 				Redraw();
 				SendParentMessage(action);
 			}
@@ -149,27 +134,30 @@ Bool SDKGradientArea::InputEvent(const BaseContainer& msg)
 
 class AsyncDialog : public GeDialog
 {
-private:
-	Int32					rows;
-	String				array_drag[100];
-	BaseContainer links;
-
-	void DoEnable();
-	Bool CheckDropArea(Int32 id, const BaseContainer& msg);
-	void CreateDynamicGroup();
-	void ReLayout();
-	String GetStaticText(Int32 i);
-
-	SDKGradientArea sg;
-	C4DGadget*			gradientarea;
-
 public:
-	AsyncDialog();
+	AsyncDialog()
+	{
+		_arrayDrag.Resize(1) iferr_ignore("start without rows on failure");
+	}
 	virtual Bool CreateLayout();
 	virtual Bool InitValues();
 	virtual Bool Command(Int32 id, const BaseContainer& msg);
 	virtual Int32 Message(const BaseContainer& msg, BaseContainer& result);
 	virtual Bool CoreMessage  (Int32 id, const BaseContainer& msg);
+
+private:
+	void DoEnable();
+	Bool CheckDropArea(Int32 id, const BaseContainer& msg);
+	void CreateDynamicGroup();
+	void ReLayout();
+	String GetStaticText(Int32 i) const;
+
+private:
+	static constexpr Int MAX_ROWS = 100;
+	maxon::BaseArray<String> _arrayDrag;
+	BaseContainer _links;
+	SDKGradientArea _sg;
+	C4DGadget* _gradientarea = nullptr;
 };
 
 enum
@@ -180,12 +168,6 @@ enum
 	IDC_XPOSITION	= 1004,
 	IDC_XINTERPOL	= 1005
 };
-
-AsyncDialog::AsyncDialog()
-{
-	gradientarea = nullptr;
-	rows = 1;
-}
 
 Bool AsyncDialog::CreateLayout()
 {
@@ -223,9 +205,9 @@ Bool AsyncDialog::CreateLayout()
 
 		GroupBegin(0, BFV_SCALEFIT | BFH_SCALEFIT, 0, 2, String(), 0);
 		{
-			gradientarea = AddUserArea(IDC_GRADTEST, BFH_SCALEFIT);
-			if (gradientarea)
-				AttachUserArea(sg, gradientarea);
+			_gradientarea = AddUserArea(IDC_GRADTEST, BFH_SCALEFIT);
+			if (_gradientarea)
+				AttachUserArea(_sg, _gradientarea);
 
 			GroupBegin(0, BFH_LEFT, 2, 0, String(), 0);
 			{
@@ -280,7 +262,7 @@ Bool AsyncDialog::CreateLayout()
 void AsyncDialog::DoEnable()
 {
 	Float pos = 0.0;
-	Bool	ok	= sg.ggtmp.GetPosition(&pos);
+	Bool	ok	= _sg._ggtmp.GetPosition(&pos);
 	Enable(IDC_XPOSITION, ok);
 	Enable(IDC_XINTERPOL, ok);
 }
@@ -302,10 +284,10 @@ Bool AsyncDialog::InitValues()
 	SetBool(IDC_ACCESS, true);
 
 	Float pos = 0.0;
-	sg.ggtmp.GetPosition(&pos);
+	_sg._ggtmp.GetPosition(&pos);
 
 	SetPercent(IDC_XPOSITION, pos);
-	SetInt32(IDC_XINTERPOL, sg.interpolation);
+	SetInt32(IDC_XINTERPOL, 4);
 
 	DoEnable();
 
@@ -314,16 +296,18 @@ Bool AsyncDialog::InitValues()
 
 Bool AsyncDialog::CheckDropArea(Int32 id, const BaseContainer& msg)
 {
-	Int32 x, y, w, h, dx, dy;
+	Int32 dx, dy;
 	GetDragPosition(msg, &dx, &dy);
+
+	Int32 x, y, w, h;
 	GetItemDim(id, &x, &y, &w, &h);
+
 	return dy > y && dy < y + h;
 }
 
 void AsyncDialog::CreateDynamicGroup()
 {
-	Int32 i;
-	for (i = 0; i < rows; i++)
+	for (Int32 i = 0; i < _arrayDrag.GetCount(); i++)
 	{
 		AddCheckbox(0, BFH_LEFT, 0, 0, "Rows " + String::IntToString(i + 1));
 		AddStaticText(GADGET_DRAG + i, BFH_SCALEFIT, 260, 0, GetStaticText(i), BORDER_THIN_IN);
@@ -337,67 +321,72 @@ Bool AsyncDialog::Command(Int32 id, const BaseContainer& msg)
 	switch (id)
 	{
 		case GADGET_ADDROW:
-			if (rows < 100)
-				rows++;
-			ReLayout();
+		{
+			if (_arrayDrag.GetCount() < MAX_ROWS && _arrayDrag.Append() == maxon::OK)
+				ReLayout();
 			break;
-
+		}
 		case GADGET_SUBROW:
-			if (rows > 1)
+		{
+			if (_arrayDrag.IsPopulated())
 			{
-				rows--;
+				_arrayDrag.Pop();
 				ReLayout();
 			}
 			break;
-
+		}
 		case IDC_GRADTEST:
+		{
 			InitValues();
 			break;
-
+		}
 		case IDC_XPOSITION:
-			sg.ggtmp.SetPosition(msg.GetFloat(BFM_ACTION_VALUE));
-			sg.Redraw();
+		{
+			_sg._ggtmp.SetPosition(msg.GetFloat(BFM_ACTION_VALUE));
+			_sg.Redraw();
 			break;
-
+		}
 		case IDC_XINTERPOL:
-			sg.interpolation = msg.GetInt32(BFM_ACTION_VALUE);
-			sg.ggtmp.CalcImage();
-			sg.Redraw();
+		{
+			_sg._ggtmp._interpol = msg.GetInt32(BFM_ACTION_VALUE);
+			_sg._ggtmp.CalcImage();
+			_sg.Redraw();
 			break;
+		}
 	}
 	return true;
 }
 
-static String GenText(C4DAtomGoal* bl)
+static String GenText(const C4DAtomGoal& bl)
 {
 	String str;
-	if (bl->IsInstanceOf(Obase))
+	if (bl.IsInstanceOf(Obase))
 		str = "BaseObject";
-	else if (bl->IsInstanceOf(Tbase))
+	else if (bl.IsInstanceOf(Tbase))
 		str = "BaseTag";
-	else if (bl->IsInstanceOf(Mbase))
+	else if (bl.IsInstanceOf(Mbase))
 		str = "BaseMaterial";
-	else if (bl->IsInstanceOf(CKbase))
+	else if (bl.IsInstanceOf(CKbase))
 		str = "CKey";
-	else if (bl->IsInstanceOf(CTbase))
+	else if (bl.IsInstanceOf(CTbase))
 		str = "CTrack";
-	else if (bl->IsInstanceOf(GVbase))
+	else if (bl.IsInstanceOf(GVbase))
 		str = "BaseNode";
 	else
 		return "Unknown object";
 
-	if (bl->IsInstanceOf(Tbaselist2d))
-		return str + " " + static_cast<BaseList2D*>(bl)->GetName() + " (" + String::IntToString(bl->GetType()) + ")";
+	if (bl.IsInstanceOf(Tbaselist2d))
+		return str + " " + static_cast<const BaseList2D&>(bl).GetName() + " (" + String::IntToString(bl.GetType()) + ")";
 
-	return str + " (" + String::IntToString(bl->GetType()) + ")";
+	return str + " (" + String::IntToString(bl.GetType()) + ")";
 }
 
-String AsyncDialog::GetStaticText(Int32 i)
+String AsyncDialog::GetStaticText(Int32 i) const
 {
-	C4DAtomGoal* bl = links.GetData(i).GetLinkAtom(GetActiveDocument());
+	const C4DAtomGoal* bl = _links.GetData(i).GetLinkAtom(GetActiveDocument());
 	if (!bl)
 		return String();
-	return String("Dropped ") + GenText(bl);
+	return String("Dropped ") + GenText(*bl);
 }
 
 Bool AsyncDialog::CoreMessage(Int32 id, const BaseContainer& msg)
@@ -405,15 +394,14 @@ Bool AsyncDialog::CoreMessage(Int32 id, const BaseContainer& msg)
 	switch (id)
 	{
 		case EVMSG_CHANGE:
+		{
 			if (CheckCoreMessage(msg))
 			{
-				Int32 i;
-				for (i = 0; i < rows; i++)
-				{
+				for (Int32 i = 0; i < _arrayDrag.GetCount(); i++)
 					SetString(GADGET_DRAG + i, GetStaticText(i));
-				}
 			}
 			break;
+		}
 	}
 	return GeDialog::CoreMessage(id, msg);
 }
@@ -425,17 +413,18 @@ Int32 AsyncDialog::Message(const BaseContainer& msg, BaseContainer& result)
 		case BFM_DRAGRECEIVE:
 		{
 			String prefix = "Dragging ";
-			Int32	 i, id = -1;
+			Int32	 id = -1;
 			if (msg.GetInt32(BFM_DRAG_FINISHED))
 				prefix = "Dropped ";
 
 			if (CheckDropArea(GROUP_SCROLL, msg))
 			{
-				for (i = 0; i < rows; i++)
+				for (Int32 i = 0; i < _arrayDrag.GetCount(); i++)
 				{
 					if (CheckDropArea(GADGET_DRAG + i, msg))
 					{
-						id = i; break;
+						id = i;
+						break;
 					}
 				}
 			}
@@ -443,66 +432,33 @@ Int32 AsyncDialog::Message(const BaseContainer& msg, BaseContainer& result)
 			{
 				if (msg.GetInt32(BFM_DRAG_LOST))
 				{
-					for (i = 0; i < rows; i++)
-					{
+					for (Int32 i = 0; i < _arrayDrag.GetCount(); i++)
 						SetString(GADGET_DRAG + i, GetStaticText(i));
-					}
 				}
 				else
 				{
-					String			 string, str;
-					Int32				 type = 0;
-					void*				 object = nullptr;
-					C4DAtomGoal* bl = nullptr;
-
+					Int32 type = 0;
+					void*	object = nullptr;
 					GetDragObject(msg, &type, &object);
 
+					const C4DAtomGoal* bl = nullptr;
+					String string = prefix + "unknown object";
 					if (type == DRAGTYPE_ATOMARRAY && static_cast<AtomArray*>(object)->GetCount() == 1 && static_cast<AtomArray*>(object)->GetIndex(0))
 					{
 						bl = (C4DAtomGoal*)static_cast<AtomArray*>(object)->GetIndex(0);
 						if (bl)
-						{
-							if (bl->IsInstanceOf(Obase))
-							{
-								str = "BaseObject";
-							}
-							else if (bl->IsInstanceOf(Tbase))
-							{
-								str = "BaseTag";
-							}
-							else if (bl->IsInstanceOf(Mbase))
-							{
-								str = "BaseMaterial";
-							}
-							else if (bl->IsInstanceOf(CKbase))
-							{
-								str = "CKey";
-							}
-							else if (bl->IsInstanceOf(CTbase))
-							{
-								str = "CTrack";
-							}
-
-							if (bl->IsInstanceOf(Tbaselist2d))
-								string = prefix + str + " " + static_cast<BaseList2D*>(bl)->GetName() + " (" + String::IntToString(bl->GetType()) + ")";
-							else
-								string = prefix + str + " (" + String::IntToString(bl->GetType()) + ")";
-						}
+							string = GenText(*bl);
 					}
-					else
-					{
-						string = prefix + "unknown object";
-					}
-
+					
 					if (msg.GetInt32(BFM_DRAG_FINISHED))
-						links.SetLink(id, bl);
+						_links.SetLink(id, bl);
 
-					for (i = 0; i < rows; i++)
-						array_drag[i] = GetStaticText(i);
-					array_drag[id] = string;
+					for (Int32 i = 0; i < _arrayDrag.GetCount(); i++)
+						_arrayDrag[i] = GetStaticText(i);
+					_arrayDrag[id] = string;
 
-					for (i = 0; i < rows; i++)
-						SetString(GADGET_DRAG + i, array_drag[i]);
+					for (Int32 i = 0; i < _arrayDrag.GetCount(); i++)
+						SetString(GADGET_DRAG + i, _arrayDrag[i]);
 
 					return SetDragDestination(MOUSE_POINT_HAND);
 				}
@@ -515,16 +471,13 @@ Int32 AsyncDialog::Message(const BaseContainer& msg, BaseContainer& result)
 
 class AsyncTest : public CommandData
 {
-private:
-	AsyncDialog dlg;
-
 public:
 	virtual Bool Execute(BaseDocument* doc, GeDialog* parentManager);
 	virtual Int32 GetState(BaseDocument* doc, GeDialog* parentManager);
 	virtual Bool RestoreLayout(void* secret);
 
-	//		virtual Bool ExecuteSubID(BaseDocument *doc, Int32 subid);
-	//		virtual Bool GetSubContainer(BaseDocument *doc, BaseContainer &submenu);
+private:
+	AsyncDialog _dlg;
 };
 
 Int32 AsyncTest::GetState(BaseDocument* doc, GeDialog* parentManager)
@@ -534,12 +487,12 @@ Int32 AsyncTest::GetState(BaseDocument* doc, GeDialog* parentManager)
 
 Bool AsyncTest::Execute(BaseDocument* doc, GeDialog* parentManager)
 {
-	return dlg.Open(DLG_TYPE::ASYNC_FULLSCREEN_MONITOR, ID_ASYNCTEST, 0, 0);
+	return _dlg.Open(DLG_TYPE::ASYNC, ID_ASYNCTEST, 0, 0);
 }
 
 Bool AsyncTest::RestoreLayout(void* secret)
 {
-	return dlg.RestoreLayout(ID_ASYNCTEST, 0, secret);
+	return _dlg.RestoreLayout(ID_ASYNCTEST, 0, secret);
 }
 
 Bool RegisterAsyncTest()

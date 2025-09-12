@@ -37,12 +37,12 @@ inline Int32 Sgn(Float r) { return (r < 0.0) ? -1 : 1; }
 
 static Bool _CollisionFn(BaseDocument* doc, BaseList2D* op, HairObject* hair, HairGuides* guides, HairGuideDynamics* dyn, const Vector& bmin, const Vector& bmax, Float t1, Float t2, Float pr, Vector* oldpnt, Vector* newpnt, Vector* vel, Float* invmass, Int32 pcnt, Int32 cnt, Int32 scnt)
 {
-	BaseContainer* bc = op->GetDataInstance();
+	BaseContainer& bc = op->GetDataInstanceRef();
 
-	Float bounce = -bc->GetFloat(HAIRSDK_COLLIDER_BOUNCE);
-	Float friction = 1.0 - bc->GetFloat(HAIRSDK_COLLIDER_FRICTION);
-	Float width	 = bc->GetFloat(HAIRSDK_COLLIDER_WIDTH);
-	Float height = bc->GetFloat(HAIRSDK_COLLIDER_HEIGHT);
+	Float bounce = -bc.GetFloat(HAIRSDK_COLLIDER_BOUNCE);
+	Float friction = 1.0 - bc.GetFloat(HAIRSDK_COLLIDER_FRICTION);
+	Float width	 = bc.GetFloat(HAIRSDK_COLLIDER_WIDTH);
+	Float height = bc.GetFloat(HAIRSDK_COLLIDER_HEIGHT);
 
 	Int32 i, l, j;
 
@@ -116,13 +116,16 @@ static Bool _CollisionFn(BaseDocument* doc, BaseList2D* op, HairObject* hair, Ha
 
 Bool HairCollisionObject::Init(GeListNode* node, Bool isCloneInit)
 {
-	BaseContainer* bc = static_cast<BaseList2D*>(node)->GetDataInstance();
+	if (node == nullptr)
+		return false;
+
 	if (!isCloneInit)
 	{
-		bc->SetFloat(HAIRSDK_COLLIDER_BOUNCE, 0.3);
-		bc->SetFloat(HAIRSDK_COLLIDER_FRICTION, 0.1);
-		bc->SetFloat(HAIRSDK_COLLIDER_WIDTH, 200.0);
-		bc->SetFloat(HAIRSDK_COLLIDER_HEIGHT, 200.0);
+		BaseContainer& bc = static_cast<BaseList2D*>(node)->GetDataInstanceRef();
+		bc.SetFloat(HAIRSDK_COLLIDER_BOUNCE, 0.3);
+		bc.SetFloat(HAIRSDK_COLLIDER_FRICTION, 0.1);
+		bc.SetFloat(HAIRSDK_COLLIDER_WIDTH, 200.0);
+		bc.SetFloat(HAIRSDK_COLLIDER_HEIGHT, 200.0);
 	}
 
 	m_FnTable.calc_collision = _CollisionFn;
@@ -151,12 +154,12 @@ DRAWRESULT HairCollisionObject::Draw(BaseObject* op, DRAWPASS drawpass, BaseDraw
 	if (drawpass != DRAWPASS::OBJECT)
 		return DRAWRESULT::SKIP;
 
-	BaseContainer* bc = op->GetDataInstance();
+	BaseContainer& bc = op->GetDataInstanceRef();
 
 	//Float bounce=-bc->GetFloat(HAIRSDK_COLLIDER_BOUNCE);
 	//Float friction=bc->GetFloat(HAIRSDK_COLLIDER_FRICTION);
-	Float width	 = bc->GetFloat(HAIRSDK_COLLIDER_WIDTH);
-	Float height = bc->GetFloat(HAIRSDK_COLLIDER_HEIGHT);
+	Float width	 = bc.GetFloat(HAIRSDK_COLLIDER_WIDTH);
+	Float height = bc.GetFloat(HAIRSDK_COLLIDER_HEIGHT);
 
 	const Matrix& mg = bh->GetMg();
 
@@ -171,9 +174,9 @@ DRAWRESULT HairCollisionObject::Draw(BaseObject* op, DRAWPASS drawpass, BaseDraw
 	return DRAWRESULT::OK;
 }
 
-//////////////////////////////////////////////////////////////////////////
 
-#define ID_HAIR_COLLIDER_EXAMPLE 1018963
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 ID_HAIR_COLLIDER_EXAMPLE = 1018963;
 
 Bool RegisterCollisionObject()
 {

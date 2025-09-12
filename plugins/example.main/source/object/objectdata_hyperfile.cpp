@@ -397,7 +397,8 @@ BaseObject* ObjectDataHyperFileExample::GetVirtualObjects(BaseObject* op, const 
 }
 
 
-#define ID_SDK_OBJECTDATA_HYPERFILEEXAMPLE 1039637  // Always request a unique Plugin ID from Plugin Cafe: developers.maxon.net/forum/developer.asp
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 ID_SDK_OBJECTDATA_HYPERFILEEXAMPLE = 1039637;  // Always request a unique Plugin ID from Plugin Cafe: developers.maxon.net/forum/developer.asp
 
 Bool RegisterObjectHyperFileExample()
 {

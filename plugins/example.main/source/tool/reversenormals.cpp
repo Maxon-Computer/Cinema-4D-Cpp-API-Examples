@@ -3,9 +3,10 @@
 #include "c4d_symbols.h"
 #include "main.h"
 
-#define ID_MODELING_REVERSE_NORMALS_SDK	450000026
-
 using namespace cinema;
+
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 ID_MODELING_REVERSE_NORMALS_SDK = 450000026;
 
 static Bool ReverseNormals(Modeling* krnl, C4DAtom* op, UChar* reverse, Int32 polycnt, Int32 pgoncnt, Int32* polymap)
 {

@@ -29,10 +29,10 @@ public:
 
 static Bool _ConstraintFn(BaseDocument* doc, BaseList2D* op, HairObject* hair, HairGuides* guides, HairGuideDynamics* dyn, Vector* oldpnt, Vector* newpnt, Float* invmass, Int32 pcnt, Int32 cnt, Int32 scnt)
 {
-	BaseContainer* bc = op->GetDataInstance();
+	const BaseContainer& bc = op->GetDataInstanceRef();
 
 	Int32 i, l, j;
-	Float strength = bc->GetFloat(HAIR_CONSTRAINT_STRENGTH);
+	Float strength = bc.GetFloat(HAIR_CONSTRAINT_STRENGTH);
 
 	for (i = 0; i < cnt; i++)
 	{
@@ -54,10 +54,10 @@ static Bool _ConstraintFn(BaseDocument* doc, BaseList2D* op, HairObject* hair, H
 
 Bool HairConstraintObject::Init(GeListNode* node, Bool isCloneInit)
 {
-	BaseContainer* bc = static_cast<BaseList2D*>(node)->GetDataInstance();
 	if (!isCloneInit)
 	{
-		bc->SetFloat(HAIR_CONSTRAINT_STRENGTH, 0.2);
+		BaseContainer& bc = static_cast<BaseList2D*>(node)->GetDataInstanceRef();
+		bc.SetFloat(HAIR_CONSTRAINT_STRENGTH, 0.2);
 	}
 
 	m_FnTable.calc_constraint = _ConstraintFn;
@@ -86,9 +86,8 @@ DRAWRESULT HairConstraintObject::Draw(BaseObject* op, DRAWPASS drawpass, BaseDra
 	return DRAWRESULT::SKIP;
 }
 
-//////////////////////////////////////////////////////////////////////////
-
-#define ID_HAIR_CONSTRAINT_EXAMPLE 1018964
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 ID_HAIR_CONSTRAINT_EXAMPLE = 1018964;
 
 Bool RegisterConstraintObject()
 {

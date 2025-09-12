@@ -14,7 +14,8 @@
 
 using namespace cinema;
 
-static const Int32 ID_POLYREDUCTON_TEST = 1038949;
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 ID_POLYREDUCTON_TEST = 1038949;
 
 class PolygonReductionCommand : public CommandData
 {
@@ -66,10 +67,8 @@ Bool PolygonReductionCommand::Execute(BaseDocument* doc, GeDialog* parentManager
 
 	// Prepare the polygon reduction data and allocate the polygon reduction instance.
 	// Notice that thread is nullptr in PolygonReductionData.  This means that the reduction will occur immediately and synchronously in the current thread.
-	PolygonReductionData polyReductionData = PolygonReductionData(doc, ToPoly(activeClone), nullptr);
-	AutoAlloc<PolygonReduction> polygonReduction;
-
-	if (!polygonReduction)
+	PolygonReductionData polyReductionData(doc, ToPoly(activeClone), nullptr);
+	iferr (auto polygonReduction = maxon::UniqueRef<PolygonReduction>::Create())
 	{
 		BaseObject::Free(activeClone);
 		doc->DoUndo();

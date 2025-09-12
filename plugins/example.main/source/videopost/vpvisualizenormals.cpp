@@ -90,8 +90,8 @@ Bool VisualizePostData::RenderEngineCheck(const BaseVideoPost* node, Int32 id) c
 	return true;
 }
 
-// be sure to use a unique ID obtained from developers.maxon.net
-#define ID_VISUALIZENORMALS 1000986
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 ID_VISUALIZENORMALS = 1000986;
 
 Bool RegisterVPVisualizeNormals()
 {

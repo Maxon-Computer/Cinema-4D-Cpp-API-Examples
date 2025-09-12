@@ -142,7 +142,7 @@ maxon::Result<maxon::AssetDescription> CreateNodeTemplateAsset(
 	// Store the group node as an asset and replace that group node by its asset and commit.
 	maxon::AssetDescription assetDescription;
 	maxon::Id assetId = maxon::AssetInterface::MakeUuid("node", false) iferr_return;
-	assetDescription = graph.MoveToAsset(groupNode, repository, assetId, {}) iferr_return;
+	assetDescription = graph.MoveToAsset(groupNode, repository, assetId, false, {}) iferr_return;
 	transaction.Commit() iferr_return;
 
 	// Set the name and category of the asset.

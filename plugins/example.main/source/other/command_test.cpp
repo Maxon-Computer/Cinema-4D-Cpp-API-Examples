@@ -97,21 +97,22 @@ public:
 		switch (shape)
 		{
 			case POLYLINE_DRAW::LINE:
+			{
 				positions.Resize(2) iferr_return;
 				positions[0] = start;
 				positions[1] = end;
 				break;
-
+			}
 			case POLYLINE_DRAW::BOX:
+			{
 				positions.Resize(4) iferr_return;
 				positions[0] = start;
 				positions[1] = Vector(start.x, end.y, 0.0);
 				positions[2] = end;
 				positions[3] = Vector(end.x, start.y, 0.0);
 				break;
-
-			default:
-				break;
+			}
+			default: break;
 		}
 
 		data.Set(COMMAND::POLYLINE::POSITIONS, std::move(positions)) iferr_return;
@@ -133,17 +134,18 @@ public:
 		switch (shape)
 		{
 			case POLYLINE_DRAW::LINE:
+			{
 				positions[1] = end;
 				break;
-
+			}
 			case POLYLINE_DRAW::BOX:
+			{
 				positions[1].y = end.y;
 				positions[2] = end;
 				positions[3].x = end.x;
 				break;
-
-			default:
-				break;
+			}
+			default: break;
 		}
 
 		data.Set(COMMAND::POLYLINE::POSITIONS, std::move(positions)) iferr_return;
@@ -156,7 +158,8 @@ MAXON_COMPONENT_OBJECT_REGISTER(PaintCommandImpl, CommandClasses, "net.maxonexam
 
 } // namespace maxon
 
-static const Int32 ID_PAINT_TOOL = 990020203;
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 ID_PAINT_TOOL = 990020203;
 
 class PaintTool : public DescriptionToolData
 {
@@ -176,16 +179,17 @@ public:
 
 	virtual Bool MouseInput(BaseDocument* doc, BaseContainer& data, BaseDraw* bd, EditorWindow* win, const BaseContainer& msg)
 	{
-		BaseObject*		op = nullptr;
-		BaseContainer bc;
-		BaseContainer device;
-		Int32					button = NOTOK;
-		Float					dx = 0.0;
-		Float					dy = 0.0;
-		Float					mouseX = msg.GetFloat(BFM_INPUT_X);
-		Float					mouseY = msg.GetFloat(BFM_INPUT_Y);
-		Bool 					ctrl = msg.GetInt32(BFM_INPUT_QUALIFIER) & QCTRL;
-		Bool 					shift = msg.GetInt32(BFM_INPUT_QUALIFIER) & QSHIFT;
+		iferr_scope_handler
+		{
+			err.DbgStop();
+			return false;
+		};
+
+		Float mouseX = msg.GetFloat(BFM_INPUT_X);
+		Float mouseY = msg.GetFloat(BFM_INPUT_Y);
+		Bool ctrl = msg.GetInt32(BFM_INPUT_QUALIFIER) & QCTRL;
+		Bool shift = msg.GetInt32(BFM_INPUT_QUALIFIER) & QSHIFT;
+		Int32	button = NOTOK;
 
 		switch (msg.GetInt32(BFM_INPUT_CHANNEL))
 		{
@@ -193,16 +197,12 @@ public:
 			case BFM_INPUT_MOUSERIGHT: button = KEY_MRIGHT; break;
 			default: return true;
 		}
-
-		AutoAlloc<AtomArray>opList;
-		if (!opList)
-			return false;
-
+		maxon::UniqueRef<AtomArray> opList = maxon::UniqueRef<AtomArray>::Create() iferr_return;
 		doc->GetActiveObjects(*opList, GETACTIVEOBJECTFLAGS::CHILDREN);
 		if (opList->GetCount() <= 0)
 			return true;
 
-		op = static_cast<BaseObject*>(opList->GetIndex(0));
+		BaseObject* op = static_cast<BaseObject*>(opList->GetIndex(0));
 		if (!op)
 			return true;
 
@@ -213,13 +213,8 @@ public:
 		if (!paintObject)
 			return false;
 
-		iferr_scope_handler
-		{
-			err.DbgStop();
-			return false;
-		};
-
-		if (ctrl) // case A: create a fixed size line if the user does a single click with CTRL
+		// Case A: create a fixed size line if the user does a single click with CTRL
+ 		if (ctrl)
 		{
 			maxon::CommandDataRef commandData = maxon::CommandDataClasses::BASE().Create() iferr_return;
 			commandData.Set(maxon::COMMAND::POLYLINE::DRAW, maxon::POLYLINE_DRAW::LINE) iferr_return;
@@ -253,7 +248,6 @@ public:
 			}
 			return true;
 		}
-
 		
 		// case C: interactive mode where the user can click and drag in the view and create a custom size box 
 		maxon::CommandDataRef commandData = maxon::CommandDataClasses::BASE().Create() iferr_return;
@@ -267,6 +261,9 @@ public:
 
 		result = commandData.Interact(maxon::INTERACTIONTYPE::START) iferr_return;
 
+		Float dx = 0.0;
+		Float	dy = 0.0;
+		BaseContainer device;
 		while (win->MouseDrag(&dx, &dy, &device) == MOUSEDRAGRESULT::CONTINUE)
 		{
 			if (dx == 0.0 && dy == 0.0)

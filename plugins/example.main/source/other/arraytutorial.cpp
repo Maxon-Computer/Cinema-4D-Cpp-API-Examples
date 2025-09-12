@@ -231,13 +231,8 @@ public:
 	//----------------------------------------------------------------------------------------
 	class Example1
 	{
-		MAXON_DISALLOW_COPY_AND_ASSIGN(Example1);
 	public:
-		Example1() {}
-		~Example1() {}
-
-		Example1(Example1&& src) : _data(std::move(src._data)) {}
-		MAXON_OPERATOR_MOVE_ASSIGNMENT(Example1);
+		Example1() = default;
 
 		maxon::Result<void> CopyFrom(const Example1& src)
 		{

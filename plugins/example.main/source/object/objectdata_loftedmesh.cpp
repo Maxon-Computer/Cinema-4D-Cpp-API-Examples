@@ -15,8 +15,8 @@
 
 using namespace cinema;
 
-// A unique plugin ID. You must obtain this from developers.maxon.net. Use this ID to create new instances of this object.
-static const Int32 ID_SDKEXAMPLE_OBJECTDATA_LOFTEDMESH = 1038749;
+/// A unique plugin ID. You must obtain this from developers.maxon.net. Use this ID to create new instances of this object.
+static constexpr const Int32 ID_SDKEXAMPLE_OBJECTDATA_LOFTEDMESH = 1038749;
 
 namespace LoftedMeshHelpers
 {
@@ -277,22 +277,16 @@ Bool LoftedMesh::Init(GeListNode* node, Bool isCloneInit)
 	if (!node)
 		return false;
 
-	// Cast the node to the BasObject class.
-	BaseObject* baseObjPtr = static_cast<BaseObject*>(node);
-
-	// Retrieve the BaseContainer instance bound to the BaseObject instance.
-	BaseContainer* bcPtr = baseObjPtr->GetDataInstance();
-
-	// Check the BaseContainer instance pointer.
-	if (!bcPtr)
-		return false;
-
 	if (!isCloneInit)
 	{
+		// Cast the node to the BasObject class.
+		BaseObject* baseObjPtr = static_cast<BaseObject*>(node);
+		// Retrieve the BaseContainer instance bound to the BaseObject instance.
+		BaseContainer& bc = baseObjPtr->GetDataInstanceRef();
 		// Set the values for the different parameters of the generator.
-		bcPtr->SetInt32(SDK_EXAMPLE_LOFTEDMESH_S_STEPS, 5);
-		bcPtr->SetInt32(SDK_EXAMPLE_LOFTEDMESH_T_STEPS, 5);
-		bcPtr->SetInt32(SDK_EXAMPLE_LOFTEDMESH_INTERPOLATION, SDK_EXAMPLE_SPLINETYPE_BEZIER);
+		bc.SetInt32(SDK_EXAMPLE_LOFTEDMESH_S_STEPS, 5);
+		bc.SetInt32(SDK_EXAMPLE_LOFTEDMESH_T_STEPS, 5);
+		bc.SetInt32(SDK_EXAMPLE_LOFTEDMESH_INTERPOLATION, SDK_EXAMPLE_SPLINETYPE_BEZIER);
 	}
 
 	return true;
@@ -322,14 +316,12 @@ BaseObject* LoftedMesh::GetVirtualObjects(BaseObject* op, const HierarchyHelp* h
 		return BaseObject::Alloc(Onull);
 
 	// Retrieve the BaseContainer associated check it.
-	BaseContainer* bcPtr = op->GetDataInstance();
-	if (!bcPtr)
-		return BaseObject::Alloc(Onull);
-
+	const BaseContainer& bc = op->GetDataInstanceRef();
+	
 	// Retrieve the number of subdivisions which every of the two splines will be subdivided in.
-	const Int32			 stepsS = bcPtr->GetInt32(SDK_EXAMPLE_LOFTEDMESH_S_STEPS);
-	const Int32			 stepsT = bcPtr->GetInt32(SDK_EXAMPLE_LOFTEDMESH_T_STEPS);
-	const SPLINETYPE interp = (SPLINETYPE)bcPtr->GetInt32(SDK_EXAMPLE_LOFTEDMESH_INTERPOLATION);
+	const Int32			 stepsS = bc.GetInt32(SDK_EXAMPLE_LOFTEDMESH_S_STEPS);
+	const Int32			 stepsT = bc.GetInt32(SDK_EXAMPLE_LOFTEDMESH_T_STEPS);
+	const SPLINETYPE interp = (SPLINETYPE)bc.GetInt32(SDK_EXAMPLE_LOFTEDMESH_INTERPOLATION);
 
 	// Check the presence of two children curves needed to run the generator.
 	if (!op->GetDown())

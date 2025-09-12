@@ -102,9 +102,8 @@ DRAWRESULT HairForceObject::Draw(BaseObject* op, DRAWPASS drawpass, BaseDraw* bd
 	return DRAWRESULT::SKIP;
 }
 
-//////////////////////////////////////////////////////////////////////////
-
-#define ID_HAIR_FORCE_EXAMPLE 1018962
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 ID_HAIR_FORCE_EXAMPLE = 1018962;
 
 Bool RegisterForceObject()
 {

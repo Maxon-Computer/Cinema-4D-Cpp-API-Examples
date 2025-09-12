@@ -5,9 +5,9 @@
 #include "main.h"
 #include "xmandelbrot.h"
 
-#define CCOUNT 125
-
 using namespace cinema;
+
+static constexpr const Int32 CCOUNT = 125;
 
 class MandelbrotData : public ShaderData
 {
@@ -121,8 +121,8 @@ Vector MandelbrotData::Output(BaseShader* chn, ChannelData* cd)
 	return col;
 }
 
-// be sure to use a unique ID obtained from developers.maxon.net
-#define ID_MANDELBROT	1001162
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 ID_MANDELBROT = 1001162;
 
 Bool RegisterMandelbrot()
 {

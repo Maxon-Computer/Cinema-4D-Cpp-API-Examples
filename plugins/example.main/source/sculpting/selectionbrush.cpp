@@ -10,9 +10,10 @@ The brush will work with all the symmetry options.
 
 #include "lib_sculpt.h"														//This is only required for the helper IsObjectEnabled(BaseObject *op) function.
 
-#define SCULPTBRUSH_SDK_EXAMPLE_SELECTION 1029669	//You MUST get your own ID from developers.maxon.net
-
 using namespace cinema;
+
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 SCULPTBRUSH_SDK_EXAMPLE_SELECTION = 1029669;
 
 class SculptSelectionBrush : public SculptBrushToolData
 {
@@ -30,7 +31,7 @@ public:
 	static Bool MovePointsFunc(BrushDabData* dab);
 
 public:
-	BaseDocument* _doc;	// Used to store the current document during a brush stroke.
+	BaseDocument* _doc = nullptr;	// Used to store the current document during a brush stroke.
 };
 
 Int32 SculptSelectionBrush::GetState(BaseDocument *doc)

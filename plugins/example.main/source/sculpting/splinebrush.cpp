@@ -6,28 +6,20 @@
 #include "c4d.h"
 #include "main.h"
 
-
-#define SCULPTBRUSH_SDK_EXAMPLE_SPLINE 1032294 	//You MUST get your own ID from developers.maxon.net
-
 using namespace cinema;
+
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 SCULPTBRUSH_SDK_EXAMPLE_SPLINE = 1032294;
 
 struct SplineStrokeData
 {
-	Bool	 firstHit;
-	Bool	 firstPointDone;
+	Bool	 firstHit = false;
+	Bool	 firstPointDone = false;
 	Vector hitPoint;
 
-	Int32	 strokeId;
+	Int32	 strokeId = -1;
 
-	SplineObject *_spline;
-
-	SplineStrokeData()
-	{
-		_spline = nullptr;
-		strokeId = -1;
-		firstHit = false;
-		firstPointDone = false;
-	}
+	SplineObject *_spline = nullptr;
 };
 
 class SculptSplineBrush : public SculptBrushToolData
@@ -52,9 +44,9 @@ public:
 
 public:
 	maxon::BaseArray<SplineStrokeData> _splineStrokeData;
-	BaseDocument*							 _doc;
-	Int32											 _strokeCounter;
-	SplineObject*							 _spline;
+	BaseDocument* _doc = nullptr;
+	Int32 _strokeCounter = 0;
+	SplineObject* _spline = nullptr;
 };
 
 Int32 SculptSplineBrush::GetToolPluginId() const

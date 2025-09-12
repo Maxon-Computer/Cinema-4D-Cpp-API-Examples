@@ -9,6 +9,7 @@
 // Maxon API header files
 #include "maxon/lib_math.h"
 #include "maxon/sort.h"
+#include "maxon/array.h"
 
 // local header files
 #include "command_declaration.h"

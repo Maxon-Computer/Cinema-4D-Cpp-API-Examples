@@ -95,8 +95,8 @@ Bool InvertData::Message(GeListNode *node, Int32 type, void *data)
 	return VideoPostData::Message(node, type, data);
 }
 
-// be sure to use a unique ID obtained from developers.maxon.net
-#define ID_INVERTVIDEOPOST 1000455
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 ID_INVERTVIDEOPOST = 1000455;
 
 Bool RegisterVPInvertImage()
 {

@@ -1,4 +1,5 @@
 #include "viewporttextureprovider_impl.h"
+#include "thumbnailgenerator_impl.h"
 
 namespace maxonsdk
 {

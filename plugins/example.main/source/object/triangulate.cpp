@@ -8,14 +8,13 @@ using namespace cinema;
 
 class TriangulateData : public ObjectData
 {
+public:
+	virtual BaseObject* GetVirtualObjects(BaseObject* op, const HierarchyHelp* hh);
+	static NodeData* Alloc() { return NewObjClear(TriangulateData); }
+
 private:
 	LineObject* PrepareSingleSpline(BaseObject* generator, BaseObject* op, Matrix* ml, const HierarchyHelp* hh, Bool* dirty);
 	void Transform(PointObject* op, const Matrix& m);
-
-public:
-	virtual BaseObject* GetVirtualObjects(BaseObject* op, const HierarchyHelp* hh);
-
-	static NodeData* Alloc() { return NewObjClear(TriangulateData); }
 };
 
 LineObject* TriangulateData::PrepareSingleSpline(BaseObject* generator, BaseObject* op, Matrix* ml, const HierarchyHelp* hh, Bool* dirty)
@@ -30,13 +29,14 @@ LineObject* TriangulateData::PrepareSingleSpline(BaseObject* generator, BaseObje
 
 void TriangulateData::Transform(PointObject* op, const Matrix& m)
 {
-	Vector* padr = op->GetPointW();
-	Int32		pcnt = op->GetPointCount(), i;
+	maxon::Block<Vector> pts(op->GetPointW(), op->GetPointCount());
+	if (pts.GetFirst())
+	{
+		for (Vector& v : pts)
+			v = m * v;
 
-	for (i = 0; i < pcnt; i++)
-		padr[i] = m * padr[i];
-
-	op->Message(MSG_UPDATE);
+		op->Message(MSG_UPDATE);
+	}
 }
 
 BaseObject* TriangulateData::GetVirtualObjects(BaseObject* op, const HierarchyHelp* hh)
@@ -44,13 +44,11 @@ BaseObject* TriangulateData::GetVirtualObjects(BaseObject* op, const HierarchyHe
 	if (!op->GetDown())
 		return nullptr;
 
-	LineObject*		 contour = nullptr;
-	PolygonObject* pp = nullptr;
 	Bool	 dirty = false;
 	Matrix ml;
 
 	op->NewDependenceList();
-	contour = PrepareSingleSpline(op, op->GetDown(), &ml, hh, &dirty);
+	LineObject* contour = PrepareSingleSpline(op, op->GetDown(), &ml, hh, &dirty);
 	if (!dirty)
 		dirty = op->CheckCache(hh);
 	if (!dirty)
@@ -63,8 +61,7 @@ BaseObject* TriangulateData::GetVirtualObjects(BaseObject* op, const HierarchyHe
 	if (!contour)
 		return nullptr;
 
-	pp = contour->Triangulate(hh->GetDocument(), hh->GetDocument() ? hh->GetDocument()->GetCacheRunId() : NOTOK, 0.0, hh->GetThread());
-
+	PolygonObject* pp = contour->Triangulate(hh->GetDocument(), hh->GetDocument() ? hh->GetDocument()->GetCacheRunId() : NOTOK, 0.0, hh->GetThread());
 	if (!pp)
 		return nullptr;
 
@@ -81,8 +78,8 @@ BaseObject* TriangulateData::GetVirtualObjects(BaseObject* op, const HierarchyHe
 	return pp;
 }
 
-// be sure to use a unique ID obtained from developers.maxon.net
-#define ID_TRIANGULATEOBJECT 1001159
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 ID_TRIANGULATEOBJECT = 1001159;
 
 Bool RegisterTriangulate()
 {

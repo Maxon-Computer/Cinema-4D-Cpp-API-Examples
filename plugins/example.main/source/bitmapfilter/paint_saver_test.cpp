@@ -9,9 +9,12 @@
 #include "c4d_includes.h"
 #include "main.h"
 
-#define ID_BITMAP_SAVER_TEST 200000109
-
 using namespace cinema;
+
+#ifdef MAXON_TARGET_DEBUG
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 ID_BITMAP_SAVER_TEST = 200000109;
+#endif
 
 class BitmapSaverTest : public CommandData
 {
@@ -105,28 +108,6 @@ static void ExportImage(PaintTexture* tex, BitmapSaverPlugin* bp, COLORMODE colo
 
 Bool BitmapSaverTest::Execute(BaseDocument* doc, GeDialog* parentManager)
 {
-	/*
-		AutoAlloc<BaseBitmap> bmp;
-		bmp->Init(100, 100, 24);
-		BaseBitmap *a1 = bmp->AddChannel(true, false);
-		BaseBitmap *a2 = bmp->AddChannel(false, false);
-		bmp->Clear(255, 128, 0);
-		if (a1)
-		{
-			Int32 y; UChar buf[] = { 128 };
-			for (y = 0; y < 100; y++)
-				a1->SetPixelCnt(0, y, 100, buf, 0, COLORMODE::GRAY, 0);
-		}
-		if (a2)
-		{
-			Int32 y; UChar buf[] = { 255 };
-			for (y = 0; y < 100; y++)
-				a2->SetPixelCnt(0, y, 100, buf, 0, COLORMODE::GRAY, 0);
-		}
-		bmp->Save(Filename("G:\\3D\\BP3 test stuff\\format_conversion_test\\test.tif"),FILTER_TIF,nullptr,SAVEBIT::USE32BITCHANNELS|SAVEBIT::GREYSCALE|SAVEBIT::ALPHA);
-	//	bmp->Save(Filename("G:\\3D\\BP3 test stuff\\format_conversion_test\\test.tif"),FILTER_TIF,nullptr,SAVEBIT::USE16BITCHANNELS|SAVEBIT::ALPHA);
-	//return true;
-	*/
 	PaintTexture* tex = PaintTexture::GetSelectedTexture();
 	if (!tex)
 	{

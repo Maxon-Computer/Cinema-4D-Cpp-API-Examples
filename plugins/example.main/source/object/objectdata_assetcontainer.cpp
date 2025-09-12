@@ -58,12 +58,10 @@ See also:
 
 #include "oassetcontainer.h"
 
-// Plugin ID of the #AssetContainerObjectData plugin interface. You must register your plugin IDs
-// via developers.maxon.net.
-static const cinema::Int32 Oassetcontainer = 1065023;
-
 using namespace cinema;
-using namespace maxon;
+
+/// Plugin ID of the #AssetContainerObjectData plugin interface. You must obtain this from developers.maxon.net.
+static constexpr const Int32 Oassetcontainer = 1065023;
 
 /// @brief Realizes a type which can internalize other nodes in a custom branch of itself.
 /// 
@@ -183,8 +181,8 @@ public:
 	/// @details This effectively makes our custom branch visible for every one else and with that
 	/// part of the scene graph.
 	// ----------------------------------------------------------------------------------------------
-	Result<Bool> GetBranchInfo(const GeListNode* node, 
-		const ValueReceiver<const BranchInfo&>& info, GETBRANCHINFO flags) const
+	maxon::Result<Bool> GetBranchInfo(const GeListNode* node, 
+		const maxon::ValueReceiver<const BranchInfo&>& info, GETBRANCHINFO flags) const
 	{
 		iferr_scope;
 		yield_scope;
@@ -345,7 +343,7 @@ public:
 			BaseContainer items;
 			items.SetString(0, "None"_s);
 
-			BaseArray<const BaseObject*> assets;
+			maxon::BaseArray<const BaseObject*> assets;
 			if (!GetAssetPointers(assets))
 				return SUPER::GetDDescription(node, description, flags);
 
@@ -369,7 +367,7 @@ public:
 	/// @param[out] assets		The asset pointers to retrieve.
 	/// @return								If the operation has been successful. 
 	// ----------------------------------------------------------------------------------------------
-	bool GetAssetPointers(BaseArray<const BaseObject*>& assets) const
+	bool GetAssetPointers(maxon::BaseArray<const BaseObject*>& assets) const
 	{
 		iferr_scope_handler
 		{

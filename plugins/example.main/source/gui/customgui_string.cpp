@@ -12,13 +12,13 @@
 ///
 //----------------------------------------------------------------------------------------
 
-
-#define ID_SDK_EXAMPLE_CUSTOMGUI_STRING 1034655
-
-#define TEXT_ID 1001 ///< The ID of the string text field GUI element.
-#define COUNT_ID 1002 ///< The ID of the number text field GUI element.
-
 using namespace cinema;
+
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 ID_SDK_EXAMPLE_CUSTOMGUI_STRING = 1034655;
+
+static constexpr const Int32 TEXT_ID = 1001; ///< The ID of the string text field GUI element.
+static constexpr const Int32 COUNT_ID = 1002; ///< The ID of the number text field GUI element.
 
 //----------------------------------------------------------------------------------------
 /// A custom GUI to display a string with an additional text field showing the number of characters.
@@ -27,26 +27,23 @@ class iExampleCustomGUIString : public iCustomGui
 {
 	INSTANCEOF(iExampleCustomGUIString, iCustomGui)
 
-private:
-
-	String _string; ///< The current string to display.
-	Bool _tristate; ///< The current tristate.
-
 public:
-	
 	iExampleCustomGUIString(const BaseContainer &settings, CUSTOMGUIPLUGIN *plugin);
 	virtual Bool CreateLayout();
 	virtual Bool InitValues();
 	virtual Bool Command(Int32 id, const BaseContainer &msg);
 	virtual Bool SetData(const TriState<GeData> &tristate);
 	virtual TriState<GeData> GetData();
+
+private:
+	String _string; ///< The current string to display.
+	Bool _tristate = false; ///< The current tristate.
+
 };
 
 
 iExampleCustomGUIString::iExampleCustomGUIString(const BaseContainer &settings, CUSTOMGUIPLUGIN *plugin) : iCustomGui(settings, plugin)
 {
-	// Defining default values
-	_tristate = false;
 };
 
 Bool iExampleCustomGUIString::CreateLayout()
@@ -145,7 +142,7 @@ TriState<GeData> iExampleCustomGUIString::GetData()
 
 
 
-static Int32 g_stringtable[] = { DTYPE_STRING }; ///< This array defines the applicable datatypes.
+static Int32 g_stringtableCGString[] = { DTYPE_STRING }; ///< This array defines the applicable datatypes.
 
 
 //---------------------
@@ -160,7 +157,6 @@ public:
   virtual const Char* GetResourceSym();
   virtual CustomProperty* GetProperties();
   virtual Int32 GetResourceDataType(Int32*& table);
-
 };
 
 
@@ -214,8 +210,8 @@ CustomProperty* SDKExampleCustomGUIString::GetProperties()
 Int32 SDKExampleCustomGUIString::GetResourceDataType(Int32*& table)
 {
 	// Returns the applicable datatypes defined in the stringtable array.
-	table = g_stringtable; 
-	return sizeof(g_stringtable)/sizeof(Int32);
+	table = g_stringtableCGString; 
+	return sizeof(g_stringtableCGString)/sizeof(Int32);
 };
 
 Bool RegisterCustomGUIString()

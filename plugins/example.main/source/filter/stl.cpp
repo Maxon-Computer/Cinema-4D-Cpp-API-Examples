@@ -21,12 +21,13 @@ public:
 
 Bool STLLoaderData::Init(GeListNode* node, Bool isCloneInit)
 {
-	BaseContainer* data = static_cast<BaseList2D*>(node)->GetDataInstance();
-
 	AutoAlloc<UnitScaleData> unit;
 	if (unit)
-		data->SetData(SDKSTLIMPORTFILTER_SCALE, GeData(*unit));
-
+	{
+		BaseContainer& data = static_cast<BaseList2D*>(node)->GetDataInstanceRef();
+		data.SetData(SDKSTLIMPORTFILTER_SCALE, GeData(*unit));
+	}
+	
 	return true;
 }
 
@@ -41,17 +42,19 @@ public:
 
 Bool STLSaverData::Init(GeListNode* node, Bool isCloneInit)
 {
-	BaseContainer* data = static_cast<BaseList2D*>(node)->GetDataInstance();
-
 	AutoAlloc<UnitScaleData> unit;
 	if (unit)
-		data->SetData(SDKSTLEXPORTFILTER_SCALE, GeData(*unit));
+	{
+		BaseContainer& data = static_cast<BaseList2D*>(node)->GetDataInstanceRef();
+		data.SetData(SDKSTLEXPORTFILTER_SCALE, GeData(*unit));
+	}
 
 	return true;
 }
 
-#define ARG_MAXCHARS 256
-#define	STL_SPEEDUP	 4096
+static constexpr const Int32 BUFMAX = 500;
+static constexpr const Int32 ARG_MAXCHARS = 256;
+static constexpr const Int32 STL_SPEEDUP = 4096;
 
 struct ZPolygon
 {
@@ -61,19 +64,36 @@ struct ZPolygon
 class STLLOAD
 {
 public:
-	BaseFile*			 file;
-	SCENEFILTER		 flags;
-	Char					 str[ARG_MAXCHARS], speedup[STL_SPEEDUP];
-	Int						 filepos, filelen, vbuf, vcnt;
-	PolygonObject* op;
-	ZPolygon*			 vadr;
-
 	STLLOAD();
 	~STLLOAD();
 
 	Bool ReadArg();
 	Bool ReadFloat(Float& l);
+
+public:
+	maxon::UniqueRef<BaseFile> file;
+	SCENEFILTER flags = SCENEFILTER::NONE;
+	Char					 str[ARG_MAXCHARS], speedup[STL_SPEEDUP];
+	Int filepos = 0;
+	Int filelen = 0;
+	Int vbuf = BUFMAX;
+	Int vcnt = 0;
+	PolygonObject* op = nullptr;
+	ZPolygon* vadr = nullptr;
+
 };
+
+STLLOAD::STLLOAD()
+{
+	str[0]	= 0;
+	file = BaseFile::Alloc();
+}
+
+STLLOAD::~STLLOAD()
+{
+	blDelete(op);
+	DeleteMem(vadr);
+}
 
 Bool STLLOAD::ReadArg()
 {
@@ -133,26 +153,6 @@ Bool STLLOAD::ReadFloat(Float& r)
 	return true;
 }
 
-STLLOAD::STLLOAD()
-{
-	flags = SCENEFILTER::NONE;
-	op = nullptr;
-	str[0]	= 0;
-	filepos	= 0;
-	filelen	= 0;
-	file = BaseFile::Alloc();
-	vadr = nullptr;
-	vcnt = 0;
-	vbuf = 500;
-}
-
-STLLOAD::~STLLOAD()
-{
-	BaseFile::Free(file);
-	blDelete(op);
-	DeleteMem(vadr);
-}
-
 static void CapString(Char* s)
 {
 	Int32 i;
@@ -163,7 +163,7 @@ static void CapString(Char* s)
 
 static Int32 LexCompare(const Char* s1, const Char* s2)
 {
-	Char a1[500], a2[500];
+	Char a1[BUFMAX], a2[BUFMAX];
 	strcpy(a1, s1); CapString(a1);
 	strcpy(a2, s2); CapString(a2);
 	return strcmp(a1, a2);
@@ -384,28 +384,24 @@ FILEERROR STLLoaderData::Load(BaseSceneLoader* node, const Filename& name, BaseD
 class STLSAVE
 {
 public:
-	BaseFile*			file;
-	BaseDocument* doc;
-	Int32					pos, cnt;
-	SCENEFILTER		flags;
-
 	STLSAVE();
 	~STLSAVE();
 
+public:
+	maxon::UniqueRef<BaseFile> file;
+	BaseDocument* doc = nullptr;
+	Int32 pos = 0;
+	Int32 cnt = 0;
+	SCENEFILTER flags = SCENEFILTER::NONE;
 };
 
 STLSAVE::STLSAVE()
 {
-	doc	= nullptr;
-	pos	= 0;
-	cnt	= 0;
-	flags = SCENEFILTER::NONE;
 	file	= BaseFile::Alloc();
 }
 
 STLSAVE::~STLSAVE()
 {
-	BaseFile::Free(file);
 	BaseDocument::Free(doc);
 }
 
@@ -474,13 +470,12 @@ FILEERROR STLSaverData::Save(BaseSceneSaver* node, const Filename& name, BaseDoc
 	if (!(flags & SCENEFILTER::OBJECTS))
 		return FILEERROR::NONE;
 
-	Float		scl;
-	STLSAVE stl;
 	Char		header[80];
 
 	const UnitScaleData* scale = node->GetDataInstanceRef().GetCustomDataType<UnitScaleData>(SDKSTLEXPORTFILTER_SCALE);
-	scl = CalculateTranslationScale(doc->GetDataInstanceRef().GetCustomDataType<UnitScaleData>(DOCUMENT_DOCUNIT), scale);
+	Float scl = CalculateTranslationScale(doc->GetDataInstanceRef().GetCustomDataType<UnitScaleData>(DOCUMENT_DOCUNIT), scale);
 
+	STLSAVE stl;
 	stl.flags = flags;
 	stl.doc = doc->Polygonize();
 
@@ -502,12 +497,16 @@ FILEERROR STLSaverData::Save(BaseSceneSaver* node, const Filename& name, BaseDoc
 	return stl.file->GetError();
 }
 
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 ID_STL_LOADER_SDK = 1000984;
+static constexpr const Int32 ID_STL_SAVER_SDK = 1000958;
+
 Bool RegisterSTL()
 {
 	String name = GeLoadString(IDS_STL);
-	if (!RegisterSceneLoaderPlugin(1000984, name, PLUGINFLAG_SCENELOADER_URL_AWARE | PLUGINFLAG_SCENELOADER_SUPPORT_ASYNC | PLUGINFLAG_SCENELOADER_SUPPORT_MERGED_OPTIONS, STLLoaderData::Alloc, "Fsdkstlimport"_s))
+	if (!RegisterSceneLoaderPlugin(ID_STL_LOADER_SDK, name, PLUGINFLAG_SCENELOADER_URL_AWARE | PLUGINFLAG_SCENELOADER_SUPPORT_ASYNC | PLUGINFLAG_SCENELOADER_SUPPORT_MERGED_OPTIONS, STLLoaderData::Alloc, "Fsdkstlimport"_s))
 		return false;
-	if (!RegisterSceneSaverPlugin(1000958, name, 0, STLSaverData::Alloc, "Fsdkstlexport"_s, "stl"_s))
+	if (!RegisterSceneSaverPlugin(ID_STL_SAVER_SDK, name, 0, STLSaverData::Alloc, "Fsdkstlexport"_s, "stl"_s))
 		return false;
 	return true;
 }

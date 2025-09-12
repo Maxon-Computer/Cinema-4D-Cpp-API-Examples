@@ -9,8 +9,8 @@
 class LayerShaderBrowser : public cinema::GeDialog
 {
 public:
-	LayerShaderBrowser();
-	virtual ~LayerShaderBrowser();
+	LayerShaderBrowser() { }
+	virtual ~LayerShaderBrowser() { }
 
 	virtual cinema::Bool CreateLayout();
 	virtual cinema::Bool InitValues();
@@ -24,9 +24,9 @@ public:
 	void* lastselected;
 
 private:
-	cinema::LinkBoxGui*				 linkbox;
-	cinema::TreeViewCustomGui* tree;
-	cinema::Int32							 lastdirty;
+	cinema::LinkBoxGui*	_linkbox = nullptr;
+	cinema::TreeViewCustomGui* _tree = nullptr;
+	cinema::Int32 _lastdirty = -1;
 };
 
 #endif // LAYERSHADERBROWSER_H__

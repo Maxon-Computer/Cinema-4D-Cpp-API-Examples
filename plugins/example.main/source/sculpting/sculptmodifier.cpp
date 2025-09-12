@@ -3,9 +3,10 @@
 #include "c4d_symbols.h"
 #include "main.h"
 
-#define ID_SCULPT_BRUSH_EXAMPLE_MODIFIER 1030975
-
 using namespace cinema;
+
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 ID_SCULPT_BRUSH_EXAMPLE_MODIFIER = 1030975;
 
 class ExampleSculptModifier : public SculptBrushModifierData
 {

@@ -33,12 +33,10 @@ using namespace cinema;
 //---------------------------
 DotsUserArea::DotsUserArea()
 {
-	_data = nullptr;
 }
 
 DotsUserArea::~DotsUserArea()
 {
-	
 }
 
 Bool DotsUserArea::Init()
@@ -111,8 +109,7 @@ Bool DotsUserArea::InputEvent(const BaseContainer& msg)
 //------------
 /// the iCustomGui dialog hosting the user area 
 //------------
-iExampleCustomGUIDots::iExampleCustomGUIDots(
-	const BaseContainer &settings, CUSTOMGUIPLUGIN *plugin) : iCustomGui(settings, plugin)
+iExampleCustomGUIDots::iExampleCustomGUIDots(const BaseContainer &settings, CUSTOMGUIPLUGIN *plugin) : iCustomGui(settings, plugin)
 {
 	_tristate = false;
 };
@@ -149,14 +146,8 @@ Bool iExampleCustomGUIDots::InitValues()
 
 Bool iExampleCustomGUIDots::Command(Int32 id, const BaseContainer &msg)
 {
-	iferr_scope_handler
-	{
-		return false;
-	};
-
 	switch (id)
 	{
-
 		// A message from the user area was received, inform the parent that the data has changed.
 		case ID_USERAREA:
 		{
@@ -204,7 +195,6 @@ TriState<GeData> iExampleCustomGUIDots::GetData()
 
 iCustomDataTypeDots::iCustomDataTypeDots(const maxon::BaseArray<Vector> &points)
 {
-	iferr_scope;
 	_points.CopyFrom(points) iferr_ignore("do not return any error inside the constructor"_s);
 };
 
@@ -214,7 +204,6 @@ iCustomDataTypeDots::iCustomDataTypeDots(const maxon::BaseArray<Vector> &points)
 
 iCustomDataTypeDots::iCustomDataTypeDots(const iCustomDataTypeDots& cdtd)
 {
-	iferr_scope;
 	_points.CopyFrom(cdtd._points) iferr_ignore("do not return any error inside the constructor"_s);
 };
 
@@ -257,7 +246,6 @@ Int32 SDKExampleCustomGUIDots::GetId()
 CDialog* SDKExampleCustomGUIDots::Alloc(const BaseContainer& settings)
 {
 	// creating the dialog that "is" the actual GUI
-
 	iferr (iExampleCustomGUIDots* const dlg = NewObj(iExampleCustomGUIDots, settings, GetPlugin()))
 		return nullptr;
   
@@ -348,8 +336,8 @@ Int32 DotsCustomDataTypeClass::Compare(const CustomDataType* d1, const CustomDat
 	// This just compares the number of points. A better implementation would be to also compare 
 	// the values of the points
 
-	const maxon::Int countd1 = s->_points.GetCount();
-	const maxon::Int countd2 = d->_points.GetCount();
+	const Int countd1 = s->_points.GetCount();
+	const Int countd2 = d->_points.GetCount();
 
 	if (countd1 == countd2) 
 		return 0;
@@ -416,7 +404,6 @@ const Char* DotsCustomDataTypeClass::GetResourceSym()
 void DotsCustomDataTypeClass::GetDefaultProperties(BaseContainer &data)
 {
 	// the default values of this datatype
-
 	// use the custom GUI as default
 	data.SetInt32(DESC_CUSTOMGUI, id_sdk_example_customgui_dots);
 	data.SetInt32(DESC_ANIMATE, DESC_ANIMATE_ON);

@@ -20,7 +20,7 @@ namespace maxonsdk
 {
 
 #define HYBRIDDATATYPEGUI_RESOURCE_SYMBOL "HYBRIDDATATYPEGUI"
-static Int32 g_resourceDataTypeTable[] = { HYBRIDDATATYPE_ID };
+static Int32 g_resourceDataTypeTableHybrid[] = { HYBRIDDATATYPE_ID };
 
 Int32 HybridDataTypeData::GetId()
 {
@@ -55,8 +55,8 @@ CustomProperty* HybridDataTypeData::GetProperties()
 }
 Int32 HybridDataTypeData::GetResourceDataType(Int32 *&table)
 {
-	table = g_resourceDataTypeTable;
-	return sizeof(g_resourceDataTypeTable) / sizeof(Int32);
+	table = g_resourceDataTypeTableHybrid;
+	return sizeof(g_resourceDataTypeTableHybrid) / sizeof(Int32);
 }
 
 static HybridDataTypeLib g_hybridDataTypeGuiLib;
@@ -85,11 +85,12 @@ HybridDataTypeGui::HybridDataTypeGui(const BaseContainer &settings, CUSTOMGUIPLU
 	}
 }
 
-#define NUMBERFIELD_ID 1000
+static constexpr const Int32 NUMBERFIELD_ID = 1000;
+
 Bool HybridDataTypeGui::CreateLayout()
 {
-	static Int32 EDITW = 100;
-	static Int32 EDITH = 10;
+	static constexpr const Int32 EDITW = 100;
+	static constexpr const Int32 EDITH = 10;
 
 	GroupBegin(0, BFH_LEFT | BFV_CENTER, 0, 1, String(), 0);
 	C4DGadget* field = AddEditNumberArrows(NUMBERFIELD_ID, 0, EDITW, EDITH);

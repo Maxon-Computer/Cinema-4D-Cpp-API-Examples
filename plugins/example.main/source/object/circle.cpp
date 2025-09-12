@@ -37,19 +37,22 @@ Bool DoubleCircleData::Message(GeListNode* node, Int32 type, void* data)
 
 Bool DoubleCircleData::Init(GeListNode* node, Bool isCloneInit)
 {
-	BaseObject*		 op = (BaseObject*)node;
-	BaseContainer* data = op->GetDataInstance();
-	if (!data)
+	if (node == nullptr)
 		return false;
-	if (!isCloneInit)
+
+	// Store default settings if the object isn't cloned.
+	if (isCloneInit == false)
 	{
-		data->SetFloat(CIRCLEOBJECT_RAD, 200.0);
-		data->SetInt32(PRIM_PLANE, 0);
-		data->SetBool(PRIM_REVERSE, false);
-		data->SetInt32(SPLINEOBJECT_INTERPOLATION, SPLINEOBJECT_INTERPOLATION_ADAPTIVE);
-		data->SetInt32(SPLINEOBJECT_SUB, 8);
-		data->SetFloat(SPLINEOBJECT_ANGLE, DegToRad(5.0));
-		data->SetFloat(SPLINEOBJECT_MAXIMUMLENGTH, 5.0);
+		// Retrieve the BaseContainer object belonging to the generator.
+		BaseObject* baseObjectPtr = static_cast<BaseObject*>(node);
+		BaseContainer& settings = baseObjectPtr->GetDataInstanceRef();
+		settings.SetFloat(CIRCLEOBJECT_RAD, 200.0);
+		settings.SetInt32(PRIM_PLANE, 0);
+		settings.SetBool(PRIM_REVERSE, false);
+		settings.SetInt32(SPLINEOBJECT_INTERPOLATION, SPLINEOBJECT_INTERPOLATION_ADAPTIVE);
+		settings.SetInt32(SPLINEOBJECT_SUB, 8);
+		settings.SetFloat(SPLINEOBJECT_ANGLE, DegToRad(5.0));
+		settings.SetFloat(SPLINEOBJECT_MAXIMUMLENGTH, 5.0);
 	}
 
 	return true;
@@ -71,12 +74,9 @@ Int32 DoubleCircleData::GetHandleCount(const BaseObject* op) const
 }
 void DoubleCircleData::GetHandle(BaseObject* op, Int32 i, HandleInfo& info)
 {
-	BaseContainer* data = op->GetDataInstance();
-	if (!data)
-		return;
-
-	Float rad = data->GetFloat(CIRCLEOBJECT_RAD);
-	Int32 plane = data->GetInt32(PRIM_PLANE);
+	const BaseContainer& data = op->GetDataInstanceRef();
+	Float rad = data.GetFloat(CIRCLEOBJECT_RAD);
+	Int32 plane = data.GetInt32(PRIM_PLANE);
 
 	info.position	 = SwapPoint(Vector(rad, 0.0, 0.0), plane);
 	info.direction = !SwapPoint(Vector(1.0, 0.0, 0.0), plane);
@@ -85,18 +85,16 @@ void DoubleCircleData::GetHandle(BaseObject* op, Int32 i, HandleInfo& info)
 
 void DoubleCircleData::SetHandle(BaseObject* op, Int32 i, Vector p, const HandleInfo& info)
 {
-	BaseContainer* data = op->GetDataInstance();
-	if (!data)
-		return;
+	BaseContainer& data = op->GetDataInstanceRef();
 
 	Float val = Dot(p, info.direction);
 
-	data->SetFloat(CIRCLEOBJECT_RAD, ClampValue(val, 0.0_f, (Float) MAXRANGE));
+	data.SetFloat(CIRCLEOBJECT_RAD, ClampValue(val, 0.0_f, (Float) MAXRANGE));
 }
 
 static SplineObject* GenerateCircle(Float rad)
 {
-#define TANG 0.415
+	static constexpr const Float TANG = 0.415;
 
 	Float	sn, cs;
 	Int32	i, sub = 4;
@@ -203,20 +201,18 @@ static void OrientObject(SplineObject* op, Int32 plane, Bool reverse)
 
 SplineObject* DoubleCircleData::GetContour(BaseObject* op, BaseDocument* doc, Float lod, BaseThread* bt)
 {
-	BaseContainer* bc = op->GetDataInstance();
-	if (!bc)
-		return nullptr;
-	SplineObject* bp = GenerateCircle(bc->GetFloat(CIRCLEOBJECT_RAD));
+	const BaseContainer& bc = op->GetDataInstanceRef();
+	SplineObject* bp = GenerateCircle(bc.GetFloat(CIRCLEOBJECT_RAD));
 	if (!bp)
 		return nullptr;
-	BaseContainer* bb = bp->GetDataInstance();
+	BaseContainer& bb = bp->GetDataInstanceRef();
 
-	bb->SetInt32(SPLINEOBJECT_INTERPOLATION, bc->GetInt32(SPLINEOBJECT_INTERPOLATION));
-	bb->SetInt32(SPLINEOBJECT_SUB, bc->GetInt32(SPLINEOBJECT_SUB));
-	bb->SetFloat(SPLINEOBJECT_ANGLE, bc->GetFloat(SPLINEOBJECT_ANGLE));
-	bb->SetFloat(SPLINEOBJECT_MAXIMUMLENGTH, bc->GetFloat(SPLINEOBJECT_MAXIMUMLENGTH));
+	bb.SetInt32(SPLINEOBJECT_INTERPOLATION, bc.GetInt32(SPLINEOBJECT_INTERPOLATION));
+	bb.SetInt32(SPLINEOBJECT_SUB, bc.GetInt32(SPLINEOBJECT_SUB));
+	bb.SetFloat(SPLINEOBJECT_ANGLE, bc.GetFloat(SPLINEOBJECT_ANGLE));
+	bb.SetFloat(SPLINEOBJECT_MAXIMUMLENGTH, bc.GetFloat(SPLINEOBJECT_MAXIMUMLENGTH));
 
-	OrientObject(bp, bc->GetInt32(PRIM_PLANE), bc->GetBool(PRIM_REVERSE));
+	OrientObject(bp, bc.GetInt32(PRIM_PLANE), bc.GetBool(PRIM_REVERSE));
 
 	return bp;
 }
@@ -224,28 +220,30 @@ SplineObject* DoubleCircleData::GetContour(BaseObject* op, BaseDocument* doc, Fl
 Bool DoubleCircleData::GetDEnabling(const GeListNode* node, const DescID& id, const GeData& t_data, DESCFLAGS_ENABLE flags, const BaseContainer* itemdesc) const
 {
 	Int32 inter;
-	const BaseContainer* data = static_cast<const BaseObject*>(node)->GetDataInstance();
-	if (!data)
-		return false;
+	const BaseContainer& data = static_cast<const BaseObject*>(node)->GetDataInstanceRef();
 
 	switch (id[0].id)
 	{
 		case SPLINEOBJECT_SUB:
-			inter = data->GetInt32(SPLINEOBJECT_INTERPOLATION);
+		{
+			inter = data.GetInt32(SPLINEOBJECT_INTERPOLATION);
 			return inter == SPLINEOBJECT_INTERPOLATION_NATURAL || inter == SPLINEOBJECT_INTERPOLATION_UNIFORM;
-
+		}
 		case SPLINEOBJECT_ANGLE:
-			inter = data->GetInt32(SPLINEOBJECT_INTERPOLATION);
+		{
+			inter = data.GetInt32(SPLINEOBJECT_INTERPOLATION);
 			return inter == SPLINEOBJECT_INTERPOLATION_ADAPTIVE || inter == SPLINEOBJECT_INTERPOLATION_SUBDIV;
-
+		}
 		case SPLINEOBJECT_MAXIMUMLENGTH:
-			return data->GetInt32(SPLINEOBJECT_INTERPOLATION) == SPLINEOBJECT_INTERPOLATION_SUBDIV;
+		{
+			return data.GetInt32(SPLINEOBJECT_INTERPOLATION) == SPLINEOBJECT_INTERPOLATION_SUBDIV;
+		}
 	}
 	return true;
 }
 
-// be sure to use a unique ID obtained from developers.maxon.net
-#define ID_CIRCLEOBJECT 1001154
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 ID_CIRCLEOBJECT = 1001154;
 
 Bool RegisterCircle()
 {

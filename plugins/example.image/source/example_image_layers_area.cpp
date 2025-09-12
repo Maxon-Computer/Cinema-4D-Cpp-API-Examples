@@ -46,12 +46,12 @@ static const cinema::Int32 g_buffer_line_size = g_buffer_width * g_buffer_channe
 static const cinema::Int32 g_buffer_size = g_buffer_line_size * g_buffer_height;
 
 // The title used by the dialog and command, as well as the IDs of the dialog gadgets.
-#define CMD_TITLE "C++ SDK: Image Layers Area"_s
-#define ID_GRP_BUTTONS 1000
-#define ID_UA_IMAGE_LAYERS 2000
-#define ID_BTN_ADD 2001
-#define ID_BTN_REMOVE 2002
-#define ID_BTN_SAVE 2003
+static constexpr const cinema::Char* CMD_TITLE = "C++ SDK: Image Layers Area";
+static constexpr const cinema::Int32 ID_GRP_BUTTONS = 1000;
+static constexpr const cinema::Int32 ID_UA_IMAGE_LAYERS = 2000;
+static constexpr const cinema::Int32 ID_BTN_ADD = 2001;
+static constexpr const cinema::Int32 ID_BTN_REMOVE = 2002;
+static constexpr const cinema::Int32 ID_BTN_SAVE = 2003;
 
 /// We need this because IMAGEINTERPOLATIONMODE is currently not exposed in the public API, I
 /// will fix this in a future release.
@@ -397,7 +397,7 @@ public:
 
 		// Set the title and the margin between the group and the border and between items in the 
 		// group. We are defining here the implicitly existing outmost group.
-		SetTitle(CMD_TITLE);
+		SetTitle(String(CMD_TITLE));
 		result &= GroupBorderSpace(margin, margin, margin, margin);
 		result &= GroupSpace(margin, margin);
 
@@ -524,7 +524,7 @@ cinema::Bool RegisterImageLayersAreaExample();
 cinema::Bool RegisterImageLayersAreaExample() 
 {
 	return cinema::RegisterCommandPlugin(
-		g_image_layers_command, CMD_TITLE, 0, nullptr, 
-		"Opens a dialog holding a custom UI element that stacks multiple bitmaps with transparencies."_s, 
+		g_image_layers_command, maxon::String(CMD_TITLE), 0, nullptr,
+		"Opens a dialog holding a custom UI element that stacks multiple bitmaps with transparencies."_s,
 		cinema::ImageLayersAreaCommand::Alloc());
 }

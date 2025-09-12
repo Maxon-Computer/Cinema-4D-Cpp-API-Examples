@@ -14,10 +14,11 @@
 
 using namespace cinema;
 
-static const Int32 ID_CREATETAKE = 1033812;
-static const Int32 ID_EDITOVERIDE = 1033814;
-static const Int32 ID_ANIMATEOVERRIDE = 1033815;
-static const Int32 ID_AUTOTAKE = 1033816;
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 ID_CREATETAKE = 1033812;
+static constexpr const Int32 ID_EDITOVERIDE = 1033814;
+static constexpr const Int32 ID_ANIMATEOVERRIDE = 1033815;
+static constexpr const Int32 ID_AUTOTAKE = 1033816;
 
 class TakeTestCommmand : public CommandData
 {

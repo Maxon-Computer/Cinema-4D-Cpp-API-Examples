@@ -1,6 +1,6 @@
-#include "c4d_basedraw.h"
 #include "c4d_basedocument.h"
-#include "c4d_baseobject.h"
+#include "c4d_basedraw.h"
+#include "c4d_general.h"
 #include "c4d_objectdata.h"
 
 // Includes from example.main
@@ -14,8 +14,8 @@
 
 using namespace cinema;
 
-/**A unique plugin ID. You must obtain this from developers.maxon.net. Use this ID to create new instances of this object.*/
-static const Int32 ID_SDKEXAMPLE_OBJECTDATA_VERTEXHANDLE = 1038237;
+/// A unique plugin ID. You must obtain this from developers.maxon.net. Use this ID to create new instances of this object.
+static constexpr const Int32 ID_SDKEXAMPLE_OBJECTDATA_VERTEXHANDLE = 1038237;
 
 //------------------------------------------------------------------------------------------------
 /// Basic ObjectData implementation showing how to dynamically draw handles on a triangular
@@ -65,19 +65,19 @@ maxon::Result<Float> VertexHandle::GetCurrentAngle(const Int32& vertexIdx)
 
 Bool VertexHandle::Init(GeListNode* node, Bool isCloneInit)
 {
-	BaseObject* baseObjPtr = static_cast<BaseObject*>(node);
+	if (node == nullptr)
+		return false;
 
-	// Retrieve the BaseContainer object belonging to the generator.
-	BaseContainer* bcPtr = baseObjPtr->GetDataInstance();
-
-	if (!isCloneInit)
+	// Store default settings if the object isn't cloned.
+	if (isCloneInit == false)
 	{
-		// Populate the Object Manager with the default values.
-		bcPtr->SetFloat(SDK_EXAMPLE_VERTEXHANDLE_POINT_A_DIST, 100);
-		bcPtr->SetFloat(SDK_EXAMPLE_VERTEXHANDLE_POINT_B_DIST, 100);
-		bcPtr->SetFloat(SDK_EXAMPLE_VERTEXHANDLE_POINT_C_DIST, 100);
+		// Retrieve the BaseContainer object belonging to the generator.
+		BaseObject* baseObjectPtr = static_cast<BaseObject*>(node);
+		BaseContainer& settings = baseObjectPtr->GetDataInstanceRef();
+		settings.SetFloat(SDK_EXAMPLE_VERTEXHANDLE_POINT_A_DIST, 100);
+		settings.SetFloat(SDK_EXAMPLE_VERTEXHANDLE_POINT_B_DIST, 100);
+		settings.SetFloat(SDK_EXAMPLE_VERTEXHANDLE_POINT_C_DIST, 100);
 	}
-
 	return true;
 }
 
@@ -93,14 +93,11 @@ void VertexHandle::GetHandle(BaseObject* op, Int32 i, HandleInfo& info)
 		return;
 
 	// Retrieve the BaseContainer object belonging to the generator.
-	BaseContainer* bcPtr = op->GetDataInstance();
-
-	if (!bcPtr)
-		return;
+	const BaseContainer& settings = op->GetDataInstanceRef();
 
 	// Define a vector containing for each of its components the distance of each vertex of the
 	// triangle from the origin.
-	const Vector ptsDistance(bcPtr->GetFloat(SDK_EXAMPLE_VERTEXHANDLE_POINT_A_DIST), bcPtr->GetFloat(SDK_EXAMPLE_VERTEXHANDLE_POINT_B_DIST), bcPtr->GetFloat(SDK_EXAMPLE_VERTEXHANDLE_POINT_C_DIST));
+	const Vector ptsDistance(settings.GetFloat(SDK_EXAMPLE_VERTEXHANDLE_POINT_A_DIST), settings.GetFloat(SDK_EXAMPLE_VERTEXHANDLE_POINT_B_DIST), settings.GetFloat(SDK_EXAMPLE_VERTEXHANDLE_POINT_C_DIST));
 
 	iferr (const Float currentAngle = GetCurrentAngle(i))
 		return;
@@ -125,10 +122,7 @@ void VertexHandle::SetHandle(BaseObject* op, Int32 i, Vector p, const HandleInfo
 		return;
 
 	// Retrieve the BaseContainer object belonging to the generator.
-	BaseContainer* bcPtr = op->GetDataInstance();
-
-	if (!bcPtr)
-		return;
+	BaseContainer& settings = op->GetDataInstanceRef();
 
 	// Project the final position of the handle (after being moved) on the moving direction in
 	// order to calculate the distance occurred.
@@ -137,15 +131,9 @@ void VertexHandle::SetHandle(BaseObject* op, Int32 i, Vector p, const HandleInfo
 	// Update the affected value in the Attribute Manager.
 	switch (i)
 	{
-		case 0:
-			bcPtr->SetFloat(SDK_EXAMPLE_VERTEXHANDLE_POINT_A_DIST, moveValue);
-			break;
-		case 1:
-			bcPtr->SetFloat(SDK_EXAMPLE_VERTEXHANDLE_POINT_B_DIST, moveValue);
-			break;
-		case 2:
-			bcPtr->SetFloat(SDK_EXAMPLE_VERTEXHANDLE_POINT_C_DIST, moveValue);
-			break;
+		case 0: settings.SetFloat(SDK_EXAMPLE_VERTEXHANDLE_POINT_A_DIST, moveValue); break;
+		case 1: settings.SetFloat(SDK_EXAMPLE_VERTEXHANDLE_POINT_B_DIST, moveValue); break;
+		case 2: settings.SetFloat(SDK_EXAMPLE_VERTEXHANDLE_POINT_C_DIST, moveValue); break;
 	}
 }
 
@@ -159,13 +147,10 @@ void VertexHandle::GetDimension(const BaseObject* op, Vector* mp, Vector* rad) c
 		return;
 
 	// Retrieve the BaseContainer object belonging to the generator.
-	const BaseContainer* bcPtr = op->GetDataInstance();
-
-	if (!bcPtr)
-		return;
+	const BaseContainer& settings = op->GetDataInstanceRef();
 
 	// Store vertexes distances in a vector.
-	Vector ptsDistance(bcPtr->GetFloat(SDK_EXAMPLE_VERTEXHANDLE_POINT_A_DIST), bcPtr->GetFloat(SDK_EXAMPLE_VERTEXHANDLE_POINT_B_DIST), bcPtr->GetFloat(SDK_EXAMPLE_VERTEXHANDLE_POINT_C_DIST));
+	Vector ptsDistance(settings.GetFloat(SDK_EXAMPLE_VERTEXHANDLE_POINT_A_DIST), settings.GetFloat(SDK_EXAMPLE_VERTEXHANDLE_POINT_B_DIST), settings.GetFloat(SDK_EXAMPLE_VERTEXHANDLE_POINT_C_DIST));
 
 	// Assign the maximum vector component to the x and z component of the box radius vector.
 	rad->x = ptsDistance.GetMax();
@@ -174,48 +159,41 @@ void VertexHandle::GetDimension(const BaseObject* op, Vector* mp, Vector* rad) c
 
 BaseObject* VertexHandle::GetVirtualObjects(BaseObject* op, const HierarchyHelp* hh)
 {
-	if (!op)
-		return nullptr;
+	iferr_scope_handler { return nullptr; };
+	maxon::UniqueRef<PolygonObject> triObjPtr;
 
-	BaseContainer* objectDataPtr = op->GetDataInstance();
-	if (!objectDataPtr)
-		return nullptr;
-
-	// Retrieve the distance-from-origin values from the Attribute Manager.
-	const Vector ptsDistance(objectDataPtr->GetFloat(SDK_EXAMPLE_VERTEXHANDLE_POINT_A_DIST), objectDataPtr->GetFloat(SDK_EXAMPLE_VERTEXHANDLE_POINT_B_DIST), objectDataPtr->GetFloat(SDK_EXAMPLE_VERTEXHANDLE_POINT_C_DIST));
-
-	// Allocate a PolygonObject instance (a simple triangular face).
-	PolygonObject* triObjPtr = PolygonObject::Alloc(3, 1);
-	if (!triObjPtr)
-		return BaseObject::Alloc(Onull);
-
-	// Get writing access to the vertexes array.
-	Vector* triPntsPtr = triObjPtr->GetPointW();
-	if (!triPntsPtr)
+	if (op)
 	{
-		PolygonObject::Free(triObjPtr);
-		return BaseObject::Alloc(Onull);
+		const BaseContainer& settings = op->GetDataInstanceRef();
+
+		// Retrieve the distance-from-origin values from the Attribute Manager.
+		const Vector ptsDistance(settings.GetFloat(SDK_EXAMPLE_VERTEXHANDLE_POINT_A_DIST), settings.GetFloat(SDK_EXAMPLE_VERTEXHANDLE_POINT_B_DIST), settings.GetFloat(SDK_EXAMPLE_VERTEXHANDLE_POINT_C_DIST));
+
+		// Allocate a PolygonObject instance (a simple triangular face).
+		triObjPtr = maxon::UniqueRef<PolygonObject>::Create(3, 1) iferr_return;
+
+		// Get writing access to the vertexes array.
+		Vector* triPntsPtr = triObjPtr->GetPointW();
+		if (!triPntsPtr)
+			return nullptr;
+
+		// Set vertexes positions for the triangle.
+		triPntsPtr[0] = Vector(0, 0, ptsDistance[0]);
+		triPntsPtr[1] = Vector(ptsDistance[1] * Cos(-PI / 6), 0, ptsDistance[1] * Sin(-PI / 6));
+		triPntsPtr[2] = Vector(ptsDistance[2] * Cos(-PI * 5 / 6), 0, ptsDistance[2] * Sin(-PI * 5 / 6));
+
+		// Get writing access to the vertexes indexes array.
+		CPolygon* polysPtr = triObjPtr->GetPolygonW();
+		if (!polysPtr)
+			return nullptr;
+
+		// Set vertexes indexes for the single triangle.
+		polysPtr[0] = CPolygon(0, 2, 1);
+
+		triObjPtr->Message(MSG_UPDATE);
 	}
-
-	// Set vertexes positions for the triangle.
-	triPntsPtr[0] = Vector(0, 0, ptsDistance[0]);
-	triPntsPtr[1] = Vector(ptsDistance[1] * Cos(-PI / 6), 0, ptsDistance[1] * Sin(-PI / 6));
-	triPntsPtr[2] = Vector(ptsDistance[2] * Cos(-PI * 5 / 6), 0, ptsDistance[2] * Sin(-PI * 5 / 6));
-
-	// Get writing access to the vertexes indexes array.
-	CPolygon* polysPtr = triObjPtr->GetPolygonW();
-	if (!polysPtr)
-	{
-		PolygonObject::Free(triObjPtr);
-		return BaseObject::Alloc(Onull);
-	}
-
-	// Set vertexes indexes for the single triangle.
-	polysPtr[0] = CPolygon(0, 2, 1);
-
-	triObjPtr->Message(MSG_UPDATE);
-
-	return triObjPtr;
+	
+	return triObjPtr.Disconnect();
 }
 
 DRAWRESULT VertexHandle::Draw(BaseObject* op, DRAWPASS drawpass, BaseDraw* bd, BaseDrawHelp* bh)
@@ -230,13 +208,6 @@ DRAWRESULT VertexHandle::Draw(BaseObject* op, DRAWPASS drawpass, BaseDraw* bd, B
 
 	if (drawpass != DRAWPASS::HANDLES)
 		return DRAWRESULT::SKIP;
-
-	// Retrieve the BaseContainer object belonging to the generator.
-	BaseContainer* bcPtr = op->GetDataInstance();
-
-	if (!bcPtr)
-		return DRAWRESULT::SKIP;
-
 
 	HandleInfo	handleInfo;
 	const Int32 currentHandleId = op->GetHighlightHandle(bd);

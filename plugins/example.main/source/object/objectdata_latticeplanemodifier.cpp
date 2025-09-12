@@ -9,8 +9,8 @@
 
 using namespace cinema;
 
-/**A unique plugin ID. You must obtain this from developers.maxon.net. Use this ID to create new instances of this object.*/
-static const Int32 ID_SDKEXAMPLE_OBJECTDATA_LATTICEPLANEMODIFIER = 1038814;
+/// A unique plugin ID. You must obtain this from developers.maxon.net. Use this ID to create new instances of this object.
+static constexpr const Int32 ID_SDKEXAMPLE_OBJECTDATA_LATTICEPLANEMODIFIER = 1038814;
 
 //------------------------------------------------------------------------------------------------
 /// ObjectData implementation performing free-form deformation on a planar square-shaped cage.

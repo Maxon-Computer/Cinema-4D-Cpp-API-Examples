@@ -10,8 +10,8 @@ using namespace cinema;
 
 //////////////////////////////////////////////////////////////////////////
 
-#define HAIRSTYLE_LINK			1000
-#define HAIRSTYLE_FUR_COUNT 1104
+static constexpr const Int32 HAIRSTYLE_LINK = 1000;
+static constexpr const Int32 HAIRSTYLE_FUR_COUNT = 1104;
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -293,9 +293,8 @@ DRAWRESULT HairGrassObject::Draw(BaseObject* op, DRAWPASS drawpass, BaseDraw* bd
 	return DRAWRESULT::SKIP;
 }
 
-//////////////////////////////////////////////////////////////////////////
-
-#define ID_HAIR_GRASS_EXAMPLE 1018965
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 ID_HAIR_GRASS_EXAMPLE = 1018965;
 
 Bool RegisterGrassObject()
 {

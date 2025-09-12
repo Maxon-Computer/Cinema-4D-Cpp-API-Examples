@@ -5,9 +5,10 @@
 #include "toolsculptdrawpoly.h"
 #include "main.h"
 
-#define ID_SCULPT_DRAWPOLY_TOOL	1027981
-
 using namespace cinema;
+
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 ID_SCULPT_DRAWPOLY_TOOL = 1027981;
 
 class SculptDrawPolyTool : public DescriptionToolData
 {
@@ -25,8 +26,9 @@ private:
 	virtual Bool MouseInput(BaseDocument* pDoc, BaseContainer& data, BaseDraw* pDraw, EditorWindow* win, const BaseContainer& msg);
 	virtual TOOLDRAW Draw(BaseDocument* doc, BaseContainer& data, BaseDraw* bd, BaseDrawHelp* bh, BaseThread* bt, TOOLDRAWFLAGS flags);
 
-	SculptObject* m_pLastObject;
-	Float					m_rLastMouseX, m_rLastMouseY;
+	SculptObject* _lastObject = nullptr;
+	Float _lastMouseX = -1.0f;
+	Float _lastMouseY = -1.0f;
 };
 
 SculptDrawPolyTool::SculptDrawPolyTool()
@@ -42,14 +44,14 @@ Bool SculptDrawPolyTool::InitTool(BaseDocument* pDoc, BaseContainer& data, BaseT
 	if (!DescriptionToolData::InitTool(pDoc, data, bt))
 		return false;
 
-	m_rLastMouseX = m_rLastMouseY = -1.0f;
-	m_pLastObject = nullptr;
+	_lastMouseX = _lastMouseY = -1.0f;
+	_lastObject = nullptr;
 	return true;
 }
 
 void SculptDrawPolyTool::FreeTool(BaseDocument* pDoc, BaseContainer& data)
 {
-	m_pLastObject = nullptr;
+	_lastObject = nullptr;
 	DescriptionToolData::FreeTool(pDoc, data);
 }
 
@@ -72,28 +74,28 @@ Bool SculptDrawPolyTool::GetCursorInfo(BaseDocument* pDoc, BaseContainer& data, 
 		SculptObject* pSculpt = GetSelectedSculptObject(pDoc);
 		if (!pSculpt)
 		{
-			m_pLastObject = nullptr;
+			_lastObject = nullptr;
 			return true;
 		}
 
-		if (pSculpt != m_pLastObject)
+		if (pSculpt != _lastObject)
 		{
-			m_pLastObject = pSculpt;
+			_lastObject = pSculpt;
 
 			// Unfreeze the object so that we can use collision detection
-			if (m_pLastObject->IsFrozen())
+			if (_lastObject->IsFrozen())
 			{
-				m_pLastObject->SetFrozen(false);
+				_lastObject->SetFrozen(false);
 			}
 
 			// Request a collision update
-			m_pLastObject->NeedCollisionUpdate();
+			_lastObject->NeedCollisionUpdate();
 		}
 
-		if (m_pLastObject)
+		if (_lastObject)
 		{
 			// Update the collision data
-			m_pLastObject->UpdateCollision();
+			_lastObject->UpdateCollision();
 		}
 	}
 	else
@@ -117,7 +119,7 @@ Bool SculptDrawPolyTool::MouseInput(BaseDocument* pDoc, BaseContainer& data, Bas
 	if (pDraw != pDoc->GetActiveBaseDraw())
 		return true;
 
-	if (!m_pLastObject)
+	if (!_lastObject)
 		return true;
 
 	Float distance = data.GetFloat(SCULPTDRAWPOLY_POLYGONSIZE);
@@ -174,7 +176,7 @@ Bool SculptDrawPolyTool::MouseInput(BaseDocument* pDoc, BaseContainer& data, Bas
 		if (!firstHit)
 		{
 			SculptHitData hitData;
-			if (m_pLastObject->Hit(pDraw, rMouseX, rMouseY, false, hitData))
+			if (_lastObject->Hit(pDraw, rMouseX, rMouseY, false, hitData))
 			{
 				firstHit = true;
 				hitPoint = hitData.localHitPoint + (Vector64)hitData.localHitNormal;
@@ -185,7 +187,7 @@ Bool SculptDrawPolyTool::MouseInput(BaseDocument* pDoc, BaseContainer& data, Bas
 		if (firstHit)
 		{
 			SculptHitData hitData;
-			if (m_pLastObject->Hit(pDraw, rMouseX, rMouseY, false, hitData))
+			if (_lastObject->Hit(pDraw, rMouseX, rMouseY, false, hitData))
 			{
 				Vector normal = (Vector64)hitData.localHitNormal;
 				Vector newP = hitData.localHitPoint + (Vector64)hitData.localHitNormal;

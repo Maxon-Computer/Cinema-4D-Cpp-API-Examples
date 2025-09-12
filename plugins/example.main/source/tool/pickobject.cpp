@@ -4,9 +4,10 @@
 #include "toolpickobjectsdk.h"
 #include <stdio.h>
 
-#define ID_SAMPLE_PICK_OBJECT_TOOL 450000263
-
 using namespace cinema;
+
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 ID_SAMPLE_PICK_OBJECT_TOOL = 450000263;
 
 class PickObjectTool : public DescriptionToolData
 {
@@ -114,19 +115,23 @@ Vector4d PickObjectTool::GetClipCoordinates(BaseDraw* bd, Float x, Float y, Floa
 Vector PickObjectTool::GetWorldCoordinates(BaseDraw* bd, const maxon::SquareMatrix4d& m, Float x, Float y, Float z, Int32 sampleLocation, Vector4d& clipCoodinates)
 {
 	// Pick object returns the view-projection matrix. This transforms a point in camera space into clip space.
-	Vector4d pos = GetClipCoordinates(bd, x, y, z, sampleLocation);
-	clipCoodinates = pos;
+	clipCoodinates = GetClipCoordinates(bd, x, y, z, sampleLocation);
 
 	// Apply the inverse view transform and multiply with the view matrix to calculate the world coordinates.
 	maxon::SquareMatrix4d im = ~m;
+	Vector4d posInCameraSpace = im * clipCoodinates;
+
+	// Enable the following lines for debugging purposes.
+	/*Vector4d posInCameraSpaceNormalized(posInCameraSpace);
+	posInCameraSpaceNormalized.NormalizeW();
+	DiagnosticOutput("posInCameraSpace: @", posInCameraSpaceNormalized.GetVector3());*/
 
 	Matrix mg = bd->GetMg();
 	maxon::SquareMatrix4d inverseCameraMatrix(mg);
-	Vector4d posInCameraSpace = im * pos;
-	pos = inverseCameraMatrix * posInCameraSpace;
-	pos.NormalizeW();
+	Vector4d posInWorldSpace = inverseCameraMatrix * posInCameraSpace;
+	posInWorldSpace.NormalizeW();
 
-	return pos.GetVector3();
+	return posInWorldSpace.GetVector3();
 }
 
 Bool PickObjectTool::GetCursorInfo(BaseDocument* doc, BaseContainer& data, BaseDraw* bd, Float x, Float y, BaseContainer& bc)

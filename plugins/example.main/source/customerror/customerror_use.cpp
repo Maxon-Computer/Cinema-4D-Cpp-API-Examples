@@ -2,13 +2,14 @@
 
 using namespace cinema;
 
-static const Int32 PluginID = 99990000;
+
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 ID_CUSTOM_ERROR_SDK = 99990000;
 
 #include "customerror_interface.h"
 
 // Dummy test function
-maxon::Result<void> TestFunction(maxon::Int * val);
-maxon::Result<void> TestFunction(maxon::Int * val)
+static maxon::Result<void> TestFunction(maxon::Int * val)
 {
 	iferr_scope;
 	
@@ -56,6 +57,6 @@ public:
 Bool RegisterCustomErrorExample();
 Bool RegisterCustomErrorExample()
 {
-	return RegisterCommandPlugin(PluginID, "C++ SDK - Custom Error Test"_s, PLUGINFLAG_COMMAND_OPTION_DIALOG, nullptr, ""_s, CustomErrorExample::Alloc());
+	return RegisterCommandPlugin(ID_CUSTOM_ERROR_SDK, "C++ SDK - Custom Error Test"_s, PLUGINFLAG_COMMAND_OPTION_DIALOG, nullptr, ""_s, CustomErrorExample::Alloc());
 }
 

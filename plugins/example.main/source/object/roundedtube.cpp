@@ -10,8 +10,6 @@ using namespace cinema;
 class RoundedTube : public ObjectData
 {
 public:
-	String test;
-
 	virtual Bool Init		(GeListNode* node, Bool isCloneInit);
 	virtual Bool Read		(GeListNode* node, HyperFile* hf, Int32 level);
 	virtual Bool Write	(const GeListNode* node, HyperFile* hf) const;
@@ -25,16 +23,19 @@ public:
 	virtual Bool Message(GeListNode* node, Int32 type, void* t_data);
 
 	static NodeData* Alloc() { return NewObjClear(RoundedTube); }
+
+private:
+	String _test;
 };
 
 Bool RoundedTube::Message(GeListNode* node, Int32 type, void* t_data)
 {
 	if (type == MSG_DESCRIPTION_VALIDATE)
 	{
-		BaseContainer* data = static_cast<BaseObject*>(node)->GetDataInstance();
+		BaseContainer& data = static_cast<BaseObject*>(node)->GetDataInstanceRef();
 
-		CutReal(*data, TUBEOBJECT_IRADX, 0.0, data->GetFloat(TUBEOBJECT_RAD));
-		CutReal(*data, TUBEOBJECT_ROUNDRAD, 0.0, data->GetFloat(TUBEOBJECT_IRADX));
+		CutReal(data, TUBEOBJECT_IRADX, 0.0, data.GetFloat(TUBEOBJECT_RAD));
+		CutReal(data, TUBEOBJECT_ROUNDRAD, 0.0, data.GetFloat(TUBEOBJECT_IRADX));
 	}
 	else if (type == MSG_MENUPREPARE)
 	{
@@ -45,15 +46,15 @@ Bool RoundedTube::Message(GeListNode* node, Int32 type, void* t_data)
 
 void RoundedTube::GetDimension(const BaseObject* op, Vector* mp, Vector* rad) const
 {
-	const BaseContainer* data = op->GetDataInstance();
+	const BaseContainer& data = op->GetDataInstanceRef();
 
 	Float rado, radx, rady;
-	rado = data->GetFloat(TUBEOBJECT_RAD);
-	radx = data->GetFloat(TUBEOBJECT_IRADX);
-	rady = data->GetFloat(TUBEOBJECT_IRADY);
+	rado = data.GetFloat(TUBEOBJECT_RAD);
+	radx = data.GetFloat(TUBEOBJECT_IRADX);
+	rady = data.GetFloat(TUBEOBJECT_IRADY);
 
 	*mp = Vector(0.0);
-	switch (data->GetInt32(PRIM_AXIS))
+	switch (data.GetInt32(PRIM_AXIS))
 	{
 		case 0:
 		case 1: *rad = Vector(rady, rado + radx, rado + radx); break;
@@ -199,21 +200,21 @@ static LineObject* GenerateIsoLathe(Vector* cpadr, Int32 cpcnt, Int32 sub)
 
 Bool RoundedTube::Init(GeListNode* node, Bool isCloneInit)
 {
-	test = String("Test");
+	_test = String("Test");
 
 	BaseObject*		 op = (BaseObject*)node;
-	BaseContainer* data = op->GetDataInstance();
 
 	if (!isCloneInit)
 	{
-		data->SetFloat(TUBEOBJECT_RAD, 200.0);
-		data->SetFloat(TUBEOBJECT_IRADX, 50.0);
-		data->SetFloat(TUBEOBJECT_IRADY, 50.0);
-		data->SetInt32(TUBEOBJECT_SUB, 1);
-		data->SetInt32(TUBEOBJECT_ROUNDSUB, 8);
-		data->SetFloat(TUBEOBJECT_ROUNDRAD, 10.0);
-		data->SetInt32(TUBEOBJECT_SEG, 36);
-		data->SetInt32(PRIM_AXIS, PRIM_AXIS_YP);
+		BaseContainer& data = op->GetDataInstanceRef();
+		data.SetFloat(TUBEOBJECT_RAD, 200.0);
+		data.SetFloat(TUBEOBJECT_IRADX, 50.0);
+		data.SetFloat(TUBEOBJECT_IRADY, 50.0);
+		data.SetInt32(TUBEOBJECT_SUB, 1);
+		data.SetInt32(TUBEOBJECT_ROUNDSUB, 8);
+		data.SetFloat(TUBEOBJECT_ROUNDRAD, 10.0);
+		data.SetInt32(TUBEOBJECT_SEG, 36);
+		data.SetInt32(PRIM_AXIS, PRIM_AXIS_YP);
 	}
 
 	return true;
@@ -223,14 +224,14 @@ Bool RoundedTube::Read(GeListNode* node, HyperFile* hf, Int32 level)
 {
 	if (level >= 0)
 	{
-		hf->ReadString(&test);
+		hf->ReadString(&_test);
 	}
 	return true;
 }
 
 Bool RoundedTube::Write(const GeListNode* node, HyperFile* hf) const
 {
-	hf->WriteString(test);
+	hf->WriteString(_test);
 	return true;
 }
 
@@ -283,16 +284,16 @@ BaseObject* RoundedTube::GetVirtualObjects(BaseObject* op, const HierarchyHelp* 
 	if (!dirty)
 		return op->GetCache();
 
-	BaseContainer* data = op->GetDataInstance();
+	const BaseContainer& data = op->GetDataInstanceRef();
 
-	Float rad = data->GetFloat(TUBEOBJECT_RAD, 200.0);
-	Float iradx = data->GetFloat(TUBEOBJECT_IRADX, 50.0);
-	Float irady = data->GetFloat(TUBEOBJECT_IRADY, 50.0);
-	Float rrad	= data->GetFloat(TUBEOBJECT_ROUNDRAD, 10.0);
-	Int32 sub	 = CalcLOD(data->GetInt32(TUBEOBJECT_SUB, 1), hh->GetLOD(), 1, 1000);
-	Int32 rsub = CalcLOD(data->GetInt32(TUBEOBJECT_ROUNDSUB, 8), hh->GetLOD(), 1, 1000);
-	Int32 seg	 = CalcLOD(data->GetInt32(TUBEOBJECT_SEG, 36), hh->GetLOD(), 3, 1000);
-	Int32 axis = data->GetInt32(PRIM_AXIS);
+	Float rad = data.GetFloat(TUBEOBJECT_RAD, 200.0);
+	Float iradx = data.GetFloat(TUBEOBJECT_IRADX, 50.0);
+	Float irady = data.GetFloat(TUBEOBJECT_IRADY, 50.0);
+	Float rrad	= data.GetFloat(TUBEOBJECT_ROUNDRAD, 10.0);
+	Int32 sub	 = CalcLOD(data.GetInt32(TUBEOBJECT_SUB, 1), hh->GetLOD(), 1, 1000);
+	Int32 rsub = CalcLOD(data.GetInt32(TUBEOBJECT_ROUNDSUB, 8), hh->GetLOD(), 1, 1000);
+	Int32 seg	 = CalcLOD(data.GetInt32(TUBEOBJECT_SEG, 36), hh->GetLOD(), 3, 1000);
+	Int32 axis = data.GetInt32(PRIM_AXIS);
 	Int32 i;
 	Float sn, cs;
 
@@ -365,13 +366,13 @@ Int32 RoundedTube::GetHandleCount(const BaseObject* op) const
 }
 void RoundedTube::GetHandle(BaseObject* op, Int32 id, HandleInfo& info)
 {
-	BaseContainer* data = op->GetDataInstance();
+	const BaseContainer& data = op->GetDataInstanceRef();
 
-	Float	rad = data->GetFloat(TUBEOBJECT_RAD);
-	Float	iradx = data->GetFloat(TUBEOBJECT_IRADX);
-	Float	irady = data->GetFloat(TUBEOBJECT_IRADY);
-	Float	rrad	= data->GetFloat(TUBEOBJECT_ROUNDRAD);
-	Int32	axis	= data->GetInt32(PRIM_AXIS);
+	Float	rad = data.GetFloat(TUBEOBJECT_RAD);
+	Float	iradx = data.GetFloat(TUBEOBJECT_IRADX);
+	Float	irady = data.GetFloat(TUBEOBJECT_IRADY);
+	Float	rrad	= data.GetFloat(TUBEOBJECT_ROUNDRAD);
+	Int32	axis	= data.GetInt32(PRIM_AXIS);
 
 	switch (id)
 	{
@@ -389,9 +390,7 @@ void RoundedTube::GetHandle(BaseObject* op, Int32 id, HandleInfo& info)
 
 void RoundedTube::SetHandle(BaseObject* op, Int32 i, Vector p, const HandleInfo& info)
 {
-	BaseContainer* data = op->GetDataInstance();
-	if (!data)
-		return;
+	BaseContainer& data = op->GetDataInstanceRef();
 
 	HandleInfo inf;
 	GetHandle(op, i, inf);
@@ -400,11 +399,11 @@ void RoundedTube::SetHandle(BaseObject* op, Int32 i, Vector p, const HandleInfo&
 
 	switch (i)
 	{
-		case 0: data->SetFloat(TUBEOBJECT_RAD, ClampValue(data->GetFloat(TUBEOBJECT_RAD) + val, data->GetFloat(TUBEOBJECT_IRADX), (Float) MAXRANGE)); break;
-		case 1: data->SetFloat(TUBEOBJECT_IRADX, ClampValue(data->GetFloat(TUBEOBJECT_IRADX) + val, data->GetFloat(TUBEOBJECT_ROUNDRAD), data->GetFloat(TUBEOBJECT_RAD))); break;
-		case 2: data->SetFloat(TUBEOBJECT_IRADY, ClampValue(data->GetFloat(TUBEOBJECT_IRADY) + val, data->GetFloat(TUBEOBJECT_ROUNDRAD), (Float) MAXRANGE)); break;
+		case 0: data.SetFloat(TUBEOBJECT_RAD, ClampValue(data.GetFloat(TUBEOBJECT_RAD) + val, data.GetFloat(TUBEOBJECT_IRADX), (Float) MAXRANGE)); break;
+		case 1: data.SetFloat(TUBEOBJECT_IRADX, ClampValue(data.GetFloat(TUBEOBJECT_IRADX) + val, data.GetFloat(TUBEOBJECT_ROUNDRAD), data.GetFloat(TUBEOBJECT_RAD))); break;
+		case 2: data.SetFloat(TUBEOBJECT_IRADY, ClampValue(data.GetFloat(TUBEOBJECT_IRADY) + val, data.GetFloat(TUBEOBJECT_ROUNDRAD), (Float) MAXRANGE)); break;
 		case 3:
-		case 4: data->SetFloat(TUBEOBJECT_ROUNDRAD, ClampValue(data->GetFloat(TUBEOBJECT_ROUNDRAD) + val, 0.0_f, FMin(data->GetFloat(TUBEOBJECT_IRADX), data->GetFloat(TUBEOBJECT_IRADY)))); break;
+		case 4: data.SetFloat(TUBEOBJECT_ROUNDRAD, ClampValue(data.GetFloat(TUBEOBJECT_ROUNDRAD) + val, 0.0_f, FMin(data.GetFloat(TUBEOBJECT_IRADX), data.GetFloat(TUBEOBJECT_IRADY)))); break;
 		default: break;
 	}
 }
@@ -414,13 +413,12 @@ DRAWRESULT RoundedTube::Draw(BaseObject* op, DRAWPASS drawpass, BaseDraw* bd, Ba
 	if (drawpass != DRAWPASS::HANDLES)
 		return DRAWRESULT::SKIP;
 
-	BaseContainer* data = op->GetDataInstance();
+	const BaseContainer& data = op->GetDataInstanceRef();
 
-	Int32 i;
-	Float	rad = data->GetFloat(TUBEOBJECT_RAD);
-	Float	iradx = data->GetFloat(TUBEOBJECT_IRADX);
-	Float	irady = data->GetFloat(TUBEOBJECT_IRADY);
-	Int32	axis	= data->GetInt32(PRIM_AXIS);
+	Float	rad = data.GetFloat(TUBEOBJECT_RAD);
+	Float	iradx = data.GetFloat(TUBEOBJECT_IRADX);
+	Float	irady = data.GetFloat(TUBEOBJECT_IRADY);
+	Int32	axis	= data.GetInt32(PRIM_AXIS);
 
 	// bd->SetPen(GetViewColor(VIEWCOLOR_HANDLES));
 
@@ -432,7 +430,7 @@ DRAWRESULT RoundedTube::Draw(BaseObject* op, DRAWPASS drawpass, BaseDraw* bd, Ba
 	Int32			 hitid = op->GetHighlightHandle(bd);
 	bd->SetMatrix_Matrix(op, bh->GetMg());
 
-	for (i = GetHandleCount(op) - 1; i >= 0; --i)
+	for (Int32 i = GetHandleCount(op) - 1; i >= 0; --i)
 	{
 		GetHandle(op, i, info);
 
@@ -456,11 +454,15 @@ DRAWRESULT RoundedTube::Draw(BaseObject* op, DRAWPASS drawpass, BaseDraw* bd, Ba
 				break;
 			}
 			case 3:
+			{
 				bd->DrawLine(info.position, SwapPoint(Vector(rad + iradx, irady, 0.0), axis), 0);
 				break;
+			}
 			case 4:
+			{
 				bd->DrawLine(info.position, SwapPoint(Vector(rad + iradx, irady, 0.0), axis), 0);
 				break;
+			}
 			default: break;
 		}
 	}
@@ -468,8 +470,8 @@ DRAWRESULT RoundedTube::Draw(BaseObject* op, DRAWPASS drawpass, BaseDraw* bd, Ba
 	return DRAWRESULT::OK;
 }
 
-// be sure to use a unique ID obtained from developers.maxon.net
-#define ID_ROUNDEDTUBEOBJECT 1001157
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 ID_ROUNDEDTUBEOBJECT = 1001157;
 
 Bool RegisterRoundedTube()
 {

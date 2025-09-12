@@ -25,8 +25,8 @@
 #include "c4d_customdatatype.h"
 #include "c4d_gui.h"
 
-const maxon::Int32 id_sdk_example_customgui_dots = 1035302;	///< The ID of the custom GUI
-const maxon::Int32 id_sdk_example_customdatatype_dots = 1035303; ///< The ID of the custom datatype
+static constexpr const maxon::Int32 id_sdk_example_customgui_dots = 1035302;	///< The ID of the custom GUI
+static constexpr const maxon::Int32 id_sdk_example_customdatatype_dots = 1035303; ///< The ID of the custom datatype
 
 class DotsCustomDataTypeClass; // forward declaration
 
@@ -91,7 +91,7 @@ public:
   virtual void DrawMsg(cinema::Int32 x1, cinema::Int32 y1, cinema::Int32 x2, cinema::Int32 y2, const cinema::BaseContainer& msg);
   virtual cinema::Bool InputEvent(const cinema::BaseContainer& msg);
 
-	iCustomDataTypeDots* _data;
+	iCustomDataTypeDots* _data = nullptr;
 };
 
 //------------
@@ -105,12 +105,6 @@ enum
 class iExampleCustomGUIDots : public cinema::iCustomGui
 {
 	INSTANCEOF(iExampleCustomGUIDots, cinema::iCustomGui)
-
-private:
-	cinema::Bool _tristate;
-	iCustomDataTypeDots _data;
-	DotsUserArea _dotsUserArea;
-
 public:
 	iExampleCustomGUIDots(const cinema::BaseContainer &settings, cinema::CUSTOMGUIPLUGIN *plugin);
 	virtual cinema::Bool CreateLayout();
@@ -118,6 +112,11 @@ public:
 	virtual cinema::Bool Command(cinema::Int32 id, const cinema::BaseContainer &msg);
 	virtual cinema::Bool SetData(const cinema::TriState<cinema::GeData> &tristate);
 	virtual cinema::TriState<cinema::GeData> GetData();
+
+private:
+	cinema::Bool _tristate;
+	iCustomDataTypeDots _data;
+	DotsUserArea _dotsUserArea;
 };
 
 //---------------------
@@ -134,7 +133,6 @@ public:
   virtual const cinema::Char* GetResourceSym();
   virtual cinema::CustomProperty* GetProperties();
   virtual cinema::Int32 GetResourceDataType(cinema::Int32*& table);
-
 };
 
 //---------------------------

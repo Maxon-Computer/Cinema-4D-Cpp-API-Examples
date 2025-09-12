@@ -18,9 +18,10 @@
 // use dynamic/inferred guide
 ////////////////////////////////////////////////////////////////////////////////////
 
-#define ID_SNAPTOOL 1030693
-
 using namespace cinema;
+
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 ID_SNAPTOOL = 1030693;
 
 class SnapTool : public DescriptionToolData
 {

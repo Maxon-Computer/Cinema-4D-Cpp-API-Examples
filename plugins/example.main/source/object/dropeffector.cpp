@@ -46,11 +46,8 @@ Bool DropEffector::InitEffector(GeListNode* node, Bool isCloneInit)
 
 	if (!isCloneInit)
 	{
-		BaseContainer* bc = op->GetDataInstance();
-		if (!bc)
-			return false;
-
-		bc->SetFloat(DROPEFFECTOR_DISTANCE, 1000.0);
+		BaseContainer& bc = op->GetDataInstanceRef();
+		bc.SetFloat(DROPEFFECTOR_DISTANCE, 1000.0);
 	}
 
 	return true;
@@ -59,16 +56,14 @@ Bool DropEffector::InitEffector(GeListNode* node, Bool isCloneInit)
 maxon::Result<maxon::GenericData> DropEffector::InitPoints(const BaseObject* op, const BaseObject* gen, const BaseDocument* doc, const EffectorDataStruct& data, MoData* md, BaseThread* thread) const
 {
 	iferr_scope;
-	const BaseContainer* bc = op->GetDataInstance();
-	if (!bc)
-		return {};
+	const BaseContainer& bc = op->GetDataInstanceRef();
 
 	maxon::GenericData result;
 	DropEffectorData& ed = result.Create<DropEffectorData>() iferr_return;
 
-	ed.mode = bc->GetInt32(DROPEFFECTOR_MODE);
-	ed.maxdist = bc->GetFloat(DROPEFFECTOR_DISTANCE);
-	ed.target	 = bc->GetObjectLink(DROPEFFECTOR_TARGET, doc);
+	ed.mode = bc.GetInt32(DROPEFFECTOR_MODE);
+	ed.maxdist = bc.GetFloat(DROPEFFECTOR_DISTANCE);
+	ed.target	 = bc.GetObjectLink(DROPEFFECTOR_TARGET, doc);
 	if (!ed.target)
 		return {};
 
@@ -213,8 +208,8 @@ maxon::Result<Bool> DropEffector::GetAccessedObjects(const BaseList2D* node, MET
 	return true;
 }
 
-// be sure to use a unique ID obtained from developers.maxon.net
-#define ID_DROPEFFECTOR 1019571
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 ID_DROPEFFECTOR = 1019571;
 
 Bool RegisterDropEffector()
 {

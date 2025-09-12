@@ -22,27 +22,11 @@ struct SDKGradient
 
 class SDKGradientGadget
 {
-private:
-	cinema::Int32				 iw, ih, xmin, active, *count, *interpol, maxgrad;
-	cinema::Int32				 dragx, dragy, dragid;
-	cinema::Vector			 dragcol;
-	SDKGradient* g;
-	cinema::GeUserArea*	 ua;
-
-	cinema::Float YtoP(cinema::Int32 y);
-	cinema::Int32 PtoY(cinema::Float pos);
-	void GetBoxPosition(cinema::Int32 num, cinema::Int32* x, cinema::Int32* y);
-	cinema::Int32 InsertBox(cinema::Vector col, cinema::Float per, cinema::Int32 id);
-	cinema::Int32 FindID();
-	void RemoveBox(cinema::Int32 num);
-
 public:
-	cinema::BaseBitmap* col;
-
 	SDKGradientGadget();
 	~SDKGradientGadget();
 
-	void Init(cinema::GeUserArea* a_ua, SDKGradient* a_g, cinema::Int32* a_count, cinema::Int32* a_interpol, cinema::Int32 a_maxgrad);
+	void Init(cinema::GeUserArea* ua, cinema::Int32 interpol, cinema::Int32 maxgrad);
 	cinema::Bool InitDim(cinema::Int32 x, cinema::Int32 y);
 
 	cinema::Bool MouseDown(cinema::Int32 x, cinema::Int32 y, cinema::Bool dbl);
@@ -52,6 +36,26 @@ public:
 	cinema::Bool GetPosition(cinema::Float* per);
 
 	void CalcImage();
+
+private:
+	cinema::Float YtoP(cinema::Int32 y);
+	cinema::Int32 PtoY(cinema::Float pos);
+	void GetBoxPosition(cinema::Int32 num, cinema::Int32* x, cinema::Int32* y);
+	cinema::Int32 InsertBox(cinema::Vector col, cinema::Float per, cinema::Int32 id);
+	cinema::Int32 FindID();
+
+public:
+	maxon::UniqueRef<cinema::BaseBitmap> _col;
+	cinema::Int32 _interpol = 0;
+
+private:
+	cinema::Int32 _iw = 0, _ih = 0, _xmin = 0, _active = 0;
+	cinema::Int32 _maxgrad = 0;
+	cinema::Int32 _dragx, _dragy, _dragid;
+	cinema::Vector _dragcol;
+	maxon::BaseArray<SDKGradient> _g;
+	cinema::GeUserArea* _ua = nullptr;
+
 };
 
 cinema::Vector CalcGradientMix(const cinema::Vector& g1, const cinema::Vector& g2, cinema::Float per, cinema::Int32 interpol);

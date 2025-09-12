@@ -1,0 +1,9 @@
+STRINGTABLE ocircleshape
+{
+  ocircleshape       "Circle Shape";
+  
+  SDK_EXAMPLE_CIRCLESHAPE_RADIUS         "Circle radius";
+  SDK_EXAMPLE_CIRCLESHAPE_VCOUNT         "Point count";
+  SDK_EXAMPLE_CIRCLESHAPE                "SDK Example - Circle Shape";
+}
+

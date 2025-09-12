@@ -24,15 +24,15 @@ struct GradientData
 class SDKGradientClass : public ShaderData
 {
 public:
-	GradientData gdata;
-
-public:
 	virtual Bool Init(GeListNode* node, Bool isCloneInit);
 	virtual	Vector Output(BaseShader* sh, ChannelData* cd);
 	virtual	INITRENDERRESULT InitRender(BaseShader* sh, const InitRenderStruct& irs);
 	virtual	void FreeRender(BaseShader* sh);
 
 	static NodeData* Alloc() { return NewObjClear(SDKGradientClass); }
+
+public:
+	GradientData gdata;
 };
 
 Bool SDKGradientClass::Init(GeListNode* node, Bool isCloneInit)
@@ -229,6 +229,9 @@ Vector SDKGradientClass::Output(BaseShader* sh, ChannelData* sd)
 	return Vector(gdata.gradientRenderData.CalcGradientPixel(Clamp01(r)));
 }
 
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 ID_GRADIENT_SHADER_SDK = 1001161;
+
 Bool RegisterGradient()
 {
 	Filename fn = GeGetPluginResourcePath() + "gradienttypes.tif";
@@ -245,6 +248,5 @@ Bool RegisterGradient()
 	RegisterIcon(200000141, bmp, 6 * 32, 0, 32, 32, ICONFLAG::COPY);
 	RegisterIcon(200000142, bmp, 7 * 32, 0, 32, 32, ICONFLAG::COPY);
 
-	// be sure to use a unique ID obtained from developers.maxon.net
-	return RegisterShaderPlugin(1001161, GeLoadString(IDS_SDKGRADIENT), 0, SDKGradientClass::Alloc, "Xsdkgradient"_s, 0);
+	return RegisterShaderPlugin(ID_GRADIENT_SHADER_SDK, GeLoadString(IDS_SDKGRADIENT), 0, SDKGradientClass::Alloc, "Xsdkgradient"_s, 0);
 }

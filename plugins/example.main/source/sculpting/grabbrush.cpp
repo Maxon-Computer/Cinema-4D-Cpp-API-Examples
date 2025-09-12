@@ -13,9 +13,10 @@ where you are just moving those points around until the user lets go of them.
 #include "c4d.h"
 #include "main.h"
 
-#define SCULPTGRABBRUSH_SDK_EXAMPLE 1029860	//You MUST get your own ID from developers.maxon.net
-
 using namespace cinema;
+
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 SCULPTGRABBRUSH_SDK_EXAMPLE = 1029860;
 
 class ExampleSculptGrabBrush : public SculptBrushToolData
 {

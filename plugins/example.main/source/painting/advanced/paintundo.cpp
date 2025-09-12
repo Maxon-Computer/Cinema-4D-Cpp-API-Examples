@@ -2,86 +2,60 @@
 #include "paintchannels.h"
 #include "registeradvancedpaint.h"
 
-#define SCENEHOOK_VERSION 1
-#define ID_PAINT_UNDOREDO_SCENEHOOK 1031368
+using namespace cinema;
+
+static constexpr const Int32 SCENEHOOK_VERSION =  1;
+
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 ID_PAINT_UNDOREDO_SCENEHOOK = 1031368;
 
 //=============================================================================================================
 
-#define SCULPTPAINTUNDOSTRING "SculptPaintUndo"
+static constexpr const Char* SCULPTPAINTUNDOSTRING  = "SculptPaintUndo";
 
-using namespace cinema;
 
-static Bool CreateSculptUndo(BaseDocument *pDoc)
+static Bool CreateSculptUndo(BaseDocument& doc)
 {
-	if (pDoc)
+	BaseSceneHook *sceneHook = doc.FindSceneHook(ID_PAINT_UNDOREDO_SCENEHOOK);
+	if (sceneHook)
 	{
-		BaseSceneHook *pSceneHook = pDoc->FindSceneHook(ID_PAINT_UNDOREDO_SCENEHOOK);
-		if (pSceneHook)
-		{
-			BaseContainer *bc = pSceneHook->GetDataInstance();
-			bc->SetString((Int32)UNDOTYPE::PRIVATE_STRING, String(SCULPTPAINTUNDOSTRING));
-			pDoc->StartUndo();
-			pDoc->AddUndo(UNDOTYPE::PRIVATE_STRING, pSceneHook);
-			pDoc->EndUndo();
-			return true;
-		}
+		BaseContainer *bc = sceneHook->GetDataInstance();
+		bc->SetString((Int32)UNDOTYPE::PRIVATE_STRING, String(SCULPTPAINTUNDOSTRING));
+		doc.StartUndo();
+		doc.AddUndo(UNDOTYPE::PRIVATE_STRING, sceneHook);
+		doc.EndUndo();
+		return true;
 	}
 	return false;
 }
 
-PaintUndoTile::PaintUndoTile()
-: m_pData(nullptr)
-, m_dataSize(0)
-, m_x(0)
-, m_y(0)
-, m_xTile(0)
-, m_yTile(0)
+Bool PaintUndoTile::Init(PaintLayerBmp& bitmap, Int x, Int y)
 {
-}
+	iferr_scope_handler { return false; };
+	
+	_pDestBitmap = maxon::UniqueRef<cinema::BaseLink>::Create() iferr_return;
 
-PaintUndoTile::~PaintUndoTile()
-{
-	if (m_pData)
-	{
-		DeleteMem(m_pData);
-	}
-}
+	_pDestBitmap->SetLink(&bitmap);
 
-Bool PaintUndoTile::Init(PaintLayerBmp *pBitmap, Int x, Int y)
-{
-	m_pDestBitmap->SetLink(pBitmap);
-	if (!pBitmap)
-	{
-		return false;
-	}
+	_xTile = (Int)(x * Int(PAINTTILEINV));
+	_yTile = (Int)(y * Int(PAINTTILEINV));
 
-	m_xTile = (Int)(x * Int(PAINTTILEINV));
-	m_yTile = (Int)(y * Int(PAINTTILEINV));
-
-	m_x = m_xTile * PAINTTILESIZE;
-	m_y = m_yTile * PAINTTILESIZE;
+	_x = _xTile * PAINTTILESIZE;
+	_y = _yTile * PAINTTILESIZE;
 
 	int bitdepth, numChannels;
-	if (!GetChannelInfo(pBitmap, bitdepth, numChannels))
+	if (!GetChannelInfo(bitmap, bitdepth, numChannels))
 		return false;
 
-	if (m_pData)
-	{
-		DeleteMem(m_pData);
-		m_dataSize = 0;
-	}
-
-	COLORMODE colorMode = (COLORMODE)pBitmap->GetColorMode();
+	COLORMODE colorMode = (COLORMODE)bitmap.GetColorMode();
 	Int32 bitsPerPixel = (bitdepth / 8) * numChannels;
-	m_dataSize = PAINTTILESIZE * PAINTTILESIZE * bitsPerPixel;
-	iferr (m_pData = NewMem(UChar, m_dataSize))
-		return false;
+	_data.Resize(PAINTTILESIZE * PAINTTILESIZE * bitsPerPixel) iferr_return;
 
 	// Copy the data across
-	UChar *pos = m_pData;
+	UChar *pos = _data.GetFirst();
 	for (Int32 yy = 0; yy < PAINTTILESIZE; yy++)
 	{
-		pBitmap->GetPixelCnt((Int32)m_x, (Int32)m_y + yy, (Int32)PAINTTILESIZE, &pos[yy*PAINTTILESIZE*bitsPerPixel], colorMode, PIXELCNT::NONE);
+		bitmap.GetPixelCnt((Int32)_x, (Int32)_y + yy, (Int32)PAINTTILESIZE, &pos[yy*PAINTTILESIZE*bitsPerPixel], colorMode, PIXELCNT::NONE);
 	}
 
 	return true;
@@ -89,40 +63,41 @@ Bool PaintUndoTile::Init(PaintLayerBmp *pBitmap, Int x, Int y)
 
 PaintLayerBmp *PaintUndoTile::GetBitmap()
 {
-	return  (PaintLayerBmp*)m_pDestBitmap->ForceGetLink();
+	return  (PaintLayerBmp*) (_pDestBitmap ? _pDestBitmap->ForceGetLink() : nullptr);
 }
 
 void PaintUndoTile::Apply()
 {
-	PaintLayerBmp *pBitmap = GetBitmap();
-	if (!pBitmap)
-	{
+	PaintLayerBmp *bitmap = GetBitmap();
+	if (!bitmap)
 		return;
-	}
 
 	int bitdepth, numChannels;
-	if (!GetChannelInfo(pBitmap, bitdepth, numChannels))
+	if (!GetChannelInfo(*bitmap, bitdepth, numChannels))
 		return;
 
-	COLORMODE colorMode = (COLORMODE)pBitmap->GetColorMode();
+	COLORMODE colorMode = (COLORMODE)bitmap->GetColorMode();
 	Int32 bitsPerPixel = (bitdepth / 8) * numChannels;
 
 	// Copy the data across
-	UChar *pos = m_pData;
+	UChar *pos = _data.GetFirst();
 	for (Int32 y = 0; y < PAINTTILESIZE; y++)
 	{
-		pBitmap->SetPixelCnt((Int32)m_x, (Int32)m_y + y, PAINTTILESIZE, &pos[y*PAINTTILESIZE*bitsPerPixel], bitsPerPixel, colorMode , PIXELCNT::NONE);
+		bitmap->SetPixelCnt((Int32)_x, (Int32)_y + y, PAINTTILESIZE, &pos[y*PAINTTILESIZE*bitsPerPixel], bitsPerPixel, colorMode , PIXELCNT::NONE);
 	}
 
-	pBitmap->UpdateRefresh((Int32)m_x, (Int32)m_y, (Int32)m_x+PAINTTILESIZE, (Int32)m_y+PAINTTILESIZE, UPDATE_STD);
+	bitmap->UpdateRefresh((Int32)_x, (Int32)_y, (Int32)_x+PAINTTILESIZE, (Int32)_y+PAINTTILESIZE, UPDATE_STD);
 }
 
 PaintUndoTile *PaintUndoTile::GetCurrentStateClone()
 {
-	iferr (PaintUndoTile *pTile = NewObj(PaintUndoTile))
+	PaintLayerBmp *bitmap = GetBitmap();
+	if (!bitmap)
 		return nullptr;
-	pTile->Init(GetBitmap(), m_x, m_y);
-	return pTile;
+	iferr (PaintUndoTile *tile = NewObj(PaintUndoTile))
+		return nullptr;
+	tile->Init(*bitmap, _x, _y);
+	return tile;
 }
 
 //=============================================================================================================
@@ -139,18 +114,18 @@ void PaintUndoStroke::Init()
 {
 }
 
-void PaintUndoStroke::Init(PaintUndoStroke *pStroke)
+void PaintUndoStroke::Init(PaintUndoStroke& stroke)
 {
-	for (auto& a : pStroke->m_Tiles)
+	for (auto& a : stroke._tiles)
 	{
 		AddUndoTile(a.GetCurrentStateClone());
 	}
 }
 
-inline Int GetTileHash(Int x, Int y)
+inline Int GetTileHash(maxon::Pair<Int, Int>&& xy)
 {
-	Int xx = (Int)(x * Int(PAINTTILEINV));
-	Int yy = (Int)(y * Int(PAINTTILEINV));
+	Int xx = (Int)(xy.first * Int(PAINTTILEINV));
+	Int yy = (Int)(xy.second * Int(PAINTTILEINV));
 	return xx + PAINTTILESIZE * yy;
 }
 
@@ -163,14 +138,14 @@ void PaintUndoStroke::AddUndoTile(PaintUndoTile *pTile)
 
 	if (pTile)
 	{
-		m_Tiles.AppendPtr(pTile) iferr_return;
-		m_tileMap.Insert(GetTileHash(pTile->m_x, pTile->m_y), pTile) iferr_return;
+		_tiles.AppendPtr(pTile) iferr_return;
+		_tileMap.Insert(GetTileHash(pTile->GetXY()), pTile) iferr_return;
 	}
 }
 
 void PaintUndoStroke::Apply()
 {
-	for (auto& a : m_Tiles)
+	for (auto& a : _tiles)
 	{
 		a.Apply();
 	}
@@ -179,17 +154,13 @@ void PaintUndoStroke::Apply()
 
 PaintUndoTile* PaintUndoStroke::Find(Int x, Int y)
 {
-	TileMap::Entry* entry = m_tileMap.Find(GetTileHash(x, y));
+	auto* entry = _tileMap.Find(GetTileHash({ x, y }));
 	return entry ? const_cast<PaintUndoTile*>(entry->GetValue()) : nullptr;
 }
 
 
 //=============================================================================================================
 
-PaintUndoRedo::PaintUndoRedo()
-: m_pCurrentStroke(nullptr)
-{
-}
 
 PaintUndoRedo::~PaintUndoRedo()
 {
@@ -199,56 +170,58 @@ PaintUndoRedo::~PaintUndoRedo()
 
 void PaintUndoRedo::ClearRedos()
 {
-	for (auto& stroke : m_RedoStrokes)
+	for (auto& stroke : _redoStrokes)
 	{
 		DeleteObj(stroke);
 	}
-	m_RedoStrokes.Reset();
+	_redoStrokes.Reset();
 }
 
 void PaintUndoRedo::ClearUndos()
 {
-	for (auto& stroke : m_UndoStrokes)
+	for (auto& stroke : _undoStrokes)
 	{
 		DeleteObj(stroke);
 	}
-	m_UndoStrokes.Reset();
+	_undoStrokes.Reset();
 }
 
 void PaintUndoRedo::Undo()
 {
-	if (m_UndoStrokes.GetCount() > 0)
+	if (_undoStrokes.GetCount() > 0)
 	{
-		PaintUndoStroke *pLastStroke = nullptr;
-		if (m_UndoStrokes.Pop(&pLastStroke))
+		PaintUndoStroke *lastStroke = nullptr;
+		if (_undoStrokes.Pop(&lastStroke))
 		{
-			iferr (PaintUndoStroke *pRedoStroke = NewObj(PaintUndoStroke))
+			DebugAssert(lastStroke != nullptr);
+			iferr (PaintUndoStroke *redoStroke = NewObj(PaintUndoStroke))
 				return;
-			pRedoStroke->Init(pLastStroke);
-			iferr (m_RedoStrokes.Append(pRedoStroke))
+			redoStroke->Init(*lastStroke);
+			iferr (_redoStrokes.Append(redoStroke))
         return;
-			pLastStroke->Apply();
-			DeleteObj(pLastStroke);
-			pLastStroke = nullptr;
+			lastStroke->Apply();
+			DeleteObj(lastStroke);
+			lastStroke = nullptr;
 		}
 	}
 }
 
 void PaintUndoRedo::Redo()
 {
-	if (m_RedoStrokes.GetCount() > 0)
+	if (_redoStrokes.GetCount() > 0)
 	{
-		PaintUndoStroke *pLastStroke = nullptr;
-		if (m_RedoStrokes.Pop(&pLastStroke))
+		PaintUndoStroke *lastStroke = nullptr;
+		if (_redoStrokes.Pop(&lastStroke))
 		{
-			iferr (PaintUndoStroke *pUndoStroke = NewObj(PaintUndoStroke))
+			DebugAssert(lastStroke != nullptr);
+			iferr (PaintUndoStroke *undoStroke = NewObj(PaintUndoStroke))
 				return;
-			pUndoStroke->Init(pLastStroke);
-			iferr (m_UndoStrokes.Append(pUndoStroke))
+			undoStroke->Init(*lastStroke);
+			iferr (_undoStrokes.Append(undoStroke))
         return;
-			pLastStroke->Apply();
-			DeleteObj(pLastStroke);
-			pLastStroke = nullptr;
+			lastStroke->Apply();
+			DeleteObj(lastStroke);
+			lastStroke = nullptr;
 		}
 	}
 }
@@ -260,49 +233,42 @@ void PaintUndoRedo::FlushUndoBuffer()
 }
 
 
-void PaintUndoRedo::StartUndoStroke()
+Bool PaintUndoRedo::StartUndoStroke()
 {
 	ClearRedos();
-	if (!m_pCurrentStroke)
+	if (!_currentStroke)
 	{
-		m_pCurrentStroke = NewObjClear(PaintUndoStroke);
-		if (!m_pCurrentStroke)
-		{
-			CriticalStop();
-		}
+		_currentStroke = NewObjClear(PaintUndoStroke);
+		if (!_currentStroke)
+			return false;
 	}
+	return true;
 }
 
 void PaintUndoRedo::EndUndoStroke()
 {
-	if (m_pCurrentStroke)
+	if (_currentStroke)
 	{
-		iferr (m_UndoStrokes.Append(m_pCurrentStroke))
-      return;
-		m_pCurrentStroke = nullptr;
+		if (_undoStrokes.EnsureCapacity(_undoStrokes.GetCount() + 1) == maxon::OK)
+			_undoStrokes.Append(_currentStroke.Disconnect()) iferr_cannot_fail("EnsureCapacity was successful");
 	}
 }
 
 
-Bool PaintUndoRedo::AddUndoTile(PaintLayerBmp *pBitmap, Int x, Int y)
+Bool PaintUndoRedo::AddUndoTile(PaintLayerBmp& bitmap, Int x, Int y)
 {
-	if (m_pCurrentStroke)
+	if (_currentStroke)
 	{
-		if (m_pCurrentStroke->Find(x, y))
+		if (_currentStroke->Find(x, y))
 			return false;
 
-		PaintUndoTile *pUndoTile = NewObjClear(PaintUndoTile);
-		if (!pUndoTile)
-		{
+		iferr (auto undoTile = maxon::UniqueRef<PaintUndoTile>::Create())
 			return false;
-		}
-		if (!pUndoTile->Init(pBitmap, x, y))
-		{
-			DeleteObj(pUndoTile);
-			return false;
-		}
 
-		m_pCurrentStroke->AddUndoTile(pUndoTile);
+		if (undoTile->Init(bitmap, x, y))
+			return false;
+
+		_currentStroke->AddUndoTile(undoTile.Disconnect());
 		return true;
 	}
 	return false;
@@ -311,32 +277,15 @@ Bool PaintUndoRedo::AddUndoTile(PaintLayerBmp *pBitmap, Int x, Int y)
 //=======================================================
 // Sculpt Undo/Redo Scene Hook
 //=======================================================
-PaintUndoSystem::PaintUndoSystem()
-: m_pUndoRedo(nullptr)
-, undoEvent(true)
-{
-}
-
-PaintUndoSystem::~PaintUndoSystem()
-{
-	if (m_pUndoRedo)
-	{
-		DeleteObj(m_pUndoRedo);
-	}
-}
-
 NodeData *PaintUndoSystem::Alloc()
 {
 	return NewObjClear(PaintUndoSystem);
 }
 
-
 Bool PaintUndoSystem::Init(GeListNode* node, Bool isCloneInit)
 {
-	m_pUndoRedo = NewObjClear(PaintUndoRedo);
-	if (!m_pUndoRedo) 
-		return false;
-	return true;
+	_undoRedo = NewObjClear(PaintUndoRedo);
+	return _undoRedo ? true : false;
 }
 
 Bool PaintUndoSystem::Message(GeListNode *node, Int32 type, void *data)
@@ -355,73 +304,72 @@ Bool PaintUndoSystem::Message(GeListNode *node, Int32 type, void *data)
 			}
 			break;
 		}
-		default:
-			break;
+		default: break;
 	}
-
 	return SceneHookData::Message(node, type, data);
 }
 
-Bool PaintUndoSystem::AddUndoRedo(PaintLayerBmp *pBitmap, Int x, Int y)
+Bool PaintUndoSystem::AddUndoRedo(PaintLayerBmp& bitmap, Int x, Int y)
 {
-	return m_pUndoRedo->AddUndoTile(pBitmap, x, y);
+	return _undoRedo->AddUndoTile(bitmap, x, y);
 }
 
 Bool PaintUndoSystem::Undo()
 {
-	if (m_pUndoRedo && m_lock.AttemptLock())
+	if (_undoRedo && _lock.AttemptLock())
 	{
-		m_pUndoRedo->Undo();
-		m_lock.Unlock();
+		_undoRedo->Undo();
+		_lock.Unlock();
 	}
 	return true;
 }
 
 Bool PaintUndoSystem::Redo()
 {
-	if (m_pUndoRedo && m_lock.AttemptLock())
+	if (_undoRedo && _lock.AttemptLock())
 	{
-		m_pUndoRedo->Redo();
-		m_lock.Unlock();
+		_undoRedo->Redo();
+		_lock.Unlock();
 	}
 	return true;
 }
 
 Bool PaintUndoSystem::StartStroke()
 {
-	if (m_pUndoRedo)
-	{
-		m_pUndoRedo->StartUndoStroke();
-		return true;
-	}
-	return false;
-}
+	if (_undoRedo == nullptr)
+		return false;
+
+	return _undoRedo->StartUndoStroke();
+ }
 
 Bool PaintUndoSystem::EndStroke()
 {
-	if (m_pUndoRedo)
+	if (_undoRedo)
 	{
-		m_pUndoRedo->EndUndoStroke();
-		CreateSculptUndo(GetActiveDocument());
-		return true;
+		_undoRedo->EndUndoStroke();
+		BaseDocument* doc = GetActiveDocument();
+		if (doc)
+		{
+			CreateSculptUndo(*doc);
+			return true;
+		}
 	}
 	return false;
 }
 
 PaintUndoStroke *PaintUndoSystem::GetCurrentStroke()
 {
-	if (m_pUndoRedo)
-	{
-		return m_pUndoRedo->GetCurrentStroke();
-	}
+	if (_undoRedo)
+		return _undoRedo->GetCurrentStroke();
+
 	return nullptr;
 }
 
 Bool PaintUndoSystem::FlushUndoBuffer()
 {
-	if (m_pUndoRedo)
+	if (_undoRedo)
 	{
-		m_pUndoRedo->FlushUndoBuffer();
+		_undoRedo->FlushUndoBuffer();
 		return true;
 	}
 	return false;
@@ -441,18 +389,15 @@ Bool FreePaintUndoSystem()
 
 
 
-PaintUndoSystem *GetPaintUndoSystem(BaseDocument *doc)
+PaintUndoSystem* GetPaintUndoSystem(BaseDocument* doc)
 {
 	if (!doc)  
-	{ 
-		return nullptr; 
-	}
+		return nullptr;
 
-	PaintUndoSystem *pUndoRedo = nullptr;
-	BaseSceneHook *pUndoRedoHook = doc->FindSceneHook(ID_PAINT_UNDOREDO_SCENEHOOK);
-	if (pUndoRedoHook)
-	{
-		pUndoRedo = pUndoRedoHook->GetNodeData<PaintUndoSystem>();
-	}
-	return pUndoRedo;
+	PaintUndoSystem *undoRedo = nullptr;
+	BaseSceneHook *undoRedoHook = doc->FindSceneHook(ID_PAINT_UNDOREDO_SCENEHOOK);
+	if (undoRedoHook)
+		undoRedo = undoRedoHook->GetNodeData<PaintUndoSystem>();
+
+	return undoRedo;
 }

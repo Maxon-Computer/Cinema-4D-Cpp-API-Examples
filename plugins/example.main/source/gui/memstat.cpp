@@ -1,25 +1,20 @@
-// be sure to use a unique ID obtained from developers.maxon.net
-#define ID_MEMSTAT 200000072
-
+#include "maxon/asyncresourcecache.h"
+#include "maxon/dll.h"
+#include "maxon/memoizationcache.h"
+#include "maxon/parallelfor.h"
 #include "c4d.h"
 #include "main.h"
-#include "maxon/memoizationcache.h"
-#include "maxon/dll.h"
-#include "maxon/parallelfor.h"
 
 using namespace cinema;
 
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 ID_MEMSTAT = 200000072;
+
 class MemStatDialog : public GeDialog
 {
-private:
-	void CheckMaxMemory(Int32 mbblocks);
-	void CheckParallelAllocation();
-	
 public:
 	MemStatDialog();
 	virtual Bool CreateLayout();
-
-	void UpdateMemoizationCache(Bool createDialog);
 
 	virtual Bool InitValues();
 	virtual Bool Command(Int32 id, const BaseContainer& msg);
@@ -27,6 +22,12 @@ public:
 	virtual Bool CoreMessage  (Int32 id, const BaseContainer& msg);
 	virtual void Timer(const BaseContainer& msg);
 
+	void UpdateMemoizationCache(Bool createDialog);
+
+private:
+	void CheckMaxMemory(Int32 mbblocks);
+	void CheckParallelAllocation();
+	
 private:
 	maxon::HashMap<maxon::Id, maxon::Tuple<Int /*cnt*/, Int /*mem*/>> _lastStat;
 };
@@ -55,7 +56,7 @@ enum
 	IDC_MEMORY_TEST_100MB_RES,
 	IDC_MEMORY_TEST_PARALLEL_RES,
 
-	IDC_MEMORY_STAT_
+	IDC_MEMORY_TEST_
 };
 
 MemStatDialog::MemStatDialog()
@@ -66,59 +67,78 @@ Bool MemStatDialog::CreateLayout()
 {
 	// first call the parent instance
 	Bool res = GeDialog::CreateLayout();
-
-	SetTitle("Memory Statistics"_s);
-
-	GroupBegin(0, BFH_SCALEFIT, 2, 0, String("Memory"), 0);
+	
+	if (res)
 	{
-		GroupBorder(BORDER_THIN_IN);
-		GroupBorderSpace(4, 4, 4, 4);
-		AddStaticText(0, BFH_FIT, 0, 0, "Memory In Use"_s, 0); AddStaticText(IDC_MEMORY_STAT_MEMORY_INUSE, BFH_SCALEFIT, SizeChr(140), 0, String(), 0);
-		AddStaticText(0, BFH_FIT, 0, 0, "Memory Peak"_s, 0); AddStaticText(IDC_MEMORY_STAT_MEMORY_PEAK, BFH_SCALEFIT, SizeChr(140), 0, String(), 0);
-		AddStaticText(0, BFH_FIT, 0, 0, "Number of Allocations (Current)"_s, 0); AddStaticText(IDC_MEMORY_STAT_NO_OF_ALLOCATIONS_CURRENT, BFH_SCALEFIT, SizeChr(100), 0, String(), 0);
-		AddStaticText(0, BFH_FIT, 0, 0, "Number of Allocations (Total)"_s, 0); AddStaticText(IDC_MEMORY_STAT_NO_OF_ALLOCATIONS_TOTAL, BFH_SCALEFIT, SizeChr(100), 0, String(), 0);
-		AddStaticText(0, BFH_FIT, 0, 0, "Viewport memory (allocated/used) MiB"_s, 0); AddStaticText(IDC_MEMORY_STAT_OGL_MEMORY, BFH_SCALEFIT, SizeChr(100), 0, String(), 0);
-		// AddStaticText(0, BFH_FIT, 0, 0, "EOGL Texture Cache"_s, 0); AddStaticText(IDC_MEMORY_STAT_EOGL_TEXBUFFER, BFH_SCALEFIT, SizeChr(100), 0, String(), 0);
-		// AddStaticText(0, BFH_FIT, 0, 0, "EOGL VBO Cache"_s, 0); AddStaticText(IDC_MEMORY_STAT_EOGL_VERTEXBUFFER, BFH_SCALEFIT, SizeChr(100), 0, String(), 0);
+		SetTitle("Memory Statistics"_s);
+
+		GroupBegin(0, BFH_SCALEFIT, 2, 0, String("Memory"), 0);
+		{
+			GroupBorder(BORDER_THIN_IN);
+			GroupBorderSpace(4, 4, 4, 4);
+			AddStaticText(0, BFH_FIT, 0, 0, "Memory In Use"_s, 0); AddStaticText(IDC_MEMORY_STAT_MEMORY_INUSE, BFH_SCALEFIT, SizeChr(140), 0, String(), 0);
+			AddStaticText(0, BFH_FIT, 0, 0, "Memory Peak"_s, 0); AddStaticText(IDC_MEMORY_STAT_MEMORY_PEAK, BFH_SCALEFIT, SizeChr(140), 0, String(), 0);
+			AddStaticText(0, BFH_FIT, 0, 0, "Number of Allocations (Current)"_s, 0); AddStaticText(IDC_MEMORY_STAT_NO_OF_ALLOCATIONS_CURRENT, BFH_SCALEFIT, SizeChr(100), 0, String(), 0);
+			AddStaticText(0, BFH_FIT, 0, 0, "Number of Allocations (Total)"_s, 0); AddStaticText(IDC_MEMORY_STAT_NO_OF_ALLOCATIONS_TOTAL, BFH_SCALEFIT, SizeChr(100), 0, String(), 0);
+			AddStaticText(0, BFH_FIT, 0, 0, "Viewport memory (allocated/used) MiB"_s, 0); AddStaticText(IDC_MEMORY_STAT_OGL_MEMORY, BFH_SCALEFIT, SizeChr(100), 0, String(), 0);
+			// AddStaticText(0, BFH_FIT, 0, 0, "EOGL Texture Cache"_s, 0); AddStaticText(IDC_MEMORY_STAT_EOGL_TEXBUFFER, BFH_SCALEFIT, SizeChr(100), 0, String(), 0);
+			// AddStaticText(0, BFH_FIT, 0, 0, "EOGL VBO Cache"_s, 0); AddStaticText(IDC_MEMORY_STAT_EOGL_VERTEXBUFFER, BFH_SCALEFIT, SizeChr(100), 0, String(), 0);
+		}
+		GroupEnd();
+
+		GroupBegin(IDC_MEMORY_TEST_CLEAR_MEMOIZATION_GROUP, BFH_SCALEFIT, 2, 0, "Memoization Caches (cache count/reuse count)"_s, 0);
+		{
+			GroupBorder(BORDER_THIN_IN);
+			UpdateMemoizationCache(true);
+		}
+		GroupEnd();
+
+		GroupBegin(0, BFH_LEFT, 2, 0, String(), 0);
+		{
+			AddButton(IDC_MEMORY_TEST_1MB, BFH_FIT, 0, 0, "Test Max Memory Alloc (  1 MB)"_s);
+			AddStaticText(IDC_MEMORY_TEST_1MB_RES, BFH_FIT, SizeChr(140), 0, String(), 0);
+
+			AddButton(IDC_MEMORY_TEST_10MB, BFH_FIT, 0, 0, "Test Max Memory Alloc ( 10 MB)"_s);
+			AddStaticText(IDC_MEMORY_TEST_10MB_RES, BFH_FIT, SizeChr(140), 0, String(), 0);
+
+			AddButton(IDC_MEMORY_TEST_100MB, BFH_FIT, 0, 0, "Test Max Memory Alloc (100 MB)"_s);
+			AddStaticText(IDC_MEMORY_TEST_100MB_RES, BFH_FIT, SizeChr(140), 0, String(), 0);
+
+			AddButton(IDC_MEMORY_TEST_PARALLEL, BFH_FIT, 0, 0, "Test Parallel Memory Allocation"_s);
+			AddStaticText(IDC_MEMORY_TEST_PARALLEL_RES, BFH_FIT, SizeChr(140), 0, String(), 0);
+		}
+		GroupEnd();
+
+		SetTimer(500);
 	}
-	GroupEnd();
-
-	GroupBegin(IDC_MEMORY_TEST_CLEAR_MEMOIZATION_GROUP, BFH_SCALEFIT, 2, 0, "Memoization Caches (cache count/reuse count)"_s, 0);
-	{
-		GroupBorder(BORDER_THIN_IN);
-		UpdateMemoizationCache(true);
-	}
-	GroupEnd();
-
-	GroupBegin(0, BFH_LEFT, 2, 0, String(), 0);
-	{
-		AddButton(IDC_MEMORY_TEST_1MB, BFH_FIT, 0, 0, "Test Max Memory Alloc (  1 MB)"_s);
-		AddStaticText(IDC_MEMORY_TEST_1MB_RES, BFH_FIT, SizeChr(140), 0, String(), 0);
-
-		AddButton(IDC_MEMORY_TEST_10MB, BFH_FIT, 0, 0, "Test Max Memory Alloc ( 10 MB)"_s);
-		AddStaticText(IDC_MEMORY_TEST_10MB_RES, BFH_FIT, SizeChr(140), 0, String(), 0);
-
-		AddButton(IDC_MEMORY_TEST_100MB, BFH_FIT, 0, 0, "Test Max Memory Alloc (100 MB)"_s);
-		AddStaticText(IDC_MEMORY_TEST_100MB_RES, BFH_FIT, SizeChr(140), 0, String(), 0);
-
-		AddButton(IDC_MEMORY_TEST_PARALLEL, BFH_FIT, 0, 0, "Test Parallel Memory Allocation"_s);
-		AddStaticText(IDC_MEMORY_TEST_PARALLEL_RES, BFH_FIT, SizeChr(140), 0, String(), 0);
-	}
-	GroupEnd();
-
-	SetTimer(500);
 
 	return res;
 }
 
 void MemStatDialog::UpdateMemoizationCache(Bool createDialog)
 {
+	iferr_scope_handler
+	{
+		return;
+	};
 	UpdateDialogHelper helper;
 
 	using namespace maxon;
 	HashMap<Id, Tuple<Int /*cnt*/, Int /*mem*/>> stat;
+	MemoizationCacheInterface::GetStatistics(stat) iferr_return;
 
-	ifnoerr (MemoizationCacheInterface::GetStatistics(stat))
+	for (auto cache : maxon::AsyncResourceCacheTypes::GetEntriesWithId())
+	{
+		Int cnt;
+		Int mem;
+		iferr (cache.GetValue().GetStatistics(cnt, mem))
+			continue;
+		if (cnt == 0 && mem == 0)
+			continue;
+		stat.Insert(cache.GetKey(), Tuple<Int, Int>(cnt, mem)) iferr_return;
+	}
+
+	MAXON_SCOPE
 	{
 		if (!createDialog && _lastStat == stat)
 		{
@@ -197,9 +217,8 @@ void MemStatDialog::Timer(const BaseContainer& msg)
 void MemStatDialog::CheckMaxMemory(Int32 mbblocks)
 {
 	maxon::BaseArray<void*> blocks;
-	Int32 i;
 
-	for (i = 0; true; i++)
+	for (Int i = 0; true; i++)
 	{
 		void* block = nullptr;
 		if (mbblocks > 0)
@@ -208,7 +227,10 @@ void MemStatDialog::CheckMaxMemory(Int32 mbblocks)
 				break;
 		}
 		if (!block)
+		{
+			DiagnosticOutput("Failed after @ allocations", i);
 			break;
+		}
 		InitValues();
 		iferr (blocks.Append(block))
 		{
@@ -221,7 +243,7 @@ void MemStatDialog::CheckMaxMemory(Int32 mbblocks)
 	BaseContainer stat;
 	GeGetMemoryStat(stat);
 
-	for (i = 0; i < blocks.GetCount(); i++)
+	for (Int i = 0; i < blocks.GetCount(); i++)
 	{
 		void* block = blocks[i];
 		if (block)
@@ -293,6 +315,12 @@ Bool MemStatDialog::Command(Int32 id, const BaseContainer& msg)
 			}
 
 			MemoizationCacheInterface::FlushAll(Id(), nullptr, deleteRunId);
+
+			for (auto cache : maxon::AsyncResourceCacheTypes::GetEntriesWithId())
+			{
+				cache.GetValue().Reset();
+			}
+
 			DiagnosticOutput("Clear Cache took: @", time.Stop());
 			break;
 		}
@@ -310,10 +338,12 @@ Bool MemStatDialog::CoreMessage(Int32 id, const BaseContainer& msg)
 	switch (id)
 	{
 		case EVMSG_CHANGE:
+		{
 			if (CheckCoreMessage(msg))
 			{
 			}
 			break;
+		}
 	}
 	return GeDialog::CoreMessage(id, msg);
 }
@@ -328,13 +358,13 @@ Int32 MemStatDialog::Message(const BaseContainer& msg, BaseContainer& result)
 
 class MemStatCommand : public CommandData
 {
-private:
-	MemStatDialog dlg;
-
 public:
 	virtual Bool Execute(BaseDocument* doc, GeDialog* parentManager);
 	virtual Int32 GetState(BaseDocument* doc, GeDialog* parentManager);
 	virtual Bool RestoreLayout(void* secret);
+
+private:
+	MemStatDialog _dlg;
 };
 
 Int32 MemStatCommand::GetState(BaseDocument* doc, GeDialog* parentManager)
@@ -344,16 +374,16 @@ Int32 MemStatCommand::GetState(BaseDocument* doc, GeDialog* parentManager)
 
 Bool MemStatCommand::Execute(BaseDocument* doc, GeDialog* parentManager)
 {
-	return dlg.Open(DLG_TYPE::ASYNC, ID_MEMSTAT, -1, -1);
+	return _dlg.Open(DLG_TYPE::ASYNC, ID_MEMSTAT, -1, -1);
 }
 
 Bool MemStatCommand::RestoreLayout(void* secret)
 {
-	return dlg.RestoreLayout(ID_MEMSTAT, 0, secret);
+	return _dlg.RestoreLayout(ID_MEMSTAT, 0, secret);
 }
 
 Bool RegisterMemoryStat()
 {
-	return RegisterCommandPlugin(ID_MEMSTAT, String("C++ SDK - Memory Statistics"), 0, nullptr, String(), NewObjClear(MemStatCommand));
+	return RegisterCommandPlugin(ID_MEMSTAT, String("C++ SDK - Memory Statistics"), 0, nullptr, String(), NewObjPtr(MemStatCommand));
 }
 

@@ -51,8 +51,6 @@ VOLUMEINFO ParticleVolume::GetRenderInfo(BaseMaterial* mat)
 	return VOLUMEINFO::TRANSPARENCY | VOLUMEINFO::VOLUMETRIC;
 }
 
-#define MAX_PARTICLES 10000
-
 PVRender::PVRender()
 {
 	mp = nullptr;
@@ -172,7 +170,7 @@ void ParticleVolume::CalcSurface(BaseMaterial* mat, VolumeData* vd)
 
 static Float GetCoverage(PVRender* pv, VolumeData* sd)
 {
-#define PT_RADIUS 50.0
+	static constexpr const Float PT_RADIUS = 50.0;
 
 	Int32 i;
 	Float len, maxlen = 0.0;
@@ -337,8 +335,8 @@ Bool ParticleVolume::Message(GeListNode* node, Int32 type, void* data)
 }
 
 
-// be sure to use a unique ID obtained from developers.maxon.net
-#define ID_PARTICLEVOLUME	1001163
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 ID_PARTICLEVOLUME = 1001163;
 
 Bool RegisterParticleVolume()
 {

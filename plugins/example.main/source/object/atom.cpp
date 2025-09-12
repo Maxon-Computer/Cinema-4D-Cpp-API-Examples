@@ -30,14 +30,17 @@ public:
 // initialize settings
 Bool AtomObject::Init(GeListNode* node, Bool isCloneInit)
 {
-	BaseObject*		 op	= (BaseObject*)node;
-	BaseContainer* data = op->GetDataInstance();
+	if (node == nullptr)
+		return false;
+
 	if (!isCloneInit)
 	{
-		data->SetFloat(ATOMOBJECT_SRAD, 5.0);
-		data->SetFloat(ATOMOBJECT_CRAD, 2.0);
-		data->SetInt32(ATOMOBJECT_SUB, 8);
-		data->SetBool(ATOMOBJECT_SINGLE, false);
+		BaseObject* baseObjectPtr = static_cast<BaseObject*>(node);
+		BaseContainer& data = baseObjectPtr->GetDataInstanceRef();
+		data.SetFloat(ATOMOBJECT_SRAD, 5.0);
+		data.SetFloat(ATOMOBJECT_CRAD, 2.0);
+		data.SetInt32(ATOMOBJECT_SUB, 8);
+		data.SetBool(ATOMOBJECT_SINGLE, false);
 	}
 
 	return true;
@@ -47,8 +50,8 @@ Bool AtomObject::Message(GeListNode* node, Int32 type, void* t_data)
 {
 	if (type == MSG_DESCRIPTION_VALIDATE)
 	{
-		BaseContainer* data = static_cast<BaseObject*>(node)->GetDataInstance();
-		CutReal(*data, ATOMOBJECT_CRAD, 0.0, data->GetFloat(ATOMOBJECT_SRAD));
+		BaseContainer& data = static_cast<BaseObject*>(node)->GetDataInstanceRef();
+		CutReal(data, ATOMOBJECT_CRAD, 0.0, data.GetFloat(ATOMOBJECT_SRAD));
 	}
 	return true;
 }
@@ -350,9 +353,9 @@ static Bool Recurse(const HierarchyHelp* hh, BaseThread* bt, BaseObject* main, B
 				tp->SetName(pstr + " " + String::IntToString(i));
 
 				// set object parameters
-				BaseContainer* bc = tp->GetDataInstance();
-				bc->SetFloat(PRIM_SPHERE_RAD, srad);
-				bc->SetFloat(PRIM_SPHERE_SUB, sub);
+				BaseContainer& bc = tp->GetDataInstanceRef();
+				bc.SetFloat(PRIM_SPHERE_RAD, srad);
+				bc.SetFloat(PRIM_SPHERE_SUB, sub);
 
 				// insert as last object under main
 				tp->InsertUnderLast(main);
@@ -396,13 +399,13 @@ static Bool Recurse(const HierarchyHelp* hh, BaseThread* bt, BaseObject* main, B
 					pb = ml * padr[b];
 
 					// set object parameters
-					BaseContainer* bc = tp->GetDataInstance();
-					bc->SetFloat(PRIM_CYLINDER_RADIUS, crad);
-					bc->SetFloat(PRIM_CYLINDER_HEIGHT, (pb - pa).GetLength());
-					bc->SetFloat(PRIM_AXIS, 4);
-					bc->SetInt32(PRIM_CYLINDER_CAPS, false);
-					bc->SetInt32(PRIM_CYLINDER_HSUB, 1);
-					bc->SetInt32(PRIM_CYLINDER_SEG, sub);
+					BaseContainer& bc = tp->GetDataInstanceRef();
+					bc.SetFloat(PRIM_CYLINDER_RADIUS, crad);
+					bc.SetFloat(PRIM_CYLINDER_HEIGHT, (pb - pa).GetLength());
+					bc.SetFloat(PRIM_AXIS, 4);
+					bc.SetInt32(PRIM_CYLINDER_CAPS, false);
+					bc.SetInt32(PRIM_CYLINDER_HSUB, 1);
+					bc.SetInt32(PRIM_CYLINDER_SEG, sub);
 
 					// place cylinder at edge center
 					tp->SetRelPos((pa + pb) * 0.5);
@@ -473,7 +476,7 @@ BaseObject* AtomObject::GetVirtualObjects(BaseObject* op, const HierarchyHelp* h
 	Float srad, crad;
 
 	// get object container
-	const BaseContainer* bc = op->GetDataInstance();
+	const BaseContainer& bc = op->GetDataInstanceRef();
 	BaseThread*		 bt = hh->GetThread();
 
 	// group all further objects with this null object
@@ -482,10 +485,10 @@ BaseObject* AtomObject::GetVirtualObjects(BaseObject* op, const HierarchyHelp* h
 		goto error;
 
 	// get object settings
-	srad = bc->GetFloat(ATOMOBJECT_SRAD);
-	crad = bc->GetFloat(ATOMOBJECT_CRAD);
-	sub	 = bc->GetInt32(ATOMOBJECT_SUB);
-	single = bc->GetBool(ATOMOBJECT_SINGLE);
+	srad = bc.GetFloat(ATOMOBJECT_SRAD);
+	crad = bc.GetFloat(ATOMOBJECT_CRAD);
+	sub	 = bc.GetInt32(ATOMOBJECT_SUB);
+	single = bc.GetBool(ATOMOBJECT_SINGLE);
 
 	// go through all child hierarchies
 	if (!Recurse(hh, bt, main, res, orig->GetMl(), srad, crad, sub, single))
@@ -514,8 +517,8 @@ maxon::Result<Bool> AtomObject::GetAccessedObjects(const BaseList2D* node, METHO
 	return SUPER::GetAccessedObjects(node, method, access);
 }
 
-// be sure to use a unique ID obtained from developers.maxon.net
-#define ID_ATOMOBJECT 1001153
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 ID_ATOMOBJECT = 1001153;
 
 //----------------------------------------------------------------------------------------
 ///	Plugin help support callback. Can be used to display context sensitive help when the

@@ -2,6 +2,7 @@
 #include "command_declaration.h"
 
 // Maxon API header files
+#include "maxon/array.h"
 #include "maxon/unittest.h"
 #include "maxon/lib_math.h"
 

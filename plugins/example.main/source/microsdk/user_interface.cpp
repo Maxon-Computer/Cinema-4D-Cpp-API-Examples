@@ -74,9 +74,10 @@ public:
 
 void RegisterCubeCommand()
 {
-	// plugin IDs must be obtained from developers.maxon.net to avoid collisions
-	const Int32 pluginID = 1041028;
-	const Bool	success	 = RegisterCommandPlugin(pluginID, GeLoadString(IDS_MAKECUBE), 0, nullptr, maxon::String(), MakeCubeCommand::Alloc());
+	/// A unique plugin ID. You must obtain this from developers.maxon.net.
+	static constexpr const Int32 ID_COMMANDCUBE_SDK = 1041028;
+
+	const Bool	success	 = RegisterCommandPlugin(ID_COMMANDCUBE_SDK, GeLoadString(IDS_MAKECUBE), 0, nullptr, maxon::String(), MakeCubeCommand::Alloc());
 
 	if (!success)
 	{

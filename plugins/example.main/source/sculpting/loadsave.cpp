@@ -5,9 +5,9 @@
 #include "lib_sculpt.h"
 #include "main.h"
 
-#define FILE_VERSION 0
-
 using namespace cinema;
+
+static constexpr const Int32 FILE_VERSION = 0;
 
 class SculptLoaderData : public SceneLoaderData
 {
@@ -471,12 +471,16 @@ FILEERROR SculptSaverData::Save(BaseSceneSaver* node, const Filename& name, Base
 	return file->GetError();
 }
 
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 ID_SCULPTLOADER_SDK_EXAMPLE = 1027977;
+static constexpr const Int32 ID_SCULPTSAVER_SDK_EXAMPLE = 1027978;
+
 Bool RegisterSculpt()
 {
 	String name = GeLoadString(IDS_SCULPT);
-	if (!RegisterSceneLoaderPlugin(1027977, name, PLUGINFLAG_SCENELOADER_SUPPORT_MERGED_OPTIONS, SculptLoaderData::Alloc, String()))
+	if (!RegisterSceneLoaderPlugin(ID_SCULPTLOADER_SDK_EXAMPLE, name, PLUGINFLAG_SCENELOADER_SUPPORT_MERGED_OPTIONS, SculptLoaderData::Alloc, String()))
 		return false;
-	if (!RegisterSceneSaverPlugin(1027978, name, 0, SculptSaverData::Alloc, String(), "scp"_s))
+	if (!RegisterSceneSaverPlugin(ID_SCULPTSAVER_SDK_EXAMPLE, name, 0, SculptSaverData::Alloc, String(), "scp"_s))
 		return false;
 	return true;
 }

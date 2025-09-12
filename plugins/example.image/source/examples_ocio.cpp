@@ -1,3 +1,4 @@
+#include "c4d_thread.h"
 #include "c4d_basebitmap.h"
 #include "c4d_basedraw.h"
 #include "c4d_basematerial.h"
@@ -38,10 +39,10 @@ maxon::Result<void> ConvertSceneOrElements(BaseDocument* doc)
 	// CallCommand(idConvertSceneCommand);
 
 	// Ensure that the document is in OCIO color management mode.
-	BaseContainer* bc = doc->GetDataInstance();
-	if (bc->GetInt32(DOCUMENT_COLOR_MANAGEMENT) != DOCUMENT_COLOR_MANAGEMENT_OCIO)
+	BaseContainer& bc = doc->GetDataInstanceRef();
+	if (bc.GetInt32(DOCUMENT_COLOR_MANAGEMENT) != DOCUMENT_COLOR_MANAGEMENT_OCIO)
 	{
-		bc->SetInt32(DOCUMENT_COLOR_MANAGEMENT, DOCUMENT_COLOR_MANAGEMENT_OCIO);
+		bc.SetInt32(DOCUMENT_COLOR_MANAGEMENT, DOCUMENT_COLOR_MANAGEMENT_OCIO);
 		doc->UpdateOcioColorSpaces();
 		EventAdd();
 	}
@@ -54,9 +55,7 @@ maxon::Result<void> ConvertSceneOrElements(BaseDocument* doc)
 	// and non-linear input color space names "input-low" and "input-high" that are associated
 	// with an OCIO config file. Instead they must be hardcoded. Except for the the target render
 	// space, the Init call uses here the default values of the native dialog.
-	AutoAlloc<SceneColorConverter> converter;
-	if (!converter)
-		return maxon::OutOfMemoryError(MAXON_SOURCE_LOCATION, "Could not allocate converter interface."_s);
+	auto converter = maxon::UniqueRef<SceneColorConverter>::Create() iferr_return;
 
 	converter->Init(doc, "sRGB"_cs, "scene-linear Rec.709-sRGB"_cs, renderSpaceName) iferr_return;
 
@@ -67,8 +66,7 @@ maxon::Result<void> ConvertSceneOrElements(BaseDocument* doc)
 	converter->ConvertObject(doc, doc, result) iferr_return;
 
 	ApplicationOutput("\n@():", MAXON_FUNCTIONNAME);
-	ApplicationOutput("\tConverted @ elements in '@' to OCIO Render space named '@'.",
-		result.GetCount(), doc, renderSpaceName);
+	ApplicationOutput("\tConverted @ elements in '@' to OCIO Render space named '@'.", result.GetCount(), doc, renderSpaceName);
 
 	return maxon::OK;
 }
@@ -83,15 +81,13 @@ maxon::Result<void> CopyColorManagementSettings(BaseDocument* doc)
 	// convenient manner to copy all color management settings from one document to another. This
 	// does NOT entail a conversion of the colors of scene elements to OCIO, see 
 	// ConvertSceneOrElements() for that.
-	AutoAlloc<BaseDocument> newDoc;
+	auto newDoc = maxon::UniqueRef<BaseDocument>::Create() iferr_return;
 	BaseDocument::CopyLinearWorkflow(doc, newDoc, false);
 	newDoc->SetName(doc->GetName() + "(Copy)");
 
 	ApplicationOutput("\n@():", MAXON_FUNCTIONNAME);
-	ApplicationOutput("\tCopied color management settings from '@' to '@'.",
-		doc->GetName(), newDoc->GetName());
+	ApplicationOutput("\tCopied color management settings from '@' to '@'.", doc->GetName(), newDoc->GetName());
 
-	newDoc.Free();
 	return maxon::OK;
 }
 //! [CopyColorManagementSettings]
@@ -105,10 +101,10 @@ maxon::Result<void> ConvertOcioColors(BaseDocument* doc)
 		return maxon::NullptrError(MAXON_SOURCE_LOCATION, "Invalid document pointer"_s);
 
 	// OcioConverter can only initialized with a document which is in OCIO color management mode.
-	BaseContainer* bc = doc->GetDataInstance();
-	if (bc->GetInt32(DOCUMENT_COLOR_MANAGEMENT) != DOCUMENT_COLOR_MANAGEMENT_OCIO)
+	BaseContainer& bc = doc->GetDataInstanceRef();
+	if (bc.GetInt32(DOCUMENT_COLOR_MANAGEMENT) != DOCUMENT_COLOR_MANAGEMENT_OCIO)
 	{
-		bc->SetInt32(DOCUMENT_COLOR_MANAGEMENT, DOCUMENT_COLOR_MANAGEMENT_OCIO);
+		bc.SetInt32(DOCUMENT_COLOR_MANAGEMENT, DOCUMENT_COLOR_MANAGEMENT_OCIO);
 		doc->UpdateOcioColorSpaces();
 		EventAdd();
 	}
@@ -124,25 +120,21 @@ maxon::Result<void> ConvertOcioColors(BaseDocument* doc)
 	// Convert the color from sRGB space to render space. With the default OCIO settings of Cinema 
 	// 4D 2023.1, this will convert to ACEScg space. Doing this is only necessary when computation
 	// results or color definitions are explicitly outside of the render space.
-	const maxon::Vector64 colorRender = converter->TransformColor(
-		colorInput, COLORSPACETRANSFORMATION::OCIO_SRGB_TO_RENDERING);
+	const maxon::Vector64 colorRender = converter->TransformColor(colorInput, COLORSPACETRANSFORMATION::OCIO_SRGB_TO_RENDERING);
 
 	// Convert the color from render space to display space, i.e., the space the physical display 
 	// device operates in. With the default OCIO settings of Cinema 4D 2023.1, this will convert 
 	// from ACEScg to sRGB space.
-	const maxon::Vector64 colorDisplay = converter->TransformColor(
-		colorRender, COLORSPACETRANSFORMATION::OCIO_RENDERING_TO_DISPLAY);
+	const maxon::Vector64 colorDisplay = converter->TransformColor(colorRender, COLORSPACETRANSFORMATION::OCIO_RENDERING_TO_DISPLAY);
 
 	// Convert a color from render space to view transform (space), i.e., to the value which
 	// will be finally shown on the screen of a user. With the default OCIO settings of Cinema 4D 
 	// 2023.1, this will convert from ACEScg to ACES 1.0 SDR-video space.
-	const maxon::Vector64 colorView = converter->TransformColor(
-		colorRender, COLORSPACETRANSFORMATION::OCIO_RENDERING_TO_VIEW);
+	const maxon::Vector64 colorView = converter->TransformColor(colorRender, COLORSPACETRANSFORMATION::OCIO_RENDERING_TO_VIEW);
 
 	// There are multiple other conversion paths to be found in #COLORSPACETRANSFORMATION, including
 	// inverse operations, as for example converting a color in view space back to the render space.
-	const maxon::Vector64 colorRenderViewRender = converter->TransformColor(
-		colorView, COLORSPACETRANSFORMATION::OCIO_VIEW_TO_RENDERING);
+	const maxon::Vector64 colorRenderViewRender = converter->TransformColor(colorView, COLORSPACETRANSFORMATION::OCIO_VIEW_TO_RENDERING);
 
 	// Print the results.
 	ApplicationOutput("\n@():", MAXON_FUNCTIONNAME);
@@ -165,10 +157,10 @@ maxon::Result<void> ConvertOcioColorsArbitrarily(BaseDocument* doc)
 		return maxon::NullptrError(MAXON_SOURCE_LOCATION, "Invalid document pointer"_s);
 
 	// Make sure that #doc is in OCIO color management mode.
-	BaseContainer* bc = doc->GetDataInstance();
-	if (bc->GetInt32(DOCUMENT_COLOR_MANAGEMENT) != DOCUMENT_COLOR_MANAGEMENT_OCIO)
+	BaseContainer& bc = doc->GetDataInstanceRef();
+	if (bc.GetInt32(DOCUMENT_COLOR_MANAGEMENT) != DOCUMENT_COLOR_MANAGEMENT_OCIO)
 	{
-		bc->SetInt32(DOCUMENT_COLOR_MANAGEMENT, DOCUMENT_COLOR_MANAGEMENT_OCIO);
+		bc.SetInt32(DOCUMENT_COLOR_MANAGEMENT, DOCUMENT_COLOR_MANAGEMENT_OCIO);
 		doc->UpdateOcioColorSpaces();
 		EventAdd();
 	}
@@ -256,10 +248,10 @@ maxon::Result<void> GetSetColorManagementSettings(BaseDocument* doc)
 		return maxon::NullptrError(MAXON_SOURCE_LOCATION, "Invalid document pointer"_s);
 
 	// Ensure that the document is in OCIO color management mode.
-	BaseContainer* bc = doc->GetDataInstance();
-	if (bc->GetInt32(DOCUMENT_COLOR_MANAGEMENT) != DOCUMENT_COLOR_MANAGEMENT_OCIO)
+	BaseContainer& bc = doc->GetDataInstanceRef();
+	if (bc.GetInt32(DOCUMENT_COLOR_MANAGEMENT) != DOCUMENT_COLOR_MANAGEMENT_OCIO)
 	{
-		bc->SetInt32(DOCUMENT_COLOR_MANAGEMENT, DOCUMENT_COLOR_MANAGEMENT_OCIO);
+		bc.SetInt32(DOCUMENT_COLOR_MANAGEMENT, DOCUMENT_COLOR_MANAGEMENT_OCIO);
 		doc->UpdateOcioColorSpaces();
 		EventAdd();
 	}
@@ -306,10 +298,10 @@ maxon::Result<void> GetSetColorValuesInOcioDocuments(BaseDocument* doc)
 		return maxon::NullptrError(MAXON_SOURCE_LOCATION, "Invalid document pointer"_s);
 
 	// Ensure that the document is in OCIO color management mode.
-	BaseContainer* bc = doc->GetDataInstance();
-	if (bc->GetInt32(DOCUMENT_COLOR_MANAGEMENT) != DOCUMENT_COLOR_MANAGEMENT_OCIO)
+	BaseContainer& bc = doc->GetDataInstanceRef();
+	if (bc.GetInt32(DOCUMENT_COLOR_MANAGEMENT) != DOCUMENT_COLOR_MANAGEMENT_OCIO)
 	{
-		bc->SetInt32(DOCUMENT_COLOR_MANAGEMENT, DOCUMENT_COLOR_MANAGEMENT_OCIO);
+		bc.SetInt32(DOCUMENT_COLOR_MANAGEMENT, DOCUMENT_COLOR_MANAGEMENT_OCIO);
 		doc->UpdateOcioColorSpaces();
 		EventAdd();
 	}
@@ -337,8 +329,7 @@ maxon::Result<void> GetSetColorValuesInOcioDocuments(BaseDocument* doc)
 		return maxon::NullptrError(MAXON_SOURCE_LOCATION, "Could not init OCIO converter for document."_s);
 
 	// Transform #defaultColor from Render space to sRGB space.
-	const Vector colorSrgb = converter->TransformColor(
-		defaultColor, COLORSPACETRANSFORMATION::OCIO_RENDERING_TO_SRGB);
+	const Vector colorSrgb = converter->TransformColor(defaultColor, COLORSPACETRANSFORMATION::OCIO_RENDERING_TO_SRGB);
 	ApplicationOutput("\tdefaultColor(@): @", "sRGB"_s, colorSrgb);
 
 	// Allocate three materials to write color values to.
@@ -385,19 +376,16 @@ maxon::Result<void> GetSetColorValuesInOcioDocuments(BaseDocument* doc)
 //! [GetSetBitmapOcioProfiles]
 maxon::Result<void> GetSetBitmapOcioProfiles(BaseDocument* doc)
 {
-	BaseBitmap* clone;
-
 	iferr_scope;
-	finally { BaseBitmap::Free(clone); };
 
 	if (MAXON_UNLIKELY(!doc))
 		return maxon::NullptrError(MAXON_SOURCE_LOCATION, "Invalid document pointer"_s);
 
 	// Ensure that the document is in OCIO color management mode.
-	BaseContainer* bc = doc->GetDataInstance();
-	if (bc->GetInt32(DOCUMENT_COLOR_MANAGEMENT) != DOCUMENT_COLOR_MANAGEMENT_OCIO)
+	BaseContainer& bc = doc->GetDataInstanceRef();
+	if (bc.GetInt32(DOCUMENT_COLOR_MANAGEMENT) != DOCUMENT_COLOR_MANAGEMENT_OCIO)
 	{
-		bc->SetInt32(DOCUMENT_COLOR_MANAGEMENT, DOCUMENT_COLOR_MANAGEMENT_OCIO);
+		bc.SetInt32(DOCUMENT_COLOR_MANAGEMENT, DOCUMENT_COLOR_MANAGEMENT_OCIO);
 		doc->UpdateOcioColorSpaces();
 		EventAdd();
 	}
@@ -411,22 +399,18 @@ maxon::Result<void> GetSetBitmapOcioProfiles(BaseDocument* doc)
 		return maxon::UnexpectedError(MAXON_SOURCE_LOCATION, "Could not retrieve user repository."_s);
 
 	const maxon::Id assetId("file_9748feafc2c00be8");
-	const maxon::AssetDescription asset = repository.FindLatestAsset(
-		maxon::Id(), assetId, maxon::Id(), maxon::ASSET_FIND_MODE::LATEST) iferr_return;
+	const maxon::AssetDescription asset = repository.FindLatestAsset(maxon::Id(), assetId, maxon::Id(), maxon::ASSET_FIND_MODE::LATEST) iferr_return;
 	const maxon::Url textureUrl = maxon::AssetInterface::GetAssetUrl(asset, true) iferr_return;
 
 	// --- Start of Image API related code ----------------------------------------------------------
 
 	// Allocate a bitmap and load the texture asset.
-	AutoAlloc<BaseBitmap> bitmap;
-	if (MAXON_UNLIKELY(!bitmap))
-		return maxon::OutOfMemoryError(MAXON_SOURCE_LOCATION, "Could not allocate bitmap."_s);
-
+	auto bitmap = maxon::UniqueRef<BaseBitmap>::Create() iferr_return;
 	if (bitmap->Init(MaxonConvert(textureUrl)) != IMAGERESULT::OK)
 		return maxon::IoError(MAXON_SOURCE_LOCATION, textureUrl, "Could not load image file."_s);
 
 	// Clone the loaded bitmap.
-	clone = bitmap->GetClone();
+	maxon::UniqueRef<BaseBitmap> clone = bitmap->GetClone();
 	if (MAXON_UNLIKELY(!clone))
 		return maxon::UnexpectedError(MAXON_SOURCE_LOCATION, "Could not clone bitmap."_s);
 
@@ -453,19 +437,18 @@ Bool OcioAwareRenderer::Init(GeListNode* node, Bool isCloneInit)
 	if (!item)
 		return false;
 
-	BaseContainer* data = item->GetDataInstance();
+	BaseContainer& data = item->GetDataInstanceRef();
 
-	data->SetVector(ID_RENDER_COLOR, Vector(.75, .25, .0));
-	data->SetBool(ID_PRETRANSFORM_OCIO_OUTPUT, true);
-	data->SetBool(ID_OVERWRITE_OCIO_DISPLAY_SPACE, false);
-	data->SetBool(ID_OVERWRITE_OCIO_VIEW_TRANSFORM, false);
+	data.SetVector(ID_RENDER_COLOR, Vector(.75, .25, .0));
+	data.SetBool(ID_PRETRANSFORM_OCIO_OUTPUT, true);
+	data.SetBool(ID_OVERWRITE_OCIO_DISPLAY_SPACE, false);
+	data.SetBool(ID_OVERWRITE_OCIO_VIEW_TRANSFORM, false);
 
 	return true;
 }
 
 //! [OcioAwareRenderer]
-void OcioAwareRenderer::GetColorProfileInfo(
-	BaseVideoPost* node, VideoPostStruct* vps, ColorProfileInfo& info)
+void OcioAwareRenderer::GetColorProfileInfo(BaseVideoPost* node, VideoPostStruct* vps, ColorProfileInfo& info)
 {
 	if (!node)
 		return;
@@ -473,10 +456,10 @@ void OcioAwareRenderer::GetColorProfileInfo(
 	// GetColorProfileInfo allows us to react to or modify the color profiles of an upcoming OCIO 
 	// rendering.Here we use it to null the display and view transform by overwriting them with the
 	// render transform when so indicated, causing the rendered image to be treated as "raw".
-	BaseContainer* data = node->GetDataInstance();
-	if (data->GetBool(ID_OVERWRITE_OCIO_DISPLAY_SPACE))
+	const BaseContainer& data = node->GetDataInstanceRef();
+	if (data.GetBool(ID_OVERWRITE_OCIO_DISPLAY_SPACE))
 		info.displayColorSpace = info.renderingColorSpace;
-	if (data->GetBool(ID_OVERWRITE_OCIO_VIEW_TRANSFORM))
+	if (data.GetBool(ID_OVERWRITE_OCIO_VIEW_TRANSFORM))
 		info.viewColorSpace = info.renderingColorSpace;
 }
 
@@ -489,7 +472,7 @@ RENDERRESULT OcioAwareRenderer::Execute(BaseVideoPost* node, VideoPostStruct* vp
 
 	// Bail when important data is not accessible, a rendering error did occur, or the user did stop 
 	// the renderer.
-	if (!vps || !vps->doc || !vps->doc->GetDataInstance() || !vps->render)
+	if (!vps || !vps->doc || !vps->render)
 		return RENDERRESULT::OUTOFMEMORY;
 
 	if (*vps->error != RENDERRESULT::OK)
@@ -511,15 +494,15 @@ RENDERRESULT OcioAwareRenderer::Execute(BaseVideoPost* node, VideoPostStruct* vp
 		return RENDERRESULT::FAILED;
 
 	// Get the color to "render" from the VideoPost node.
-	BaseContainer* nodeData = node->GetDataInstance();
-	Vector color = nodeData->GetVector(ID_RENDER_COLOR);
+	const BaseContainer& nodeData = node->GetDataInstanceRef();
+	Vector color = nodeData.GetVector(ID_RENDER_COLOR);
 
 	// By default, just as in other places of the API, all color computations are implicitly in
 	// Render space once a document is in OCIO mode. When a video post plugin is not meant to operate
 	// in that space, all outputs must be transformed manually.
-	BaseContainer* docData = vps->doc->GetDataInstance();
-	if ((docData->GetInt32(DOCUMENT_COLOR_MANAGEMENT) == DOCUMENT_COLOR_MANAGEMENT_OCIO) &&
-		nodeData->GetBool(ID_PRETRANSFORM_OCIO_OUTPUT))
+	const BaseContainer& docData = vps->doc->GetDataInstanceRef();
+	if ((docData.GetInt32(DOCUMENT_COLOR_MANAGEMENT) == DOCUMENT_COLOR_MANAGEMENT_OCIO) &&
+		nodeData.GetBool(ID_PRETRANSFORM_OCIO_OUTPUT))
 	{
 		const OcioConverter* converter = OcioConverter::Init(vps->doc) iferr_return;
 		if (!converter)
@@ -554,20 +537,21 @@ RENDERRESULT OcioAwareRenderer::Execute(BaseVideoPost* node, VideoPostStruct* vp
 //! [Ocio2025NodeData_Init]
 Bool OcioNode2025::Init(cinema::GeListNode* node, cinema::Bool isCloneInit)
 {
-	BaseList2D* const blist = static_cast<BaseList2D*>(node);
-	BaseContainer* const bc = blist ? blist->GetDataInstance() : nullptr;
-	if (!bc)
+	if (node == nullptr)
 		return false;
 
 	// In 2025, all colors set in the Init method are always interpreted as sRGB-2.2, even when the 
 	// document is in OCIO mode, which is now the default. This differs from before where colors were 
 	// interpreted as render space colors in that case.
 	if (!isCloneInit)
-		// Will not stay as (1, 0, 0) when the document is in OCIO mode, as the color will be then 
+	{
+		BaseContainer& bc = static_cast<BaseObject*>(node)->GetDataInstanceRef();
+		// Will not stay as (1, 0, 0) when the document is in OCIO mode, as the color will be then
 		// transformed from this value interpreted as sRGB-2.2 to the render space, which is ACEScg 
 		// by default ... unless we handle MSG_MENUPREPARE.
-		bc->SetVector(OCIO_NODE_2025_COLOR, Vector(1, 0, 0));
-
+		bc.SetVector(OCIO_NODE_2025_COLOR, Vector(1, 0, 0));
+	}
+	
 	PreloadTextures() iferr_ignore("this might fail but we cannot do anything about it");
 
 	return true;
@@ -818,6 +802,8 @@ DRAWRESULT OcioNode2025::Draw(BaseObject* op, DRAWPASS drawpass, BaseDraw* bd, B
 
 BaseObject* OcioNode2025::GetVirtualObjects(BaseObject* op, const HierarchyHelp* hh)
 {
+	iferr_scope_handler { return nullptr; };
+
 	// Attempt to get an exiting cache and return it when it is valid.
 	if (!op || !hh)
 		return nullptr;
@@ -827,18 +813,13 @@ BaseObject* OcioNode2025::GetVirtualObjects(BaseObject* op, const HierarchyHelp*
 		return op->GetCache();
 
 	// Build a simple quad polygon and return it as the cache of the generator.
-	PolygonObject* result = PolygonObject::Alloc(4, 1);
-	if (!result)
-		return BaseObject::Alloc(Onull);
+	auto result = maxon::UniqueRef<PolygonObject>::Create(4, 1) iferr_return;
 
 	const Float32 diameter = 200;
 	Vector* points = result->GetPointW();
 	CPolygon* polygons = result->GetPolygonW();
 	if (!points || !polygons)
-	{
-		PolygonObject::Free(result);
-		return BaseObject::Alloc(Onull);
-	}
+		return nullptr;
 
 	points[0] = Vector(-diameter, -diameter, 0);
 	points[1] = Vector(diameter, -diameter, 0);
@@ -846,5 +827,6 @@ BaseObject* OcioNode2025::GetVirtualObjects(BaseObject* op, const HierarchyHelp*
 	points[3] = Vector(-diameter, diameter, 0);
 	polygons[0] = CPolygon(3, 2, 1, 0);
 
-	return result;
+	// The caller takes ownership of the PolygonObject.
+	return result.Disconnect();
 }

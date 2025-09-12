@@ -18,8 +18,8 @@
 
 using namespace cinema;
 
-/**A unique plugin ID. You must obtain this from developers.maxon.net. Use this ID to create new instances of this object.*/
-static const Int32 ID_SDKEXAMPLE_OBJECTDATA_GREEKTEMPLE = 1038235;
+/// A unique plugin ID. You must obtain this from developers.maxon.net. Use this ID to create new instances of this object.
+static constexpr const Int32 ID_SDKEXAMPLE_OBJECTDATA_GREEKTEMPLE = 1038235;
 
 namespace GreekTempleHelpers
 {
@@ -50,17 +50,13 @@ namespace GreekTempleHelpers
 	/// @param[in] objSegsPtr					Segmentation array.
 	/// @return												True if building process succeeds.
 	//----------------------------------------------------------------------------------------
-	static maxon::Result<void> CreateTempleBase(BaseObject* &parentObj, const Float& baseUnit, const Vector& objSize, const Int32* objSegsPtr = nullptr, const Int32 stairsCount = 3);
-	static maxon::Result<void> CreateTempleBase(BaseObject* &parentObj, const Float& baseUnit, const Vector& objSize, const Int32* objSegsPtr /*= nullptr*/, const Int32 stairsCount /*=3*/)
+	static maxon::Result<void> CreateTempleBase(BaseObject* parentObj, const Float& baseUnit, const Vector& objSize, const Int32* objSegsPtr /*= nullptr*/, const Int32 stairsCount /*=3*/)
 	{
 		iferr_scope;
 
 		// Create the rectangle profile used to extrude the base temple.
-		AutoAlloc<BaseObject>	slabPtr(Ocube);
-		AutoAlloc<BaseObject> baseNullObjPtr(Onull);
-
-		if (!slabPtr || !baseNullObjPtr)
-			return maxon::NullptrError(MAXON_SOURCE_LOCATION);
+		auto slabPtr = maxon::UniqueRef<BaseObject>::Create(Ocube) iferr_return;
+		auto baseNullObjPtr = maxon::UniqueRef<BaseObject>::Create(Onull) iferr_return;
 
 		// Set object names accordingly.
 		slabPtr->SetName("TempleBaseStair_0"_s);
@@ -89,25 +85,18 @@ namespace GreekTempleHelpers
 		slabPtr->SetRelPos(Vector(0, (-objSize.y + stairUnit) * 0.5, 0));
 
 		// Allocate object needed to be used with instance generators.
-		AutoAlloc<BaseLink> pBL;
-		GeData baseLinkData;
-
-		if (!pBL)
-			return maxon::NullptrError(MAXON_SOURCE_LOCATION);
 
 		// Create a baselink to populate the instance generators object_link parameter and
 		// set the parameter accordingly.
+		auto pBL = maxon::UniqueRef<BaseLink>::Create() iferr_return;
 		pBL->SetLink(slabPtr);
+		GeData baseLinkData;
 		baseLinkData.SetBaseLink(*pBL);
 
 		for (Int32 i = 1; i < stairsCount; i++)
 		{
-			AutoAlloc<BaseObject> stairInstancePtr(Oinstance);
-
-			if (!stairInstancePtr)
-				return maxon::NullptrError(MAXON_SOURCE_LOCATION);
-
-			stairInstancePtr->SetName("TempleBaseStair_" + String::IntToString(i));
+			auto stairInstancePtr = maxon::UniqueRef<BaseObject>::Create(Oinstance) iferr_return;
+			stairInstancePtr->SetName("TempleBaseStair_" + cinema::String::IntToString(i));
 
 			//	Create scaling components and accordingly scale the instance to guarantee
 			//	that the new width and height are modules of the unit base.
@@ -125,14 +114,14 @@ namespace GreekTempleHelpers
 			// Note that the inserting process of "released" object should
 			// follow a child->parent direction (before child than parent)
 			// otherwise released pointers will be no more accessible.
-			stairInstancePtr.Release()->InsertUnder(baseNullObjPtr);
+			stairInstancePtr.Disconnect()->InsertUnder(baseNullObjPtr);
 		}
 
 		// Insert the instance reference under the null "base" object.
-		slabPtr.Release()->InsertUnder(baseNullObjPtr);
+		slabPtr.Disconnect()->InsertUnder(baseNullObjPtr);
 
 		// Insert the final assembled node under the parent object passed.
-		baseNullObjPtr.Release()->InsertUnder(parentObj);
+		baseNullObjPtr.Disconnect()->InsertUnder(parentObj);
 
 		return maxon::OK;
 	}
@@ -145,8 +134,7 @@ namespace GreekTempleHelpers
 	/// @param[in] objSize						Bounding box radius vector.
 	/// @return												True if building process succeeds.
 	//----------------------------------------------------------------------------------------
-	static maxon::Result<void> PerformBooleanSubtraction(BaseObject* roofNullObjPtr, BaseObject* extrudeRoofGenRelPtr, const Float& baseUnit, const Vector& objSize);
-	static maxon::Result<void> PerformBooleanSubtraction(BaseObject* roofNullObjPtr, BaseObject* extrudeRoofGenRelPtr, const Float& baseUnit, const Vector& objSize)
+	static maxon::Result<void> PerformBooleanSubtraction(BaseObject* roofNullObjPtr, maxon::UniqueRef<BaseObject> extrudeRoofGenRelPtr, const Float& baseUnit, const Vector& objSize)
 	{
 		iferr_scope;
 
@@ -154,9 +142,8 @@ namespace GreekTempleHelpers
 			return maxon::IllegalArgumentError(MAXON_SOURCE_LOCATION);
 
 		//	Create some instance of the roof to detail the temple roof using booleans.
-		AutoAlloc<BaseObject> roofBooleanSub01Ptr(Oinstance), roofBooleanSub02Ptr(Oinstance);
-		if (!roofBooleanSub01Ptr || !roofBooleanSub02Ptr)
-			return maxon::NullptrError(MAXON_SOURCE_LOCATION);
+		auto roofBooleanSub01Ptr = maxon::UniqueRef<BaseObject>::Create(Oinstance) iferr_return;
+		auto roofBooleanSub02Ptr = maxon::UniqueRef<BaseObject>::Create(Oinstance) iferr_return;
 
 		// Set instance names accordingly.
 		roofBooleanSub01Ptr->SetName("RoofSubtractedInstance01"_s);
@@ -164,14 +151,10 @@ namespace GreekTempleHelpers
 
 		// Set the base link to point to the extruded roof and set the value of the link of the
 		// two instances accordingly.
-		AutoAlloc<BaseLink> pBL;
-		GeData baseLinkData;
-
-		if (!pBL)
-			return maxon::NullptrError(MAXON_SOURCE_LOCATION);
-
+		auto pBL = maxon::UniqueRef<BaseLink>::Create() iferr_return;
 		pBL->SetLink(extrudeRoofGenRelPtr);
-		baseLinkData.SetBaseLink(pBL);
+		GeData baseLinkData;
+		baseLinkData.SetBaseLink(*pBL);
 		roofBooleanSub01Ptr->SetParameter(ConstDescIDLevel(INSTANCEOBJECT_LINK), baseLinkData, DESCFLAGS_SET::NONE);
 		roofBooleanSub02Ptr->SetParameter(ConstDescIDLevel(INSTANCEOBJECT_LINK), baseLinkData, DESCFLAGS_SET::NONE);
 
@@ -200,9 +183,8 @@ namespace GreekTempleHelpers
 
 		// Create Boolean generators and set the parameter accordingly to subtract the two
 		// instances from the main extruded roof body.
-		AutoAlloc<BaseObject> boolFrontPtr(Oboole), boolRearPtr(Oboole);
-		if (!boolFrontPtr || !boolRearPtr)
-			return maxon::NullptrError(MAXON_SOURCE_LOCATION);
+		auto boolFrontPtr = maxon::UniqueRef<BaseObject>::Create(Oboole) iferr_return;
+		auto boolRearPtr = maxon::UniqueRef<BaseObject>::Create(Oboole) iferr_return;
 
 		// Set boolean generators' name accordingly.
 		boolRearPtr->SetName("RoofRearBooleanSubOperation"_s);
@@ -213,15 +195,15 @@ namespace GreekTempleHelpers
 		boolRearPtr->SetParameter(ConstDescIDLevel(BOOLEOBJECT_TYPE), BOOLEOBJECT_TYPE_SUBTRACT, DESCFLAGS_SET::NONE);
 
 		// Make the first boolean operation subtracting the first instance from the roof extrusion.
-		extrudeRoofGenRelPtr->InsertUnder(boolFrontPtr);
-		roofBooleanSub01Ptr.Release()->InsertUnderLast(boolFrontPtr);
+		extrudeRoofGenRelPtr.Disconnect()->InsertUnder(boolFrontPtr);
+		roofBooleanSub01Ptr.Disconnect()->InsertUnderLast(boolFrontPtr);
 
 		// Make the second boolean operation subtracting the second instance from the first boolean.
-		boolFrontPtr.Release()->InsertUnder(boolRearPtr);
-		roofBooleanSub02Ptr.Release()->InsertUnderLast(boolRearPtr);
+		boolFrontPtr.Disconnect()->InsertUnder(boolRearPtr);
+		roofBooleanSub02Ptr.Disconnect()->InsertUnderLast(boolRearPtr);
 
 		// Insert the last boolean operand under the roof null object.
-		boolRearPtr.Release()->InsertUnderLast(roofNullObjPtr);
+		boolRearPtr.Disconnect()->InsertUnderLast(roofNullObjPtr);
 
 		return maxon::OK;
 	}
@@ -236,17 +218,14 @@ namespace GreekTempleHelpers
 	/// @param[in] objSegsPtr					Segmentation array.
 	/// @return												True if building process succeeds.
 	//----------------------------------------------------------------------------------------
-	static maxon::Result<void> CreateTempleRoof(BaseObject* &parentObj, const Float& baseUnit, const Vector& objSize, const Int32* objSegsPtr = nullptr);
-	static maxon::Result<void> CreateTempleRoof(BaseObject* &parentObj, const Float& baseUnit, const Vector& objSize, const Int32* objSegsPtr /*= nullptr*/)
+	static maxon::Result<void> CreateTempleRoof(BaseObject* parentObj, const Float& baseUnit, const Vector& objSize, const Int32* objSegsPtr /*= nullptr*/)
 	{
 		iferr_scope;
 
-		AutoAlloc<BaseObject> triangleShapePtr(Osplinenside);
-		AutoAlloc<BaseObject> extrudeRoofGenPtr(Oextrude);
-		AutoAlloc<BaseObject> roofNullObjPtr(Onull);
-		if (!triangleShapePtr || !extrudeRoofGenPtr || !roofNullObjPtr)
-			return maxon::NullptrError(MAXON_SOURCE_LOCATION);
-
+		auto triangleShapePtr = maxon::UniqueRef<BaseObject>::Create(Osplinenside) iferr_return;
+		auto extrudeRoofGenPtr = maxon::UniqueRef<BaseObject>::Create(Oextrude) iferr_return;
+		auto roofNullObjPtr = maxon::UniqueRef<BaseObject>::Create(Onull) iferr_return;
+ 
 		// Set object names accordingly.
 		triangleShapePtr->SetName("RoofShape"_s);
 		extrudeRoofGenPtr->SetName("RoofExtrusion"_s);
@@ -269,7 +248,7 @@ namespace GreekTempleHelpers
 		}
 
 		// Calculate the length of the triangle side starting from the circle radius.
-		const Float triSideSize = 2 * (Cos(PI / 6) * triCircumCircleRadius);
+		const Float triSideSize = 2 * (cinema::Cos(cinema::PI / 6) * triCircumCircleRadius);
 		if (triSideSize == 0)
 			return maxon::IllegalArgumentError(MAXON_SOURCE_LOCATION);
 
@@ -277,7 +256,7 @@ namespace GreekTempleHelpers
 
 		const Float yScaleComponent = scaleFactor * objSize.x / triSideSize;
 		triangleShapePtr->SetAbsScale(Vector(1, yScaleComponent, 1));
-		triangleShapePtr.Release()->InsertUnder(extrudeRoofGenPtr);
+		triangleShapePtr.Disconnect()->InsertUnder(extrudeRoofGenPtr);
 
 		// Set the Extrude mode to absolute
 		extrudeRoofGenPtr->SetParameter(ConstDescIDLevel(EXTRUDEOBJECT_DIRECTION), EXTRUDEOBJECT_DIRECTION_ABSOLUTE, DESCFLAGS_SET::NONE);
@@ -294,19 +273,15 @@ namespace GreekTempleHelpers
 		// Translate the roof.
 		extrudeRoofGenPtr->SetRelPos(Vector(0, 0, -objSize.z / 2));
 
-		BaseObject* extrudeRoofGenRelPtr = extrudeRoofGenPtr.Release();
-		if (!extrudeRoofGenRelPtr)
-			return maxon::NullptrError(MAXON_SOURCE_LOCATION);
-
 		// Perform the boolean subs operation in order to decorate the temple roof;
-		PerformBooleanSubtraction(roofNullObjPtr, extrudeRoofGenRelPtr, baseUnit, objSize) iferr_return;
+		PerformBooleanSubtraction(roofNullObjPtr, std::move(extrudeRoofGenPtr), baseUnit, objSize) iferr_return;
 
 		// Rotate and reposition the roof null object to properly match position.
-		roofNullObjPtr->SetRotationOrder(ROTATIONORDER::XYZLOCAL);
-		roofNullObjPtr->SetAbsRot(Vector(0, 0, -PI * 0.5));
+		roofNullObjPtr->SetRotationOrder(cinema::ROTATIONORDER::XYZLOCAL);
+		roofNullObjPtr->SetAbsRot(Vector(0, 0, -cinema::PI * 0.5));
 		roofNullObjPtr->SetRelPos(Vector(0, objSize.y / 2 - triCircumCircleRadius, 0));
 
-		roofNullObjPtr.Release()->InsertUnder(parentObj);
+		roofNullObjPtr.Disconnect()->InsertUnder(parentObj);
 
 		return maxon::OK;
 	}
@@ -314,18 +289,16 @@ namespace GreekTempleHelpers
 	//----------------------------------------------------------------------------------------
 	/// Global function responsible to create the capital of the temple column.
 	/// @brief Function responsible to create the capital of the temple column.
-	/// @param[out] columnCapitalRelPtr	Column capital object pointer. @callerOwnsPointed{base object}
 	/// @param[in] capitalHeightRatio	Capital height ratio.
 	/// @param[in] capitalSideHeightRatio	Capital side/height ratio.
 	/// @param[in] objSegsPtr					Segmentation array.
 	/// @return												True if building process succeeds.
 	//----------------------------------------------------------------------------------------
-	static maxon::Result<void> CreateColumnCapital(BaseObject* &columnCapitalRelPtr, const Float &capitalHeightRatio, const Float &capitalSideHeightRatio, const Int32* objSegsPtr = nullptr);
-	static maxon::Result<void> CreateColumnCapital(BaseObject* &columnCapitalRelPtr, const Float &capitalHeightRatio, const Float &capitalSideHeightRatio, const Int32* objSegsPtr /*= nullptr*/)
+	static maxon::Result<BaseObject*> CreateColumnCapital(const Float &capitalHeightRatio, const Float &capitalSideHeightRatio, const Int32* objSegsPtr /*= nullptr*/)
 	{
-		AutoAlloc<BaseObject> columnCapitalPtr(Ocube);
-		if (!columnCapitalPtr)
-			return maxon::NullptrError(MAXON_SOURCE_LOCATION);
+		iferr_scope;
+		
+		auto columnCapitalPtr = maxon::UniqueRef<BaseObject>::Create(Ocube) iferr_return;
 
 		// Set object names accordingly to their function.
 		columnCapitalPtr->SetName("ColumnCapital"_s);
@@ -341,9 +314,7 @@ namespace GreekTempleHelpers
 			columnCapitalPtr->SetParameter(ConstDescIDLevel(PRIM_CUBE_SUBY), 8 * objSegsPtr[1], DESCFLAGS_SET::NONE);
 
 		// Create two taper modifiers to get the typical look of the column
-		AutoAlloc<BaseObject> capitalTaper(Otaper);
-		if (!capitalTaper)
-			return maxon::NullptrError(MAXON_SOURCE_LOCATION);
+		auto capitalTaper = maxon::UniqueRef<BaseObject>::Create(Otaper) iferr_return;
 
 		// Set modifiers name accordingly to their function
 		capitalTaper->SetName("CapitalTaper"_s);
@@ -355,29 +326,24 @@ namespace GreekTempleHelpers
 
 		// Hide the deformer cage from the viewport
 		capitalTaper->SetParameter(ConstDescIDLevel(ID_BASEOBJECT_VISIBILITY_EDITOR), OBJECT_OFF, DESCFLAGS_SET::NONE);
-		capitalTaper.Release()->InsertUnder(columnCapitalPtr);
+		capitalTaper.Disconnect()->InsertUnder(columnCapitalPtr);
 
-		columnCapitalRelPtr = columnCapitalPtr.Release();
-
-		return maxon::OK;
+		return columnCapitalPtr.Disconnect();
 	}
 
 	//----------------------------------------------------------------------------------------
 	/// Global function responsible to create the base of the temple column.
 	/// @brief Function responsible to create the base of the temple column.
-	/// @param[out] columnBaseRelPtr	Column base object pointer. @callerOwnsPointed{base object}
 	/// @param[in] baseHeightRatio		Base height ratio.
 	/// @param[in] baseRadiusHeightRatio	Base side/height ratio.
 	/// @param[in] objSegsPtr					Segmentation array.
 	/// @return												True if building process succeeds.
 	//----------------------------------------------------------------------------------------
-	static maxon::Result<void> CreateColumnBase(BaseObject* &columnBaseRelPtr, const Float &baseHeightRatio, const Float &baseRadiusHeightRatio, const Int32* objSegsPtr = nullptr);
-	static maxon::Result<void> CreateColumnBase(BaseObject* &columnBaseRelPtr, const Float &baseHeightRatio, const Float &baseRadiusHeightRatio, const Int32* objSegsPtr /*= nullptr*/)
+	static maxon::Result<BaseObject*> CreateColumnBase(const Float &baseHeightRatio, const Float &baseRadiusHeightRatio, const Int32* objSegsPtr /*= nullptr*/)
 	{
+		iferr_scope;
 
-		AutoAlloc<BaseObject> columnBasePtr(Ocylinder);
-		if (!columnBasePtr)
-			return maxon::NullptrError(MAXON_SOURCE_LOCATION);
+		auto columnBasePtr = maxon::UniqueRef<BaseObject>::Create(Ocylinder) iferr_return;
 
 		// Set object names accordingly to their function.
 		columnBasePtr->SetName("ColumnBase"_s);
@@ -391,32 +357,27 @@ namespace GreekTempleHelpers
 		columnBasePtr->SetParameter(ConstDescIDLevel(PRIM_CYLINDER_HEIGHT), baseHeightRatio, DESCFLAGS_SET::NONE);
 		columnBasePtr->SetParameter(ConstDescIDLevel(PRIM_CYLINDER_RADIUS), baseRadius, DESCFLAGS_SET::NONE);
 
-
 		// Assign the segmentation data to the steam, base and capital
 		// to allow proper deforming operators to run
 		if (objSegsPtr)
 			columnBasePtr->SetParameter(ConstDescIDLevel(PRIM_CYLINDER_HSUB), objSegsPtr[1], DESCFLAGS_SET::NONE);
 
-		columnBaseRelPtr = columnBasePtr.Release();
-
-		return maxon::OK;
+		return columnBasePtr.Disconnect();
 	}
 
 	//----------------------------------------------------------------------------------------
 	/// Global function responsible to create the stem of the temple column.
 	/// @brief Function responsible to create the stem of the temple column.
-	/// @param[out] columnStemRelPtr	Column stem object pointer. @callerOwnsPointed{base object}
 	/// @param[in] stemHeightRatio		Stem height ratio.
 	/// @param[in] stemRadiusHeightRatio	Stem side/height ratio.
 	/// @param[in] objSegsPtr					Segmentation array.
 	/// @return												True if building process succeeds.
 	//----------------------------------------------------------------------------------------
-	static maxon::Result<void> CreateColumnStem(BaseObject* &columnStemRelPtr, const Float &stemHeightRatio, const Float &stemRadiusHeightRatio, const Int32* objSegsPtr = nullptr);
-	static maxon::Result<void> CreateColumnStem(BaseObject* &columnStemRelPtr, const Float &stemHeightRatio, const Float &stemRadiusHeightRatio, const Int32* objSegsPtr /*= nullptr*/)
+	static maxon::Result<BaseObject*> CreateColumnStem(const Float &stemHeightRatio, const Float &stemRadiusHeightRatio, const Int32* objSegsPtr /*= nullptr*/)
 	{
-		AutoAlloc<BaseObject> columnStemPtr(Ocylinder);
-		if (!columnStemPtr)
-			return maxon::NullptrError(MAXON_SOURCE_LOCATION);
+		iferr_scope;
+
+		auto columnStemPtr = maxon::UniqueRef<BaseObject>::Create(Ocylinder) iferr_return;
 
 		// Set object names accordingly to their function.
 		columnStemPtr->SetName("ColumnStem"_s);
@@ -432,9 +393,7 @@ namespace GreekTempleHelpers
 			columnStemPtr->SetParameter(ConstDescIDLevel(PRIM_CYLINDER_HSUB), objSegsPtr[1], DESCFLAGS_SET::NONE);
 
 		// Create two taper modifiers to get the typical look of the column
-		AutoAlloc<BaseObject> stemTaper(Otaper);
-		if (!stemTaper)
-			return maxon::NullptrError(MAXON_SOURCE_LOCATION);
+		auto stemTaper = maxon::UniqueRef<BaseObject>::Create(Otaper) iferr_return;
 
 		// Set modifiers name accordingly to their function
 		stemTaper->SetName("StemTaper"_s);
@@ -446,11 +405,9 @@ namespace GreekTempleHelpers
 
 		// Hide the deformer cage from the viewport
 		stemTaper->SetParameter(ConstDescIDLevel(ID_BASEOBJECT_VISIBILITY_EDITOR), OBJECT_OFF, DESCFLAGS_SET::NONE);
-		stemTaper.Release()->InsertUnder(columnStemPtr);
+		stemTaper.Disconnect()->InsertUnder(columnStemPtr);
 
-		columnStemRelPtr = columnStemPtr.Release();
-
-		return maxon::OK;
+		return columnStemPtr.Disconnect();
 	}
 
 	//----------------------------------------------------------------------------------------
@@ -469,13 +426,12 @@ namespace GreekTempleHelpers
 	/// @param[in] hhPtr							A hierarchy helper for the operation. @callerOwnsPointed{hierarchy helper}
 	/// @return												True if instancing process succeeds.
 	//----------------------------------------------------------------------------------------
-	static maxon::Result<void> PerformeColumnsInstancing(BaseObject* &colonnadeNullRelPtr, BaseObject* columnNullRelPtr, const Float& topStepWidth, const Float& topStepHeight, const Vector& topStepBLVertexPos, const Vector& columnRadius, const Vector& columnScaleVector, const Float xSpace = 0, const Float zSpace = 0, const HierarchyHelp* hhPtr = nullptr);
-	static maxon::Result<void> PerformeColumnsInstancing(BaseObject* &colonnadeNullRelPtr, BaseObject* columnNullRelPtr, const Float& topStepWidth, const Float& topStepHeight, const Vector& topStepBLVertexPos, const Vector& columnRadius, const Vector& columnScaleVector, const Float xSpace /*= 0*/, const Float zSpace /*= 0*/, const HierarchyHelp* hhPtr /*= nullptr*/)
+	static maxon::Result<BaseObject*> PerformeColumnsInstancing(maxon::UniqueRef<BaseObject> columnNullRelPtr, const Float& topStepWidth, const Float& topStepHeight, const Vector& topStepBLVertexPos, const Vector& columnRadius, const Vector& columnScaleVector, const Float xSpace /*= 0*/, const Float zSpace /*= 0*/, const HierarchyHelp* hhPtr /*= nullptr*/)
 	{
+		iferr_scope;
+
 		// Create a null object acting as parent of the column parts
-		AutoAlloc<BaseObject> colonnadeNullPtr(Onull);
-		if (!colonnadeNullPtr)
-			return maxon::NullptrError(MAXON_SOURCE_LOCATION);
+		auto colonnadeNullPtr = maxon::UniqueRef<BaseObject>::Create(Onull) iferr_return;
 
 		// Set null object names accordingly to their function
 		colonnadeNullPtr->SetName("Colonnade"_s);
@@ -484,15 +440,12 @@ namespace GreekTempleHelpers
 		// bottom/left vertex of the top step
 		Vector colPosBL = topStepBLVertexPos;
 
-		AutoAlloc<BaseLink> baseLinkPtr;
-		GeData baseLinkData;
-
-		if (!baseLinkPtr)
-			return maxon::NullptrError(MAXON_SOURCE_LOCATION);
-
 		// Set the baselink data to point to the columnNull object
+		auto baseLinkPtr = maxon::UniqueRef<BaseLink>::Create() iferr_return;
 		baseLinkPtr->SetLink(columnNullRelPtr);
-		baseLinkData.SetBaseLink(baseLinkPtr);
+
+		GeData baseLinkData;
+		baseLinkData.SetBaseLink(*baseLinkPtr);
 
 		// Compute the number of columns in x and z based on the space available,
 		// the column radius and the offset between two adjacent columns
@@ -540,12 +493,10 @@ namespace GreekTempleHelpers
 
 				// Create a instance object to fill up the rectangular pattern with the
 				// columns instances
-				AutoAlloc<BaseObject> columnInstPtr(Oinstance);
-				if (!columnInstPtr)
-					return maxon::NullptrError(MAXON_SOURCE_LOCATION);
+				auto columnInstPtr = maxon::UniqueRef<BaseObject>::Create(Oinstance) iferr_return;
 
 				// Set column instance name accordingly to the i,j indexes
-				columnInstPtr->SetName("Column_" + String::IntToString(i) + "_" + String::IntToString(j));
+				columnInstPtr->SetName("Column_" + cinema::String::IntToString(i) + "_" + cinema::String::IntToString(j));
 
 				// Connect the baseLinkData
 				columnInstPtr->SetParameter(ConstDescIDLevel(INSTANCEOBJECT_LINK), baseLinkData, DESCFLAGS_SET::NONE);
@@ -559,15 +510,13 @@ namespace GreekTempleHelpers
 
 				// Avoid inserting an instance at the same location of the parent column
 				if (!(i == 0 && j == 0))
-					columnInstPtr.Release()->InsertUnderLast(colonnadeNullPtr);
+					columnInstPtr.Disconnect()->InsertUnderLast(colonnadeNullPtr);
 			}
 		}
 
-		columnNullRelPtr->InsertUnder(colonnadeNullPtr);
-
-		colonnadeNullRelPtr = colonnadeNullPtr.Release();
-
-		return maxon::OK;
+		columnNullRelPtr.Disconnect()->InsertUnder(colonnadeNullPtr);
+		
+		return colonnadeNullPtr.Disconnect();
 	}
 
 	//----------------------------------------------------------------------------------------
@@ -597,49 +546,24 @@ namespace GreekTempleHelpers
 		const Float capitalHeightRatio = (Float).15;
 		const Float capitalSideHeightRatio = (Float)1.5;
 
-		BaseObject* columnBasePtr = nullptr, *columnStemPtr = nullptr, *columnCapitalPtr = nullptr;
+		maxon::UniqueRef<BaseObject> columnBasePtr = CreateColumnBase(baseHeightRatio, baseRadiusHeightRatio, objSegsPtr) iferr_return;
+		maxon::UniqueRef<BaseObject> columnStemPtr = CreateColumnStem(stemHeightRatio, stemRadiusHeightRatio, objSegsPtr) iferr_return;
+		maxon::UniqueRef<BaseObject> columnCapitalPtr = CreateColumnCapital(capitalHeightRatio, capitalSideHeightRatio, objSegsPtr) iferr_return;
 
-		CreateColumnBase(columnBasePtr, baseHeightRatio, baseRadiusHeightRatio, objSegsPtr) iferr_return;
+		auto columnNullPtr = maxon::UniqueRef<BaseObject>::Create(Onull) iferr_return;
 
-		if (!columnBasePtr)
-			return maxon::NullptrError(MAXON_SOURCE_LOCATION);
-
-		CreateColumnStem(columnStemPtr, stemHeightRatio, stemRadiusHeightRatio, objSegsPtr) iferr_return;
-
-
-		if (!columnStemPtr)
-		{
-			BaseObject::Free(columnBasePtr);
-			return maxon::NullptrError(MAXON_SOURCE_LOCATION);
-		}
-		
-		CreateColumnCapital(columnCapitalPtr, capitalHeightRatio, capitalSideHeightRatio, objSegsPtr) iferr_return;
-		
-		if (!columnCapitalPtr)
-		{
-			BaseObject::Free(columnBasePtr);
-			BaseObject::Free(columnStemPtr);
-			return maxon::NullptrError(MAXON_SOURCE_LOCATION);
-		}
-
-		AutoAlloc<BaseObject> columnNullPtr(Onull);
-		if (!columnNullPtr)
-		{
-			BaseObject::Free(columnBasePtr);
-			BaseObject::Free(columnStemPtr);
-			BaseObject::Free(columnCapitalPtr);
-			return maxon::NullptrError(MAXON_SOURCE_LOCATION);
-		}
 		// Set null object names accordingly to their function
 		columnNullPtr->SetName("Column_0_0"_s);
 
 		columnCapitalPtr->SetRelPos(Vector(0, stemHeightRatio * 0.5 + capitalHeightRatio * 0.5, 0));
-		columnCapitalPtr->InsertUnder(columnStemPtr);
+		columnCapitalPtr.Disconnect()->InsertUnder(columnStemPtr);
+		
 		columnStemPtr->SetRelPos(Vector(0, baseHeightRatio * 0.5 + stemHeightRatio * 0.5, 0));
-		columnStemPtr->InsertUnder(columnBasePtr);
+		columnStemPtr.Disconnect()->InsertUnder(columnBasePtr);
+		
 		columnBasePtr->SetRelPos(Vector(0, baseHeightRatio * 0.5, 0));
-		columnBasePtr->InsertUnder(columnNullPtr);
-
+		columnBasePtr.Disconnect()->InsertUnder(columnNullPtr);
+		
 		// Calculate the height as the difference between the thickness of the
 		// three steps and the height of the roof
 		const Float	 triCircumCircleRadius = baseUnit * 3;
@@ -661,20 +585,8 @@ namespace GreekTempleHelpers
 
 		const Vector columnRadius(columnRadiusX, heightScaleComponent, columnRadiusZ);
 
-		BaseObject* colonnadeNullPtr = nullptr;
-		BaseObject* columnNullRelPtr = columnNullPtr.Release();
-
-		if (!columnNullRelPtr)
-			return maxon::NullptrError(MAXON_SOURCE_LOCATION);
-
 		// Perform the columnade instancing through a sub-procedure;
-		PerformeColumnsInstancing(colonnadeNullPtr, columnNullRelPtr, topStepWidth, topStepHeight, topStepBLVertexPos, columnRadius, columnScaleVector, xSpace, zSpace, hhPtr) iferr_return;
-
-		if (!colonnadeNullPtr)
-		{
-			BaseObject::Free(columnNullRelPtr);
-			return maxon::NullptrError(MAXON_SOURCE_LOCATION);
-		}
+		BaseObject* colonnadeNullPtr = PerformeColumnsInstancing(std::move(columnNullPtr), topStepWidth, topStepHeight, topStepBLVertexPos, columnRadius, columnScaleVector, xSpace, zSpace, hhPtr) iferr_return;
 
 		colonnadeNullPtr->InsertUnder(parentObj);
 
@@ -706,21 +618,26 @@ public:
 /// @{
 Bool GreekTemple::Init(GeListNode* node, Bool isCloneInit)
 {
-	// Retrieve the BaseContainer object belonging to the generator.
-	BaseObject*		 baseObjectPtr = static_cast<BaseObject*>(node);
-	BaseContainer* objectDataPtr = baseObjectPtr->GetDataInstance();
-	if (!isCloneInit)
+	if (node == nullptr)
+		return false;
+
+	if (isCloneInit == false)
 	{
-			// Fill the retrieve BaseContainer object with initial values.
-			objectDataPtr->SetFloat(SDK_EXAMPLE_GREEKTEMPLE_WIDTH, 300);
-			objectDataPtr->SetFloat(SDK_EXAMPLE_GREEKTEMPLE_HEIGHT, 200);
-			objectDataPtr->SetFloat(SDK_EXAMPLE_GREEKTEMPLE_LENGTH, 400);
-			objectDataPtr->SetInt32(SDK_EXAMPLE_GREEKTEMPLE_X_SEGMENTS, 1);
-			objectDataPtr->SetInt32(SDK_EXAMPLE_GREEKTEMPLE_Y_SEGMENTS, 1);
-			objectDataPtr->SetInt32(SDK_EXAMPLE_GREEKTEMPLE_Z_SEGMENTS, 1);
-			objectDataPtr->SetInt32(SDK_EXAMPLE_GREEKTEMPLE_STAIRS, 3);
-			objectDataPtr->SetFloat(SDK_EXAMPLE_GREEKTEMPLE_COLS_SPACEX, 50);
-			objectDataPtr->SetFloat(SDK_EXAMPLE_GREEKTEMPLE_COLS_SPACEZ, 50);
+		// Cast the node to the BasObject class.
+		BaseObject* baseObjPtr = static_cast<BaseObject*>(node);
+		// Retrieve the BaseContainer instance bound to the BaseObject instance.
+		BaseContainer& settings = baseObjPtr->GetDataInstanceRef();
+
+		// Fill the retrieve BaseContainer object with initial values.
+		settings.SetFloat(SDK_EXAMPLE_GREEKTEMPLE_WIDTH, 300);
+		settings.SetFloat(SDK_EXAMPLE_GREEKTEMPLE_HEIGHT, 200);
+		settings.SetFloat(SDK_EXAMPLE_GREEKTEMPLE_LENGTH, 400);
+		settings.SetInt32(SDK_EXAMPLE_GREEKTEMPLE_X_SEGMENTS, 1);
+		settings.SetInt32(SDK_EXAMPLE_GREEKTEMPLE_Y_SEGMENTS, 1);
+		settings.SetInt32(SDK_EXAMPLE_GREEKTEMPLE_Z_SEGMENTS, 1);
+		settings.SetInt32(SDK_EXAMPLE_GREEKTEMPLE_STAIRS, 3);
+		settings.SetFloat(SDK_EXAMPLE_GREEKTEMPLE_COLS_SPACEX, 50);
+		settings.SetFloat(SDK_EXAMPLE_GREEKTEMPLE_COLS_SPACEZ, 50);
 	}
 
 	return true;
@@ -737,16 +654,14 @@ void GreekTemple::GetDimension(const BaseObject* op, Vector* mp, Vector* rad) co
 		return;
 
 	// Retrieve the BaseContainer object belonging to the generator.
-	const BaseContainer* objectDataPtr = op->GetDataInstance();
-	if (!objectDataPtr)
-		return;
+	const BaseContainer& settings = op->GetDataInstanceRef();
 
 	// Set radius values accordingly to the bbox values stored during the init.
-	rad->x = objectDataPtr->GetFloat(SDK_EXAMPLE_GREEKTEMPLE_WIDTH) * 0.5;
-	rad->y = objectDataPtr->GetFloat(SDK_EXAMPLE_GREEKTEMPLE_HEIGHT) * 0.5;
-	rad->z = objectDataPtr->GetFloat(SDK_EXAMPLE_GREEKTEMPLE_LENGTH) * 0.5;
+	rad->x = settings.GetFloat(SDK_EXAMPLE_GREEKTEMPLE_WIDTH) * 0.5;
+	rad->y = settings.GetFloat(SDK_EXAMPLE_GREEKTEMPLE_HEIGHT) * 0.5;
+	rad->z = settings.GetFloat(SDK_EXAMPLE_GREEKTEMPLE_LENGTH) * 0.5;
 
-	mp->y = objectDataPtr->GetFloat(SDK_EXAMPLE_GREEKTEMPLE_HEIGHT) * 0.5;
+	mp->y = settings.GetFloat(SDK_EXAMPLE_GREEKTEMPLE_HEIGHT) * 0.5;
 }
 
 BaseObject* GreekTemple::GetVirtualObjects(BaseObject* op, const HierarchyHelp* hh)
@@ -763,31 +678,29 @@ BaseObject* GreekTemple::GetVirtualObjects(BaseObject* op, const HierarchyHelp* 
 		return op->GetCache();
 
 	// Retrieve the BaseContainer object belonging to the generator.
-	BaseContainer* objectDataPtr = op->GetDataInstance();
-	if (!objectDataPtr)
-		return BaseObject::Alloc(Onull);
+	BaseContainer& settings = op->GetDataInstanceRef();
 
 	// Retrieve the bbox values.
 	Vector bbox;
-	bbox[0] = objectDataPtr->GetFloat(SDK_EXAMPLE_GREEKTEMPLE_WIDTH);
-	bbox[1] = objectDataPtr->GetFloat(SDK_EXAMPLE_GREEKTEMPLE_HEIGHT);
-	bbox[2] = objectDataPtr->GetFloat(SDK_EXAMPLE_GREEKTEMPLE_LENGTH);
+	bbox[0] = settings.GetFloat(SDK_EXAMPLE_GREEKTEMPLE_WIDTH);
+	bbox[1] = settings.GetFloat(SDK_EXAMPLE_GREEKTEMPLE_HEIGHT);
+	bbox[2] = settings.GetFloat(SDK_EXAMPLE_GREEKTEMPLE_LENGTH);
 
 	if (bbox.x == 0 || bbox.y == 0 || bbox.z == 0)
 		return BaseObject::Alloc(Onull);
 
 	// Retrieve the segmentation values.
 	Int32 segsPtr[3];
-	segsPtr[0] = objectDataPtr->GetInt32(SDK_EXAMPLE_GREEKTEMPLE_X_SEGMENTS);
-	segsPtr[1] = objectDataPtr->GetInt32(SDK_EXAMPLE_GREEKTEMPLE_Y_SEGMENTS);
-	segsPtr[2] = objectDataPtr->GetInt32(SDK_EXAMPLE_GREEKTEMPLE_Z_SEGMENTS);
+	segsPtr[0] = settings.GetInt32(SDK_EXAMPLE_GREEKTEMPLE_X_SEGMENTS);
+	segsPtr[1] = settings.GetInt32(SDK_EXAMPLE_GREEKTEMPLE_Y_SEGMENTS);
+	segsPtr[2] = settings.GetInt32(SDK_EXAMPLE_GREEKTEMPLE_Z_SEGMENTS);
 
 	// Retrieve the stairs count.
-	const Int32 stairsCount = objectDataPtr->GetInt32(SDK_EXAMPLE_GREEKTEMPLE_STAIRS);
+	const Int32 stairsCount = settings.GetInt32(SDK_EXAMPLE_GREEKTEMPLE_STAIRS);
 
 	// Retrieve the space between columns on x and z axis.
-	const Float colSpaceAlongX = objectDataPtr->GetFloat(SDK_EXAMPLE_GREEKTEMPLE_COLS_SPACEX);
-	const Float colSpaceAlongZ = objectDataPtr->GetFloat(SDK_EXAMPLE_GREEKTEMPLE_COLS_SPACEZ);
+	const Float colSpaceAlongX = settings.GetFloat(SDK_EXAMPLE_GREEKTEMPLE_COLS_SPACEX);
+	const Float colSpaceAlongZ = settings.GetFloat(SDK_EXAMPLE_GREEKTEMPLE_COLS_SPACEZ);
 
 	// Create a null object to be used as dummy object for the temple.
 	BaseObject* templeObjPtr = BaseObject::Alloc(Onull);
@@ -826,7 +739,7 @@ BaseObject* GreekTemple::GetVirtualObjects(BaseObject* op, const HierarchyHelp* 
 
 Bool RegisterGreekTemple()
 {
-	String registeredName = GeLoadString(IDS_OBJECTDATA_GREEKTEMPLE);
+	cinema::String registeredName = GeLoadString(IDS_OBJECTDATA_GREEKTEMPLE);
 	if (!registeredName.IsPopulated() || registeredName == "StrNotFound")
 		registeredName = "C++ SDK - Greek Temple Generator Example";
 

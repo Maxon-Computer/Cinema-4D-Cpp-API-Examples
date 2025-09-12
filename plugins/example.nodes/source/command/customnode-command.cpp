@@ -12,6 +12,7 @@
 
 #include "c4d_basematerial.h"
 #include "maxon/nodesgraph.h"
+#include "maxon/thread.h"
 
 using namespace cinema;
 

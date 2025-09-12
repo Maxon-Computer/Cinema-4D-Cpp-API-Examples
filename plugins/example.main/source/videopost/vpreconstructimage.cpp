@@ -92,8 +92,8 @@ Bool ReconstructData::RenderEngineCheck(const BaseVideoPost* node, Int32 id) con
 	return true;
 }
 
-// be sure to use a unique ID obtained from developers.maxon.net
-#define ID_VPRECONSTRUCT 1001054
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 ID_VPRECONSTRUCT = 1001054;
 
 Bool RegisterVPReconstruct()
 {

@@ -17,10 +17,12 @@ public:
 	MAXON_ADD_TO_COPY_ON_WRITE_REFERENCE_CLASS(
 											   void Create(MAXON_SOURCE_LOCATION_DECLARATION, maxon::Int errorCode)
 											   {
-#if API_VERSION >= 20000 && API_VERSION < 21000
-												   * static_cast<typename S::DirectlyReferencedType::ReferenceClassHelper::type*>(this) = S::DirectlyReferencedType::ReferenceClassHelper::object::GetInstance() ();
-#elif API_VERSION >= 21000
+#if MAXON_CORE_FRAMEWORK_VERSION >= 20000 && MAXON_CORE_FRAMEWORK_VERSION < 21000
+												   *static_cast<typename S::DirectlyReferencedType::ReferenceClassHelper::type*>(this) = S::DirectlyReferencedType::ReferenceClassHelper::object::GetInstance()();
+#elif MAXON_CORE_FRAMEWORK_VERSION >= 21000 && MAXON_CORE_FRAMEWORK_VERSION < 2025900
 												   *static_cast<typename S::DirectlyReferencedType::Hxx1::ReferenceClass*>(this) = S::DirectlyReferencedType::Hxx1::ErrObj::GetInstance()();
+#elif MAXON_CORE_FRAMEWORK_VERSION >= 2025900
+												   *static_cast<typename S::DirectlyReferencedType::Hxx1::ReferenceClass*>(this) = S::DirectlyReferencedType::Hxx1::ErrObj::Get();
 #endif												   
 												   typename S::DirectlyReferencedType::Ptr e = this->MakeWritable(false).GetPointer();
 												   e.SetLocation(MAXON_SOURCE_LOCATION_FORWARD);

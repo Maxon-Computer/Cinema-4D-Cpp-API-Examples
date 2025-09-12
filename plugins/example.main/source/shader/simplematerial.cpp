@@ -2,15 +2,16 @@
 // It modifies the preview scenes and adds its own scene
 
 #include "c4d.h"
+#include "c4d_raylightvisible.h"
 #include "c4d_symbols.h"
-#include "msimplematerial.h"
 #include "customgui_matpreview.h"
 #include "main.h"
-
-// be sure to use a unique ID obtained from developers.maxon.net
-#define ID_SIMPLEMAT 1001164
+#include "msimplematerial.h"
 
 using namespace cinema;
+
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 ID_SIMPLEMAT = 1001164;
 
 class SimpleMaterial : public MaterialData
 {

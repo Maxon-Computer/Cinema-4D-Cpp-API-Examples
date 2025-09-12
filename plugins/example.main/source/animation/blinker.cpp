@@ -13,12 +13,12 @@ class BlinkerTrack : public CTrackData
 {
 public:
 	virtual Bool Animate(const CTrack* track, const CAnimInfo* info, Bool* chg, void* data) const;
-	virtual Bool FillKey(CTrack* track, BaseDocument* doc, BaseList2D* bl, CKey* key);
+	virtual Bool FillKey(const CTrack* track, const BaseDocument* doc, const BaseList2D* bl, CKey* key) const;
 
 	virtual Int32	GuiMessage		(CTrack* track, const BaseContainer& msg, BaseContainer& result);
 	virtual Bool Draw					 (CTrack* track, GeClipMap* map, const BaseTime& clip_left, const BaseTime& clip_right);
 	virtual Int32	GetHeight			(const CTrack* track) const;
-	virtual Bool TrackInformation(CTrack* track, BaseDocument* doc, CKey* key, maxon::String* str, Bool set);
+	virtual Bool TrackInformation(const CTrack* track, const BaseDocument* doc, CKey* key, maxon::String* str, Bool set) const;
 
 	virtual Bool KeyGetDDescription(const CTrack* track, const CKey* node, Description* description, DESCFLAGS_DESC& flags) const;
 	virtual Bool KeyGetDEnabling(const CTrack* track, const CKey* node, const DescID& id, const GeData& t_data, DESCFLAGS_ENABLE flags, const BaseContainer* itemdesc) const;
@@ -60,16 +60,16 @@ Int32 BlinkerTrack::GetHeight(const CTrack* track) const
 	return 0;
 }
 
-Bool BlinkerTrack::TrackInformation(CTrack* track, BaseDocument* doc, CKey* key, maxon::String* str, Bool set)
+Bool BlinkerTrack::TrackInformation(const CTrack* track, const BaseDocument* doc, CKey* key, maxon::String* str, Bool set) const
 {
 	if (!set)
 		*str = "Hello world"_s;
 	return true;
 }
 
-Bool BlinkerTrack::FillKey(CTrack* track, BaseDocument* doc, BaseList2D* bl, CKey* key)
+Bool BlinkerTrack::FillKey(const CTrack* track, const BaseDocument* doc, const BaseList2D* bl, CKey* key) const
 {
-	//BaseContainer *data = static_cast<BaseSequence*>(track)->GetDataInstance();
+	//BaseContainer& data = static_cast<BaseSequence*>(track)->GetDataInstanceRef();
 
 	key->SetParameter(ConstDescIDLevel(BLINKERKEY_NUMBER), 1.0, DESCFLAGS_SET::NONE);
 
@@ -82,9 +82,7 @@ Bool BlinkerTrack::Animate(const CTrack* track, const CAnimInfo* info, Bool* chg
 		return true;
 
 	GeData	 res;
-	BaseTime t;
 	Float		 p1 = 0.0, p2 = 0.0, number = 0.0;
-
 	if (info->k1 &&	info->k1->GetParameter(ConstDescIDLevel(BLINKERKEY_NUMBER), res, DESCFLAGS_GET::NONE))
 		p1 = res.GetFloat();
 	if (info->k2 && info->k2->GetParameter(ConstDescIDLevel(BLINKERKEY_NUMBER), res, DESCFLAGS_GET::NONE))
@@ -97,20 +95,16 @@ Bool BlinkerTrack::Animate(const CTrack* track, const CAnimInfo* info, Bool* chg
 	else if (info->k2)
 		number = p2;
 
-	Int32 mode;
 	Float v = Sin(number * info->fac * PI2);
-	if (v >= 0.0)
-		mode = MODE_ON;
-	else
-		mode = MODE_OFF;
+	Int32 mode = (v >= 0.0 ? MODE_ON : MODE_OFF);
 
 	((BaseObject*)info->op)->SetEditorMode(mode);
 
 	return true;
 }
 
-// be sure to use a unique ID obtained from developers.maxon.net
-#define ID_BLINKERANIMATION	1001152
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 ID_BLINKERANIMATION = 1001152;
 
 Bool RegisterBlinker()
 {

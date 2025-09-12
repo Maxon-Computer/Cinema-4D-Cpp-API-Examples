@@ -13,8 +13,8 @@
 
 using namespace cinema;
 
-/**A unique plugin ID. You must obtain this from developers.maxon.net. Use this ID to create new instances of this object.*/
-static const Int32 ID_SDKEXAMPLE_OBJECTDATA_PORCUPINEMODIFIER = 1038236;
+/// A unique plugin ID. You must obtain this from developers.maxon.net. Use this ID to create new instances of this object.
+static constexpr const Int32 ID_SDKEXAMPLE_OBJECTDATA_PORCUPINEMODIFIER = 1038236;
 
 namespace PorcupineModifierHelpers
 {
@@ -286,21 +286,19 @@ maxon::Result<void> PorcupineModifier::DisplacePointsAlongDirection(const Int32 
 
 Bool PorcupineModifier::Init(GeListNode* node, Bool isCloneInit)
 {
-	if (!node)
+	if (node == nullptr)
 		return false;
 
-	// Retrieve the BaseContainer object belonging to the generator.
-	BaseObject* baseObjectPtr = static_cast<BaseObject*>(node);
-
-	BaseContainer* objectDataPtr = baseObjectPtr->GetDataInstance();
-	if (!objectDataPtr)
-		return false;
-
-	if (!isCloneInit)
+	if (isCloneInit == false)
 	{
+		// Cast the node to the BasObject class.
+		BaseObject* baseObjPtr = static_cast<BaseObject*>(node);
+		// Retrieve the BaseContainer instance bound to the BaseObject instance.
+		BaseContainer& settings = baseObjPtr->GetDataInstanceRef();
+
 		// Fill the retrieve BaseContainer object with initial values.
-		objectDataPtr->SetInt32(SDK_EXAMPLE_PORCUPINEMODIFIER_LEVEL, 100);
-		objectDataPtr->SetFloat(SDK_EXAMPLE_PORCUPINEMODIFIER_PERCENTAGE, .5);
+		settings.SetInt32(SDK_EXAMPLE_PORCUPINEMODIFIER_LEVEL, 100);
+		settings.SetFloat(SDK_EXAMPLE_PORCUPINEMODIFIER_PERCENTAGE, .5);
 	}
 
 	_noiseArray = nullptr;

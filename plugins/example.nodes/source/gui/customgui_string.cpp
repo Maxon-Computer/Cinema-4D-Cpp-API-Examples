@@ -1,11 +1,10 @@
 #include "customgui_string.h"
 #include "c4d_customdatatypeplugin.h"
 
-// We use the custom gui provided by the SDK for our string.
-// It adds a character counter right to the text edit field.
-#define ID_SDK_EXAMPLE_CUSTOMGUI_STRING 1034655
-
 using namespace cinema;
+
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 ID_SDK_EXAMPLE_CUSTOMGUI_STRING = 1034655;
 
 namespace maxonsdk
 {

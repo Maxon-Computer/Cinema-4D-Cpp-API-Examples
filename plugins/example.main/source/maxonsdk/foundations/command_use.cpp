@@ -6,6 +6,7 @@
 // Maxon API header files
 #include "maxon/execution.h"
 #include "maxon/configuration.h"
+#include "maxon/array.h"
 
 // local header files
 #include "command_declaration.h"

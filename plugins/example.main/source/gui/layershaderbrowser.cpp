@@ -4,10 +4,13 @@
 #include "layershaderbrowser.h"
 #include "main.h"
 
-#define LAYER_SHADER_BROWSER_ID	450000054
-#define ICON_SIZE								20
-
 using namespace cinema;
+
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 LAYER_SHADER_BROWSER_ID = 450000054;
+
+static constexpr const Int32 ICON_SIZE = 20;
+
 
 class MyTreeViewFunctions : public TreeViewFunctions
 {
@@ -116,16 +119,6 @@ class MyTreeViewFunctions : public TreeViewFunctions
 MyTreeViewFunctions g_tvf;
 
 // LayerShaderBrowser
-LayerShaderBrowser::LayerShaderBrowser()
-{
-	lastselected = nullptr;
-	lastdirty = -1;
-}
-
-LayerShaderBrowser::~LayerShaderBrowser()
-{
-}
-
 Bool LayerShaderBrowser::CreateLayout()
 {
 	if (!GeDialog::CreateLayout())
@@ -133,15 +126,15 @@ Bool LayerShaderBrowser::CreateLayout()
 	if (!LoadDialogResource(IDD_SHADER_BROWSER, nullptr, 0))
 		return false;
 
-	linkbox = (LinkBoxGui*)FindCustomGui(IDC_LAYER_BROWSER_LINK, CUSTOMGUI_LINKBOX);
-	tree = (TreeViewCustomGui*)FindCustomGui(IDC_LAYER_BROWSER_TREE, CUSTOMGUI_TREEVIEW);
-	if (!linkbox || !tree)
+	_linkbox = (LinkBoxGui*)FindCustomGui(IDC_LAYER_BROWSER_LINK, CUSTOMGUI_LINKBOX);
+	_tree = (TreeViewCustomGui*)FindCustomGui(IDC_LAYER_BROWSER_TREE, CUSTOMGUI_TREEVIEW);
+	if (!_linkbox || !_tree)
 		return false;
 
 	BaseContainer layout;
 	layout.SetInt32('tree', LV_USERTREE);
-	tree->SetLayout(1, layout);
-	tree->SetRoot(linkbox, &g_tvf, this);
+	_tree->SetLayout(1, layout);
+	_tree->SetRoot(_linkbox, &g_tvf, this);
 
 	return true;
 }
@@ -156,11 +149,11 @@ Bool LayerShaderBrowser::Command(Int32 id, const BaseContainer& msg)
 	switch (id)
 	{
 		case IDC_LAYER_BROWSER_LINK:
-			tree->Refresh();
+		{
+			_tree->Refresh();
 			break;
-
-		default:
-			break;
+		}
+		default: break;
 	}
 
 	return true;
@@ -187,14 +180,14 @@ Bool LayerShaderBrowser::CoreMessage(Int32 id, const BaseContainer& msg)
 	if (id == EVMSG_CHANGE)
 	{
 		Int32				l;
-		BaseObject* op = (BaseObject*)linkbox->GetLink(GetActiveDocument(), Xlayer);
+		BaseObject* op = (BaseObject*)_linkbox->GetLink(GetActiveDocument(), Xlayer);
 		if (op)
 		{
 			l = op->GetDirty(DIRTYFLAGS::DATA);
-			if (lastdirty != l)
+			if (_lastdirty != l)
 			{
-				lastdirty = l;
-				tree->Refresh();
+				_lastdirty = l;
+				_tree->Refresh();
 			}
 		}
 	}
@@ -205,11 +198,11 @@ void LayerShaderBrowser::UpdateAll(Bool msg)
 {
 	if (msg)
 	{
-		BaseObject* op = (BaseObject*)linkbox->GetLink(GetActiveDocument(), Xlayer);
+		BaseObject* op = (BaseObject*)_linkbox->GetLink(GetActiveDocument(), Xlayer);
 		if (op)
 			op->Message(MSG_UPDATE);
 	}
-	tree->Refresh();
+	_tree->Refresh();
 }
 
 #define ADD_PARAMETER_B(expr) if (l->GetParameter(expr, d)) str = str + String(# expr) + "    " + String(d.GetInt32() ? "Yes" : "No") + "\n";
@@ -235,11 +228,13 @@ void LayerShaderBrowser::ShowInfo(cinema::LayerShaderLayer* l)
 		switch (l->GetType())
 		{
 			case cinema::TypeFolder:
+			{
 				ADD_PARAMETER_L(LAYER_S_PARAM_FOLDER_MODE);
 				ADD_PARAMETER_R(LAYER_S_PARAM_FOLDER_BLEND);
 				break;
-
+			}
 			case TypeShader:
+			{
 				ADD_PARAMETER_L(LAYER_S_PARAM_SHADER_MODE);
 				ADD_PARAMETER_R(LAYER_S_PARAM_SHADER_BLEND);
 				if (l->GetParameter(LAYER_S_PARAM_SHADER_LINK, d))
@@ -253,42 +248,49 @@ void LayerShaderBrowser::ShowInfo(cinema::LayerShaderLayer* l)
 					str += "\n";
 				}
 				break;
-
+			}
 			case TypeBrightnessContrast:
+			{
 				ADD_PARAMETER_R(LAYER_S_PARAM_BC_BRIGHTNESS);
 				ADD_PARAMETER_R(LAYER_S_PARAM_BC_CONTRAST);
 				ADD_PARAMETER_R(LAYER_S_PARAM_BC_GAMMA);
 				break;
-
+			}
 			case TypeHSL:
+			{
 				ADD_PARAMETER_R(LAYER_S_PARAM_HSL_HUE);
 				ADD_PARAMETER_R(LAYER_S_PARAM_HSL_SATURATION);
 				ADD_PARAMETER_R(LAYER_S_PARAM_HSL_LIGHTNESS);
 				ADD_PARAMETER_B(LAYER_S_PARAM_HSL_COLORIZE);
 				break;
-
+			}
 			case TypePosterize:
+			{
 				ADD_PARAMETER_L(LAYER_S_PARAM_POSTER_LEVELS);
 				ADD_PARAMETER_R(LAYER_S_PARAM_POSTER_WIDTH);
 				break;
-
+			}
 			case TypeColorize:
+			{
 				ADD_PARAMETER_L(LAYER_S_PARAM_COLORIZE_INPUT);
 				ADD_PARAMETER_B(LAYER_S_PARAM_COLORIZE_OPEN);
 				ADD_PARAMETER_B(LAYER_S_PARAM_COLORIZE_CYCLE);
 				break;
-
+			}
 			case TypeClamp:
+			{
 				ADD_PARAMETER_R(LAYER_S_PARAM_CLAMP_LOW_CLIP);
 				ADD_PARAMETER_R(LAYER_S_PARAM_CLAMP_HIGH_CLIP);
 				break;
-
+			}
 			case TypeClip:
+			{
 				ADD_PARAMETER_R(LAYER_S_PARAM_CLIP_LOW_CLIP);
 				ADD_PARAMETER_R(LAYER_S_PARAM_CLIP_HIGH_CLIP);
 				break;
-
+			}
 			case TypeDistorter:
+			{
 				ADD_PARAMETER_L(LAYER_S_PARAM_DISTORT_NOISE);
 				ADD_PARAMETER_R(LAYER_S_PARAM_DISTORT_STRENGTH);
 				ADD_PARAMETER_R(LAYER_S_PARAM_DISTORT_OCTACES);
@@ -297,15 +299,16 @@ void LayerShaderBrowser::ShowInfo(cinema::LayerShaderLayer* l)
 				ADD_PARAMETER_B(LAYER_S_PARAM_DISTORT_3D_NOISE);
 				ADD_PARAMETER_L(LAYER_S_PARAM_DISTORT_WRAP);
 				break;
-
+			}
 			case TypeTransform:
+			{
 				ADD_PARAMETER_R(LAYER_S_PARAM_TRANS_ANGLE);
 				ADD_PARAMETER_B(LAYER_S_PARAM_TRANS_MIRROR);
 				ADD_PARAMETER_B(LAYER_S_PARAM_TRANS_FLIP);
 				ADD_PARAMETER_V(LAYER_S_PARAM_TRANS_SCALE);
 				ADD_PARAMETER_V(LAYER_S_PARAM_TRANS_MOVE);
 				break;
-
+			}
 		}
 	}
 	SetString(IDC_LAYER_BROWSER_PROPS, str);
@@ -317,21 +320,14 @@ void LayerShaderBrowser::ShowInfo(cinema::LayerShaderLayer* l)
 class LayerShaderBrowseCommand : public CommandData
 {
 public:
-	LayerShaderBrowseCommand()
-	{
-		dlg = nullptr;
-	}
-	virtual ~LayerShaderBrowseCommand()
-	{
-		DeleteObj(dlg);
-	}
 	virtual Bool Execute(BaseDocument* doc, GeDialog* parentManager)
 	{
-		if (!dlg)
-			dlg = NewObjClear(LayerShaderBrowser);
-		if (!dlg)
-			return false;
-		dlg->Open(DLG_TYPE::ASYNC, LAYER_SHADER_BROWSER_ID);
+		if (_dlg == nullptr)
+		{
+			iferr (_dlg = maxon::UniqueRef<LayerShaderBrowser>::Create())
+				return false;
+		}
+		_dlg->Open(DLG_TYPE::ASYNC, LAYER_SHADER_BROWSER_ID);
 		return true;
 	}
 	virtual Int32 GetState(BaseDocument* doc, GeDialog* parentManager)
@@ -340,16 +336,17 @@ public:
 	}
 	virtual Bool RestoreLayout(void* secret)
 	{
-		if (!dlg)
-			dlg = NewObjClear(LayerShaderBrowser);
-		if (!dlg)
-			return false;
-		dlg->RestoreLayout(LAYER_SHADER_BROWSER_ID, 0, secret);
+		if (_dlg == nullptr)
+		{
+			iferr (_dlg = maxon::UniqueRef<LayerShaderBrowser>::Create())
+				return false;
+		}
+		_dlg->RestoreLayout(LAYER_SHADER_BROWSER_ID, 0, secret);
 		return true;
 	}
 
 private:
-	LayerShaderBrowser* dlg;
+	maxon::UniqueRef<LayerShaderBrowser> _dlg;
 };
 
 Bool RegisterLayerShaderBrowser()

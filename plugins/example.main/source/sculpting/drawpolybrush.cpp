@@ -7,28 +7,21 @@
 #include "lib_modeling.h"
 #include "main.h"
 
-#define SCULPTDRAWPOLYBRUSH_SDK_EXAMPLE 1029861	//You MUST get your own ID from developers.maxon.net
-
 using namespace cinema;
+
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 SCULPTDRAWPOLYBRUSH_SDK_EXAMPLE = 1029861;
 
 struct StrokeData
 {
 	Vector p1, p2, p3, p4;
-	Int32	 index1, index2, index3, index4;
+	Int32	 index1 = 0, index2 = 0, index3 = 0, index4 = 0;
 
-	Bool	 firstHit;
-	Bool	 firstPointDone;
+	Bool	 firstHit = false;
+	Bool	 firstPointDone = false;
 	Vector hitPoint;
 
-	Int32	 strokeId;
-
-	StrokeData()
-	{
-		strokeId = -1;
-		index1 = index2 = index3 = index4 = 0;
-		firstHit = false;
-		firstPointDone = false;
-	}
+	Int32	 strokeId = -1;
 };
 
 class ExampleSculptDrawPolyBrush : public SculptBrushToolData
@@ -50,9 +43,9 @@ public:
 
 public:
 	maxon::BaseArray<StrokeData> _strokeData;
-	BaseDocument*					_doc;
-	Int32									_strokeCounter;
-	PolygonObject*				_poly;
+	BaseDocument*	_doc = nullptr;
+	Int32 _strokeCounter = 0;
+	PolygonObject* _poly = nullptr;
 	AutoAlloc<Modeling>		_mod;
 };
 

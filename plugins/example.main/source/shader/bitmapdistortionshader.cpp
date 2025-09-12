@@ -11,10 +11,6 @@ using namespace cinema;
 class BitmapData : public ShaderData
 {
 public:
-	Float				noise, scale, octaves;
-	BaseShader* shader;
-
-public:
 	virtual Bool Init		(GeListNode* node, Bool isCloneInit);
 	virtual Bool Message(GeListNode* node, Int32 type, void* data);
 	virtual	Vector Output		(BaseShader* chn, ChannelData* cd);
@@ -27,6 +23,10 @@ public:
 	virtual BaseShader*	GetSubsurfaceShader(BaseShader* sh, Float& bestmpl);
 
 	static NodeData* Alloc() { return NewObjClear(BitmapData); }
+
+public:
+	Float				noise, scale, octaves;
+	BaseShader* shader;
 };
 
 SHADERINFO BitmapData::GetRenderInfo(BaseShader* sh)
@@ -122,8 +122,8 @@ Bool BitmapData::Message(GeListNode* node, Int32 type, void* msgdat)
 	return true;
 }
 
-// be sure to use a unique ID obtained from developers.maxon.net
-#define ID_BITMAPDISTORTION 1001160
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 ID_BITMAPDISTORTION = 1001160;
 
 Bool RegisterBitmap()
 {

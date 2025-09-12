@@ -5,29 +5,29 @@
 #include "maxon/pointerarray.h"
 #include "maxon/hashmap.h"
 
-#define PAINTTILESIZE 64
-#define PAINTTILEINV 1.0/64.0
+static constexpr const cinema::Int32 PAINTTILESIZE = 64;
+static constexpr const cinema::Float PAINTTILEINV = 1.0/64.0;
 
 class PaintUndoTile
 {
 public:
-	PaintUndoTile();
-	virtual ~PaintUndoTile();
+	PaintUndoTile() = default;
+	virtual ~PaintUndoTile() = default;
 
-	cinema::Bool Init(cinema::PaintLayerBmp *pBitmap, cinema::Int x, cinema::Int y);
-	cinema::PaintLayerBmp *GetBitmap();
+	cinema::Bool Init(cinema::PaintLayerBmp& bitmap, cinema::Int x, cinema::Int y);
+	cinema::PaintLayerBmp* GetBitmap();
 	void Apply();
 
 	PaintUndoTile *GetCurrentStateClone();
+	maxon::Pair<cinema::Int, cinema::Int> GetXY() const { return { _x, _y }; }
 
-	cinema::AutoAlloc<cinema::BaseLink> m_pDestBitmap;
-
-	cinema::UChar *m_pData;
-	cinema::Int m_dataSize;
-	cinema::Int m_x;
-	cinema::Int m_y;
-	cinema::Int m_xTile;
-	cinema::Int m_yTile;
+private:
+	maxon::UniqueRef<cinema::BaseLink> _pDestBitmap;
+	maxon::BaseArray<cinema::UChar> _data;
+	cinema::Int _x = 0;
+	cinema::Int _y = 0;
+	cinema::Int _xTile = 0;
+	cinema::Int _yTile = 0;
 };
 
 class PaintUndoStroke
@@ -37,33 +37,31 @@ public:
 	~PaintUndoStroke();
 
 	void Init();
-	void Init(PaintUndoStroke *pStroke);
+	void Init(PaintUndoStroke& stroke);
 	PaintUndoTile* Find(cinema::Int x, cinema::Int y);
 
 	void AddUndoTile(PaintUndoTile *pTile);
 	void Apply();
 
-	cinema::Int GetTileCount() { return m_Tiles.GetCount(); }
-	PaintUndoTile* GetUndoData(cinema::Int32 a) { return &m_Tiles[a]; }
+	cinema::Int GetTileCount() { return _tiles.GetCount(); }
+	PaintUndoTile* GetUndoData(cinema::Int32 a) { return &_tiles[a]; }
 
 public:
-	maxon::PointerArray<PaintUndoTile> m_Tiles;
-
-	typedef maxon::HashMap<cinema::Int, PaintUndoTile*> TileMap;
-	TileMap m_tileMap;
+	maxon::PointerArray<PaintUndoTile> _tiles;
+	maxon::HashMap<cinema::Int, PaintUndoTile*> _tileMap;
 };
 
 class PaintUndoRedo
 {
 public:
-	PaintUndoRedo();
+	PaintUndoRedo() = default;
 	~PaintUndoRedo();
 
-	void StartUndoStroke();
+	cinema::Bool StartUndoStroke();
 	void EndUndoStroke();
 
-	cinema::Bool AddUndoTile(cinema::PaintLayerBmp *pBitmap, cinema::Int x, cinema::Int y);
-	cinema::Bool ApplyStroke(PaintUndoStroke *pStroke);
+	cinema::Bool AddUndoTile(cinema::PaintLayerBmp& bitmap, cinema::Int x, cinema::Int y);
+	cinema::Bool ApplyStroke(PaintUndoStroke& stroke);
 
 	void Undo();
 	void Redo();
@@ -73,13 +71,12 @@ public:
 
 	void FlushUndoBuffer();
 
-	PaintUndoStroke *GetCurrentStroke() { return m_pCurrentStroke; }
+	PaintUndoStroke *GetCurrentStroke() { return _currentStroke; }
 
 private:
-	maxon::BaseArray<PaintUndoStroke*> m_UndoStrokes;
-	maxon::BaseArray<PaintUndoStroke*> m_RedoStrokes;
-
-	PaintUndoStroke *m_pCurrentStroke;
+	maxon::BaseArray<PaintUndoStroke*> _undoStrokes;
+	maxon::BaseArray<PaintUndoStroke*> _redoStrokes;
+	maxon::UniqueRef<PaintUndoStroke> _currentStroke;
 };
 
 class PaintUndoSystem : public cinema::SceneHookData
@@ -87,8 +84,8 @@ class PaintUndoSystem : public cinema::SceneHookData
 	INSTANCEOF(PaintUndoSystem , cinema::SceneHookData)
 
 private:
-	PaintUndoSystem();
-	~PaintUndoSystem();
+	PaintUndoSystem() = default;
+	~PaintUndoSystem() = default;
 
 public:
 	virtual cinema::Bool Init(cinema::GeListNode* node, cinema::Bool isCloneInit);
@@ -97,7 +94,7 @@ public:
 public:
 	static cinema::NodeData *Alloc();
 
-	cinema::Bool AddUndoRedo(cinema::PaintLayerBmp *pBitmap, cinema::Int x, cinema::Int y);
+	cinema::Bool AddUndoRedo(cinema::PaintLayerBmp& bitmap, cinema::Int x, cinema::Int y);
 	cinema::Bool Undo();
 	cinema::Bool Redo();
 
@@ -109,12 +106,12 @@ public:
 	PaintUndoStroke *GetCurrentStroke();
 
 private:
-	PaintUndoRedo *m_pUndoRedo;
-	cinema::Bool undoEvent;
+	maxon::UniqueRef<PaintUndoRedo> _undoRedo;
+	cinema::Bool _undoEvent = true;
 
-	maxon::Spinlock m_lock; // Avoid multiple calls to Undo or Redo
+	maxon::Spinlock _lock; // Avoid multiple calls to Undo or Redo
 };
 
-PaintUndoSystem *GetPaintUndoSystem(cinema::BaseDocument *doc);
+PaintUndoSystem* GetPaintUndoSystem(cinema::BaseDocument* doc);
 
 #endif // PAINTUNDO_H__

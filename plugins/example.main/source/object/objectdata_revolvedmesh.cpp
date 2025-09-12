@@ -15,8 +15,8 @@
 
 using namespace cinema;
 
-/**A unique plugin ID. You must obtain this from developers.maxon.net. Use this ID to create new instances of this object.*/
-static const Int32 ID_SDKEXAMPLE_OBJECTDATA_REVOLVEDMESH = 1038750;
+/// A unique plugin ID. You must obtain this from developers.maxon.net. Use this ID to create new instances of this object.
+static constexpr const Int32 ID_SDKEXAMPLE_OBJECTDATA_REVOLVEDMESH = 1038750;
 
 namespace RevolvedMeshHelpers
 {
@@ -216,24 +216,18 @@ Bool RevolvedMesh::Init(GeListNode* node, Bool isCloneInit)
 	if (!node)
 		return false;
 
-	// Cast the node to the BasObject class.
-	BaseObject* baseObjPtr = static_cast<BaseObject*>(node);
-
-	// Retrieve the BaseContainer instance bound to the BaseObject instance.
-	BaseContainer* bcPtr = baseObjPtr->GetDataInstance();
-
-	// Check the BaseContainer instance pointer.
-	if (!bcPtr)
-		return false;
-
 	if (!isCloneInit)
 	{
+		// Cast the node to the BasObject class.
+		BaseObject* baseObjPtr = static_cast<BaseObject*>(node);
+		// Retrieve the BaseContainer instance bound to the BaseObject instance.
+		BaseContainer& bc = baseObjPtr->GetDataInstanceRef();
 		// Set the values for the different parameters of the generator.
-		bcPtr->SetInt32(SDK_EXAMPLE_REVOLVEDMESH_S_STEPS, 5);
-		bcPtr->SetInt32(SDK_EXAMPLE_REVOLVEDMESH_T_STEPS, 5);
-		bcPtr->SetVector(SDK_EXAMPLE_REVOLVEDMESH_SPINNINGAXIS, Vector(0, 1, 0));
-		bcPtr->SetFloat(SDK_EXAMPLE_REVOLVEDMESH_STARTANGLE, 0);
-		bcPtr->SetFloat(SDK_EXAMPLE_REVOLVEDMESH_ENDANGLE, PI / 2);
+		bc.SetInt32(SDK_EXAMPLE_REVOLVEDMESH_S_STEPS, 5);
+		bc.SetInt32(SDK_EXAMPLE_REVOLVEDMESH_T_STEPS, 5);
+		bc.SetVector(SDK_EXAMPLE_REVOLVEDMESH_SPINNINGAXIS, Vector(0, 1, 0));
+		bc.SetFloat(SDK_EXAMPLE_REVOLVEDMESH_STARTANGLE, 0);
+		bc.SetFloat(SDK_EXAMPLE_REVOLVEDMESH_ENDANGLE, PI / 2);
 	}
 
 	return true;
@@ -272,19 +266,17 @@ BaseObject* RevolvedMesh::GetVirtualObjects(BaseObject* op, const HierarchyHelp*
 		return BaseObject::Alloc(Onull);
 
 	// Retrieve the BaseContainer associated check it.
-	BaseContainer* bcPtr = op->GetDataInstance();
-	if (!bcPtr)
-		return BaseObject::Alloc(Onull);
+	const BaseContainer& bc = op->GetDataInstanceRef();
 
 	// Retrieve the number of subdivisions which every of the two splines will be subdivided in.
-	const Int32	 stepsS = bcPtr->GetInt32(SDK_EXAMPLE_REVOLVEDMESH_S_STEPS);
-	const Int32	 stepsT = bcPtr->GetInt32(SDK_EXAMPLE_REVOLVEDMESH_T_STEPS);
-	const Vector spinningVector = bcPtr->GetVector(SDK_EXAMPLE_REVOLVEDMESH_SPINNINGAXIS);
+	const Int32	 stepsS = bc.GetInt32(SDK_EXAMPLE_REVOLVEDMESH_S_STEPS);
+	const Int32	 stepsT = bc.GetInt32(SDK_EXAMPLE_REVOLVEDMESH_T_STEPS);
+	const Vector spinningVector = bc.GetVector(SDK_EXAMPLE_REVOLVEDMESH_SPINNINGAXIS);
 
 	// NOTE: Being the following two angular parameters declared as "DEGREE" in the .res file
 	// the value retrieved is already converted to rad.
-	const Float spinningStartAngle = bcPtr->GetFloat(SDK_EXAMPLE_REVOLVEDMESH_STARTANGLE);
-	const Float spinningEndAngle = bcPtr->GetFloat(SDK_EXAMPLE_REVOLVEDMESH_ENDANGLE);
+	const Float spinningStartAngle = bc.GetFloat(SDK_EXAMPLE_REVOLVEDMESH_STARTANGLE);
+	const Float spinningEndAngle = bc.GetFloat(SDK_EXAMPLE_REVOLVEDMESH_ENDANGLE);
 
 	// Evaluate if the generator is performing a 360 deg revolution by checking (within the tollerance
 	// of 0.00001) the difference (without sign) between the spinning end angle and the spinning

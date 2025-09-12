@@ -30,32 +30,28 @@ public:
 
 	Result<void> DoPGPTest()
 	{
-		const Int origBufferSize = 1 << 20;	// 1 MiB
-		Block<UChar> transmitData;
-		Block<UChar> receiveData;
-		Int j;
-		BigInteger publicKeyReceiver, privateKeyReceiver, nReceiver, encryptedSymmetricKey;
-		BigInteger publicKeySender, privateKeySender, nSender, signature;
-		UInt32 origCRC, newCRC;
+		static constexpr const Int ORIG_BUFFER_SIZE = 1 << 20;	// 1 MiB
 		BaseArray<UChar> data;
-		SecureRandomProvider provider;
-		Crc32C crc;
-		Bool signatureOK1 = false, signatureOK2 = false;
 
 		// set up our original data
-		iferr (data.Resize(origBufferSize))
+		iferr (data.Resize(ORIG_BUFFER_SIZE))
 			return err;
-		provider = SecureRandom::GetDefaultProvider();
+		SecureRandomProvider provider = SecureRandom::GetDefaultProvider();
 		SecureRandom::GetRandomNumber(provider, data);
 		// Only use numbers letters and spaces so that compression actually does something. With good random numbers the entropy of the buffer is 1 and there is nothing to do.
-		for (j = 0; j < origBufferSize; j++)
+		for (Int j = 0; j < data.GetCount(); j++)
 		{
 			data[j] &= 127;
 			if (!IsAlphanumeric(data[j]))
 				data[j] = ' ';
 		}
+
+		Crc32C crc;
 		crc.Update(data);
-		origCRC = crc.GetCrc();
+		UInt32 origCRC = crc.GetCrc();
+
+		BigInteger publicKeyReceiver, privateKeyReceiver, nReceiver, encryptedSymmetricKey;
+		BigInteger publicKeySender, privateKeySender, nSender, signature;
 
 		// Generate a public (publicKeyReceiver, nReceiver) and a private (privateKeyReceiver, nReceiver) key pair for the receiver.
 		iferr (GenerateAsymmetricKeys(publicKeyReceiver, privateKeyReceiver, nReceiver))
@@ -66,6 +62,7 @@ public:
 			return err;
 
 		// Encrypt the data using the receiver's public key and create a symmetric key for encryption.
+		Block<UChar> transmitData;
 		iferr (EncryptData(data, transmitData, publicKeyReceiver, nReceiver, encryptedSymmetricKey))
 			return err;
 
@@ -76,10 +73,12 @@ public:
 		// Now, send transmitData, encryptedSymmetricKey and signature to the receiver.
 
 		// The receiver decrypts the data using the receiver's private key.
+		Block<UChar> receiveData;
 		iferr (DecryptData(transmitData, receiveData, privateKeyReceiver, nReceiver, encryptedSymmetricKey))
 			return err;
 
 		// Let's check the signature.
+		Bool signatureOK1 = false, signatureOK2 = false;
 		iferr (CheckSignature(receiveData.GetFirst(), receiveData.GetCount(), publicKeySender, nSender, signature, signatureOK1))
 			return err;
 
@@ -89,7 +88,7 @@ public:
 
 		crc.Reset();
 		crc.Update(receiveData);
-		newCRC = crc.GetCrc();
+		UInt32 newCRC = crc.GetCrc();
 
 		// Modify the received data and check the signature again. It must not match now.
 		receiveData[0]++;
@@ -123,10 +122,8 @@ public:
 	{
 		iferr_scope;
 
-		SecureRandomProvider provider;
+		SecureRandomProvider provider = SecureRandom::GetDefaultProvider();
 		BigInteger p, q, phi_n, i, one;
-
-		provider = SecureRandom::GetDefaultProvider();
 
 		// Generate a key pair for asymmetric encryption and decryption. These numbers are just created here randomly.
 		// Normally, they are only created once, the result is stored and p and q are forgotten and destroyed. No one may ever get knowledge about p or q.
@@ -284,9 +281,10 @@ public:
 	{
 		// The signature is a hash value of the data that is encrypted with the sender's private key. We take the CRC value here for simplicity.
 		BigInteger signatureTest = signature;
-		BigInteger hash;
 		Crc32C crc;
 		crc.Update(ToBlock(data, dataSize));
+
+		BigInteger hash;
 		iferr (hash.Set(crc.GetCrc()))
 			return err;
 
@@ -299,9 +297,11 @@ public:
 };
 
 }
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 ID_PGPTEST = 450000266;
 
 Bool RegisterPGPTest()
 {
 	// be sure to use a unique ID obtained from developers.maxon.net
-	return RegisterCommandPlugin(450000266, GeLoadString(IDS_PGPTEST), 0, nullptr, String("C++ SDK PGP test"), NewObjClear(maxon::PGPTest));
+	return RegisterCommandPlugin(ID_PGPTEST, GeLoadString(IDS_PGPTEST), 0, nullptr, String("C++ SDK PGP test"), NewObjClear(maxon::PGPTest));
 }

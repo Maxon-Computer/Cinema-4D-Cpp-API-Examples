@@ -138,9 +138,8 @@ error:
 	return BaseObject::Alloc(Onull);
 }
 
-//////////////////////////////////////////////////////////////////////////
-
-#define ID_HAIR_GENERATOR_EXAMPLE 1020787
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 ID_HAIR_GENERATOR_EXAMPLE = 1020787;
 
 Bool RegisterGeneratorObject()
 {

@@ -84,7 +84,7 @@ inline void DoLineBary(cinema::BrushDabData *dab, PaintChannels *channels, const
 		cinema::Int32 bitdepth = 8;
 		cinema::Int32 numChannels = 0;
 		cinema::COLORMODE colorMode = (cinema::COLORMODE)paintBmp->GetColorMode();
-		cinema::Bool supported = GetChannelInfo(paintBmp, bitdepth, numChannels);
+		cinema::Bool supported = GetChannelInfo(*paintBmp, bitdepth, numChannels);
 		if (!supported)
 			return;
 
@@ -151,7 +151,7 @@ inline void DoTextureLineBary(cinema::BrushDabData *dab, PaintChannels *channels
 		cinema::Int32 bitdepth = 8;
 		cinema::Int32 numChannels = 0;
 		cinema::COLORMODE colorMode = (cinema::COLORMODE)paintBmp->GetColorMode();
-		cinema::Bool supported = GetChannelInfo(paintBmp, bitdepth, numChannels);
+		cinema::Bool supported = GetChannelInfo(*paintBmp, bitdepth, numChannels);
 		if (!supported)
 			return;
 

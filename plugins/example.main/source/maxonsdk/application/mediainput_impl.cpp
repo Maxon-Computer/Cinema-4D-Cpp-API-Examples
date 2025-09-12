@@ -30,6 +30,7 @@
 #include "maxon/mediasession_fileformats.h"
 #include "maxon/gfx_image_pixelformats.h"
 #include "maxon/mediasession_errors.h"
+#include "maxon/progress.h"
 
 namespace maxon
 {

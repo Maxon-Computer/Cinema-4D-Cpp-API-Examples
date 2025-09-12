@@ -5,9 +5,9 @@
 #include "main.h"
 #include "ospherifydeformer.h"
 
-#define HANDLE_CNT 2
-
 using namespace cinema;
+
+static constexpr const Int32 HANDLE_CNT = 2;
 
 class Spherify : public ObjectData
 {
@@ -38,12 +38,12 @@ Bool Spherify::Message(GeListNode* node, Int32 type, void* data)
 
 Bool Spherify::ModifyObject(const BaseObject* mod, const BaseDocument* doc, BaseObject* op, const Matrix& op_mg, const Matrix& mod_mg, Float lod, Int32 flags, BaseThread* thread) const
 {
-	const BaseContainer* data = mod->GetDataInstance();
+	const BaseContainer& data = mod->GetDataInstanceRef();
 
 	Vector	 p, *padr = nullptr;
 	Matrix	 m, im;
 	Int32		 i, pcnt;
-	Float		 rad = data->GetFloat(SPHERIFYDEFORMER_RADIUS), strength = data->GetFloat(SPHERIFYDEFORMER_STRENGTH);
+	Float		 rad = data.GetFloat(SPHERIFYDEFORMER_RADIUS), strength = data.GetFloat(SPHERIFYDEFORMER_STRENGTH);
 	Float		 s;
 	const Float32* weight = nullptr;
 
@@ -87,17 +87,17 @@ maxon::Result<Bool> Spherify::GetAccessedObjects(const BaseList2D* node, METHOD_
 
 void Spherify::GetDimension(const BaseObject* op, Vector* mp, Vector* rad) const
 {
-	const BaseContainer* data = op->GetDataInstance();
+	const BaseContainer& data = op->GetDataInstanceRef();
 	*mp	 = Vector(0.0);
-	*rad = Vector(data->GetFloat(SPHERIFYDEFORMER_RADIUS));
+	*rad = Vector(data.GetFloat(SPHERIFYDEFORMER_RADIUS));
 }
 
 DRAWRESULT Spherify::Draw(BaseObject* op, DRAWPASS drawpass, BaseDraw* bd, BaseDrawHelp* bh)
 {
 	if (drawpass == DRAWPASS::OBJECT)
 	{
-		BaseContainer* data = op->GetDataInstance();
-		Float	 rad = data->GetFloat(SPHERIFYDEFORMER_RADIUS);
+		const BaseContainer& data = op->GetDataInstanceRef();
+		Float	 rad = data.GetFloat(SPHERIFYDEFORMER_RADIUS);
 		Matrix m = bh->GetMg();
 
 		m.sqmat *= rad;
@@ -141,26 +141,25 @@ DRAWRESULT Spherify::Draw(BaseObject* op, DRAWPASS drawpass, BaseDraw* bd, BaseD
 
 void Spherify::GetHandle(BaseObject* op, Int32 i, HandleInfo& info)
 {
-	BaseContainer* data = op->GetDataInstance();
-	if (!data)
-		return;
+	const BaseContainer& data = op->GetDataInstanceRef();
 
 	switch (i)
 	{
 		case 0:
-			info.position.x	 = data->GetFloat(SPHERIFYDEFORMER_RADIUS);
+		{
+			info.position.x	 = data.GetFloat(SPHERIFYDEFORMER_RADIUS);
 			info.direction.x = 1.0;
 			info.type = HANDLECONSTRAINTTYPE::LINEAR;
 			break;
-
+		}
 		case 1:
-			info.position.x	 = data->GetFloat(SPHERIFYDEFORMER_STRENGTH) * 1000.0;
+		{
+			info.position.x	 = data.GetFloat(SPHERIFYDEFORMER_STRENGTH) * 1000.0;
 			info.direction.x = 1.0;
 			info.type = HANDLECONSTRAINTTYPE::LINEAR;
 			break;
-
-		default: 
-			break;
+		}
+		default: break;
 	}
 }
 
@@ -169,11 +168,10 @@ Int32 Spherify::DetectHandle(BaseObject* op, BaseDraw* bd, Int32 x, Int32 y, QUA
 	if (qualifier & QUALIFIER::CTRL)
 		return NOTOK;
 
+	Int32 ret = NOTOK;
 	HandleInfo info;
-	Matrix		 mg = op->GetMg();
-	Int32			 i, ret = NOTOK;
-
-	for (i = 0; i < HANDLE_CNT; i++)
+	Matrix mg = op->GetMg();
+	for (Int32 i = 0; i < HANDLE_CNT; i++)
 	{
 		GetHandle(op, i, info);
 		if (bd->PointInRange(mg * info.position, x, y))
@@ -188,13 +186,12 @@ Int32 Spherify::DetectHandle(BaseObject* op, BaseDraw* bd, Int32 x, Int32 y, QUA
 
 Bool Spherify::MoveHandle(BaseObject* op, BaseObject* undo, const Vector& mouse_pos, Int32 hit_id, QUALIFIER qualifier, BaseDraw* bd)
 {
-	BaseContainer* dst = op->GetDataInstance();
+	BaseContainer& dst = op->GetDataInstanceRef();
 
 	HandleInfo info;
-
-	Float val = mouse_pos.x;
 	GetHandle(op, hit_id, info);
 
+	Float val = mouse_pos.x;
 	if (bd)
 	{
 		Matrix mg	 = op->GetUpMg() * undo->GetMl();
@@ -205,35 +202,39 @@ Bool Spherify::MoveHandle(BaseObject* op, BaseObject* undo, const Vector& mouse_
 	switch (hit_id)
 	{
 		case 0:
-			dst->SetFloat(SPHERIFYDEFORMER_RADIUS, ClampValue(val, 0.0_f, (Float) MAXRANGE));
+		{
+			dst.SetFloat(SPHERIFYDEFORMER_RADIUS, ClampValue(val, 0.0_f, (Float) MAXRANGE));
 			break;
-
+		}
 		case 1:
-			dst->SetFloat(SPHERIFYDEFORMER_STRENGTH, Clamp01(val * 0.001));
+		{
+			dst.SetFloat(SPHERIFYDEFORMER_STRENGTH, Clamp01(val * 0.001));
 			break;
-
-		default:
-			break;
+		}
+		default: break;
 	}
 	return true;
 }
 
 Bool Spherify::Init(GeListNode* node, Bool isCloneInit)
 {
-	BaseObject*		 op = (BaseObject*)node;
-	BaseContainer* data = op->GetDataInstance();
+	if (node == nullptr)
+		return false;
 
-	if (!isCloneInit)
+	// Store default settings if the object isn't cloned.
+	if (isCloneInit == false)
 	{
-		data->SetFloat(SPHERIFYDEFORMER_RADIUS, 200.0);
-		data->SetFloat(SPHERIFYDEFORMER_STRENGTH, 0.5);
+		// Retrieve the BaseContainer object belonging to the generator.
+		BaseContainer& data = static_cast<BaseObject*>(node)->GetDataInstanceRef();
+		data.SetFloat(SPHERIFYDEFORMER_RADIUS, 200.0);
+		data.SetFloat(SPHERIFYDEFORMER_STRENGTH, 0.5);
 	}
 
 	return true;
 }
 
-// be sure to use a unique ID obtained from developers.maxon.net
-#define ID_SPHERIFYOBJECT 1001158
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 ID_SPHERIFYOBJECT = 1001158;
 
 Bool RegisterSpherify()
 {

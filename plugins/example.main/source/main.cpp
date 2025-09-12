@@ -131,7 +131,7 @@ Bool PluginStart()
 		return false;
 	if (!RegisterReverseNormals())
 		return false;
-	if (!RegisterSculptingTool())
+	if (!RegisterDisplayControlTool())
 		return false;
 	if (!RegisterSnapTool())
 		return false;
@@ -257,6 +257,10 @@ Bool PluginStart()
 
 	// Python Regex example
 	if (!RegisterPythonRegexCommand())
+		return false;
+
+	// ObjectData example showing how to create an approximated circle spline
+	if (!RegisterCircleShape())
 		return false;
 
 	// ObjectData example demonstrating the use of HyperFile class in Read()/Write()

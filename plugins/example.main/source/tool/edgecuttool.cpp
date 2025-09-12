@@ -5,10 +5,13 @@
 
 #include "tooledgecutsdk.h"
 
-#define SUBDIV_DELTA								 30.0f
-#define ID_MODELING_EDGECUT_TOOL_SDK 450000025
 
 using namespace cinema;
+
+static constexpr const Float SUBDIV_DELTA = 30.0;
+
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 ID_MODELING_EDGECUT_TOOL_SDK = 450000025;
 
 class EdgeCutTool : public DescriptionToolData
 {
@@ -312,9 +315,8 @@ Exit:
 	return ok;
 }
 
-
-#define POINT_MIN (0.0)
-#define POINT_MAX (1.0)
+static constexpr const Float POINT_MIN = 0.0;
+static constexpr const Float POINT_MAX = 1.0;
 
 Bool EdgeCutTool::ModelingEdgeCut(AtomArray* arr, MODELINGCOMMANDMODE mode, BaseContainer* data, BaseDocument* doc, EditorWindow* win, const BaseContainer* msg, Bool undo, EdgeCutTool* tool)
 {

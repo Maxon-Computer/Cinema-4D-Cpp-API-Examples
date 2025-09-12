@@ -3,9 +3,11 @@
 #include "c4d.h"
 #include "main.h"
 
-#define ID_SCULPT_BRUSH_MULTISTAMP 1030685
-
 using namespace cinema;
+
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 ID_SCULPT_BRUSH_MULTISTAMP = 1030685;
+
 
 class SculptBrushMultiStamp : public SculptBrushToolData
 {
@@ -32,12 +34,10 @@ public:
 
 private:
 	maxon::BaseArray<BaseBitmap*> _bitmaps;
-	Int32 _currentMap;
+	Int32 _currentMap = 0;
 };
 
-SculptBrushMultiStamp::SculptBrushMultiStamp(SculptBrushParams *pParams)
-	: SculptBrushToolData(pParams)
-	, _currentMap(0)
+SculptBrushMultiStamp::SculptBrushMultiStamp(SculptBrushParams *pParams) : SculptBrushToolData(pParams)
 {
 }
 
@@ -82,15 +82,13 @@ void SculptBrushMultiStamp::InitStamps(const Filename &folder)
 			StatusSetBar(Int32(i / count));
 			i++;
 
-			BaseBitmap *pBitmap = BaseBitmap::Alloc();
-			if (pBitmap->Init(folder + files->GetFilename()) == IMAGERESULT::OK)
+			if (_bitmaps.EnsureCapacity(_bitmaps.GetCount() + 1) == maxon::OK)
 			{
-				iferr (_bitmaps.Append(pBitmap))
-          return;
-			}
-			else
-			{
-				BaseBitmap::Free(pBitmap);
+				maxon::UniqueRef<BaseBitmap> pBitmap = BaseBitmap::Alloc();
+				if (pBitmap && pBitmap->Init(folder + files->GetFilename()) == IMAGERESULT::OK)
+				{
+					_bitmaps.Append(pBitmap.Disconnect()) iferr_cannot_fail("Entry was reserved");
+				}
 			}
 		}
 	}

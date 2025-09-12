@@ -153,11 +153,8 @@ static maxon::Id g_nodeCustomGUIDatabaseID = maxon::Id("net.maxonexample.databas
 
 static maxon::Result<void> LoadResources()
 {
-	iferr_scope_handler
-	{
-		err.CritStop();
-		return err;
-	};
+	iferr_scope;
+
 	// Get plugin location
 	const maxon::Url& binaryUrl = maxon::g_maxon.GetUrl();
 	// Get plugin folder
@@ -165,8 +162,7 @@ static maxon::Result<void> LoadResources()
 	// Get resource folder (this folder must exist)
 	const maxon::Url resourceUrl = pluginDir.Append("res"_s).Append("nodes"_s) iferr_return;
 	// Register database
-	maxon::DataDescriptionDefinitionDatabaseInterface::RegisterDatabaseWithUrl(
-							g_nodeCustomGUIDatabaseID, resourceUrl) iferr_return;
+	maxon::DataDescriptionDefinitionDatabaseInterface::RegisterDatabaseWithUrl(g_nodeCustomGUIDatabaseID, resourceUrl) iferr_return;
 
 	// Define a default conversion class for a DataType.
 	maxon::UiConversionInterface::AddDefaultConversion(maxon::GetDataType<iCustomDataTypeDots>(), 
@@ -182,8 +178,7 @@ static void FreeResources()
 		return;
 	};
 	// Unregister a database
-	maxon::DataDescriptionDefinitionDatabaseInterface::UnregisterDatabase(
-															g_nodeCustomGUIDatabaseID) iferr_return;
+	maxon::DataDescriptionDefinitionDatabaseInterface::UnregisterDatabase(g_nodeCustomGUIDatabaseID) iferr_return;
 }
 MAXON_INITIALIZATION(LoadResources, FreeResources);
 

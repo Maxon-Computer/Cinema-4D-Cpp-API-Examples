@@ -168,11 +168,11 @@ Bool NullSnap::Draw(const SnapStruct& ss, BaseDocument* doc, BaseDraw* bd, BaseD
 	return true;
 }
 
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 SNAPDATA_NULL_SNAP_ID = 1033848;
+
 Bool RegisterSnapDataNullSnap()
 {
-	// A unique plugin ID. You must obtain this from developers.maxon.net.
-	const Int32 pluginID = 1033848; 
 	const String help = "Snap to null objects";
-	
-	return RegisterSnapPlugin(pluginID, GeLoadString(IDS_NULLSNAP), help, PLUGINFLAG_SNAP_INFERRED_POINT | PLUGINFLAG_SNAP_INFERRED_AXIS, NullSnap::Alloc, nullptr, SNAPPRIORITY::NONE);
+	return RegisterSnapPlugin(SNAPDATA_NULL_SNAP_ID, GeLoadString(IDS_NULLSNAP), help, PLUGINFLAG_SNAP_INFERRED_POINT | PLUGINFLAG_SNAP_INFERRED_AXIS, NullSnap::Alloc, nullptr, SNAPPRIORITY::NONE);
 }

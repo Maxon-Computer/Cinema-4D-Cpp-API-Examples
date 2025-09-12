@@ -1,14 +1,14 @@
 // example code for a menu/manager plugin
 
-// be sure to use a unique ID obtained from developers.maxon.net
-#define ID_ACTIVEOBJECT 1000472
-
 #include "activeobject.h"
 #include "maxon/sortedarray.h"
 #include "maxon/utilities/sprintf_safe.h"
 #include "maxon/weakrawptr.h"
 
 using namespace cinema;
+
+/// A unique plugin ID. You must obtain this from developers.maxon.net.
+static constexpr const Int32 ID_ACTIVEOBJECT = 1000472;
 
 class ListHeader;
 class ActiveObjectDialog;
@@ -19,12 +19,8 @@ static void UpdateDialog(ActiveObjectDialog* dlg);
 //---------------------------------------------
 class ListObj
 {
-	ListObj*		next;
-	ListObj*		prev;
-	ListHeader* up;
-
 public:
-	ListObj();
+	ListObj() {}
 	virtual ~ListObj();
 
 	Bool AddObj(ListHeader* header);
@@ -36,15 +32,18 @@ public:
 	ListHeader* GetUp();
 
 	friend class ListHeader;
+
+private:
+	ListObj*		next = nullptr;
+	ListObj*		prev = nullptr;
+	ListHeader* up = nullptr;
 };
+
 //---------------------------------------------
 class ListHeader
 {
-	ListObj* first;
-	ListObj* last;
-
 public:
-	ListHeader();
+	ListHeader() {}
 	~ListHeader();
 
 	Bool AddObj(ListObj* newobj);
@@ -54,14 +53,13 @@ public:
 	ListObj* GetFirst();
 
 	Int32 GetCount();
+
+private:
+	ListObj* first = nullptr;
+	ListObj* last = nullptr;
 };
 
 //---------------------------------------------
-ListObj::ListObj()
-{
-	next = prev = nullptr;
-	up = nullptr;
-}
 ListObj::~ListObj()
 {
 	if (up)
@@ -94,10 +92,6 @@ ListHeader* ListObj::GetUp()
 	return up;
 }
 //---------------------------------------------
-ListHeader::ListHeader()
-{
-	first = last = nullptr;
-}
 ListHeader::~ListHeader()
 {
 	FreeList(false);
@@ -150,9 +144,8 @@ Bool ListHeader::FreeList(Bool delentries)
 }
 Int32 ListHeader::GetCount()
 {
-	ListObj* temp;
-	Int32		 count = 0;
-	for (temp = GetFirst(); temp; temp = temp->GetNext())
+	Int32 count = 0;
+	for (ListObj* temp = GetFirst(); temp; temp = temp->GetNext())
 		count++;
 	return count;
 }
@@ -163,32 +156,22 @@ Int32 ListHeader::GetCount()
 
 struct DebugNode : public ListObj
 {
-	ListHeader										down;
-	GeListNode*										ptr;
-	String												name;
-	Bool													open;
-	Bool													isNew = false;
+	ListHeader down;
+	GeListNode* ptr = nullptr;
+	String name;
+	Bool open = false;
+	Bool isNew = false;
 	maxon::WeakRawPtr<GeListNode> link;
 
-	Bool								diff[(UInt32)HDIRTY_ID::MAX + 1];
-	UInt32							hdirty[(UInt32)HDIRTY_ID::MAX + 1];
-	Bool								diffDirty[2] = { };
-	UInt32							dirty[2] = { (UInt32)NOTOK, (UInt32)NOTOK };
+	Bool diff[UInt32(HDIRTY_ID::MAX) + 1];
+	UInt32 hdirty[UInt32(HDIRTY_ID::MAX) + 1];
+	Bool diffDirty[2] = { };
+	UInt32 dirty[2] = { (UInt32)NOTOK, (UInt32)NOTOK };
 };
 
 class DebugArray : public maxon::SortedArray<DebugArray, maxon::BaseArray<DebugNode*> >
 {
 public:
-	DebugArray()
-	{
-	}
-
-	DebugArray(DebugArray && src) : maxon::SortedArray<DebugArray, maxon::BaseArray<DebugNode*> >(std::move(src))
-	{
-	}
-
-	MAXON_OPERATOR_MOVE_ASSIGNMENT(DebugArray)
-
 	static Bool LessThan(DebugNode* a, DebugNode* b)
 	{
 		return a->ptr < b->ptr;
@@ -204,14 +187,11 @@ public:
 		return a == b->ptr;
 	}
 
-	void FlushAll()
+	void DeleteAll()
 	{
-		Int32 i;
-		for (i = 0; i < GetCount(); i++)
-		{
-			DebugNode* node = operator[](i);
+		for (DebugNode*& node : *this)
 			DeleteObj(node);
-		}
+
 		Flush();
 	}
 };
@@ -247,7 +227,6 @@ static Bool BuildTree(DebugNode* parent, DebugArray& oldlist, DebugArray& newlis
 		if (isElement)
 			n->link.Set(node);
 		n->isNew = true;
-
 	}
 
 	iferr (newlist.Append(n))
@@ -265,9 +244,9 @@ static Bool BuildTree(DebugNode* parent, DebugArray& oldlist, DebugArray& newlis
 	if (node->IsInstanceOf(Tbaselist2d))
 	{
 		const Char* mem = nullptr;
-		Int32				uID = 0;
-		Int					bytes = 0;
-		Char				cTxt[3];
+		Int32 uID = 0;
+		Int bytes = 0;
+		Char cTxt[3];
 
 		// go through all available UIDs
 		for (Int32 uIdx = 0; uIdx < static_cast<BaseList2D*>(node)->GetUniqueIDCount(); uIdx++)
@@ -311,9 +290,8 @@ static Bool BuildTree(DebugNode* parent, DebugArray& oldlist, DebugArray& newlis
 		}
 	}
 
-	Int32	 i;
 	UInt32 sum = 0;
-	for (i = 0; i < (Int32)HDIRTY_ID::MAX; i++)
+	for (Int32 i = 0; i < Int32(HDIRTY_ID::MAX); i++)
 	{
 		UInt32 hdirty = node->GetHDirty((HDIRTYFLAGS)((1 << 31) | (1 << i)));
 		n->diff[i] = n->hdirty[i] != hdirty;
@@ -322,8 +300,8 @@ static Bool BuildTree(DebugNode* parent, DebugArray& oldlist, DebugArray& newlis
 	}
 	sum += node->GetDirty(DIRTYFLAGS::ALL);
 
-	n->diff[i] = n->hdirty[(Int32)HDIRTY_ID::MAX] != sum;
-	n->hdirty[(Int32)HDIRTY_ID::MAX] = sum;
+	n->diff[Int32(HDIRTY_ID::MAX)] = n->hdirty[Int32(HDIRTY_ID::MAX)] != sum;
+	n->hdirty[Int32(HDIRTY_ID::MAX)] = sum;
 
 	Int32 dirtyData = node->GetDirty(DIRTYFLAGS::DATA);
 	Int32 dirtyMatrix = node->GetDirty(DIRTYFLAGS::MATRIX);
@@ -384,7 +362,7 @@ static Bool BuildTree(DebugNode* parent, DebugArray& oldlist, DebugArray& newlis
 
 	maxon::BufferedBaseArray<BranchInfo, 20> info;
 	node->GetBranchInfo(info, GETBRANCHINFO::NONE) iferr_ignore("GetBranchInfo");
-	for (i = 0; i < (Int32)info.GetCount(); i++)
+	for (Int i = 0; i < info.GetCount(); i++)
 	{
 		if (info[i].name.IsPopulated())
 		{
@@ -614,11 +592,10 @@ public:
 		DebugNode*	 node = (DebugNode*)obj;
 		GeListNode* link = node->link.Get();
 
-		Int32 wx, wy, wh, ww;
-		wx = drawinfo->xpos;
-		wy = drawinfo->ypos;
-		ww = drawinfo->width;
-		wh = drawinfo->height;
+		Int32 wx = drawinfo->xpos;
+		Int32 wy = drawinfo->ypos;
+		Int32 ww = drawinfo->width;
+		Int32 wh = drawinfo->height;
 
 		if (col == 'icon')
 		{
@@ -769,6 +746,7 @@ public:
 		switch (lColumn)
 		{
 			case 'tree':
+			{
 				if (link)
 				{
 					if (link->GetType() == ID_LISTHEAD)
@@ -791,6 +769,7 @@ public:
 					bc->InsData(COPY_ADDRESS, GeData("Copy Address"));
 				}
 				break;
+			}
 		}
 	}
 
@@ -863,7 +842,6 @@ public:
 				{
 					EventAdd();
 				}
-
 				break;
 			}
 			case SHOW_VARIABLE_TAG_DATA:
@@ -900,19 +878,11 @@ enum
 
 class ActiveObjectDialog : public GeDialog
 {
-private:
-	Bool							 lock;
-	TreeViewCustomGui* tree;
-	DebugNode					 root_of_docs;
-	DebugArray				 oldlist;
-
 public:
 	~ActiveObjectDialog()
 	{
-		oldlist.FlushAll();
+		_oldlist.DeleteAll();
 	}
-
-	DescriptionCustomGui* gad;
 
 	virtual Bool CreateLayout();
 	virtual Bool InitValues();
@@ -921,18 +891,29 @@ public:
 	virtual Bool CoreMessage(Int32 id, const BaseContainer& msg);
 
 	Bool FillTree();
+
+	DescriptionCustomGui* GetActiveCustomGui() { return _gad; }
+
+private:
+	DescriptionCustomGui* _gad = nullptr;
+	Bool _lock = false;
+	TreeViewCustomGui* _tree = nullptr;
+	DebugNode _root_of_docs;
+	DebugArray _oldlist;
 };
 
 void ActiveObjectDialog::DestroyWindow()
 {
-	tree = nullptr;
-	gad	 = nullptr;
+	_tree = nullptr;
+	_gad = nullptr;
 }
 
 Bool ActiveObjectDialog::CreateLayout()
 {
 	// first call the parent instance
 	Bool res = GeDialog::CreateLayout();
+	if (res == false)
+		return res;
 
 	SetTitle("C++SDK Demo - Active Object Properties"_s);
 
@@ -946,22 +927,22 @@ Bool ActiveObjectDialog::CreateLayout()
 	treedata.SetBool(TREEVIEW_BORDER, true);
 	treedata.SetBool(TREEVIEW_HAS_HEADER, true);
 	treedata.SetBool(TREEVIEW_FIXED_LAYOUT, true);
-	tree = (TreeViewCustomGui*)AddCustomGui(IDC_AO_TREEVIEW, CUSTOMGUI_TREEVIEW, String(), BFH_SCALEFIT | BFV_SCALEFIT, 0, 0, treedata);
+	_tree = (TreeViewCustomGui*)AddCustomGui(IDC_AO_TREEVIEW, CUSTOMGUI_TREEVIEW, String(), BFH_SCALEFIT | BFV_SCALEFIT, 0, 0, treedata);
 	// you can also write "TREEVIEW id { BORDER; } in the resource file
 	GroupEnd();
 
 	BaseContainer customgui;
 	customgui.SetBool(DESCRIPTION_ALLOWFOLDING, true);
-	gad = (DescriptionCustomGui*)AddCustomGui(IDC_AO_DESCRIPTION, CUSTOMGUI_DESCRIPTION, String(), BFH_SCALEFIT | BFV_SCALEFIT, 0, 0, customgui);
+	_gad = (DescriptionCustomGui*)AddCustomGui(IDC_AO_DESCRIPTION, CUSTOMGUI_DESCRIPTION, String(), BFH_SCALEFIT | BFV_SCALEFIT, 0, 0, customgui);
 
 	GroupEnd();
 
-	if (gad && GetActiveDocument())
+	if (_gad && GetActiveDocument())
 	{
-		gad->SetObject(GetActiveDocument()->GetActiveObject());
+		_gad->SetObject(GetActiveDocument()->GetActiveObject());
 	}
 
-	if (tree)
+	if (_tree)
 	{
 		BaseContainer layout;
 		layout.SetInt32('tree', LV_TREE);
@@ -985,7 +966,7 @@ Bool ActiveObjectDialog::CreateLayout()
 		layout.SetInt32('drta', LV_USER);
 		layout.SetInt32('drtb', LV_USER);
 		layout.SetInt32('drtL', LV_USER);
-		tree->SetLayout(19, layout);
+		_tree->SetLayout(19, layout);
 	}
 
 	return res;
@@ -1005,9 +986,11 @@ Bool ActiveObjectDialog::Command(Int32 id, const BaseContainer& msg)
 	switch (id)
 	{
 		case IDC_AO_LOCK_ELEMENT:
-			lock = msg.GetInt32(BFM_ACTION_VALUE) != 0;
+		{
+			_lock = msg.GetInt32(BFM_ACTION_VALUE) != 0;
 			CoreMessage(EVMSG_CHANGE, BaseContainer());
 			break;
+		}
 	}
 	return GeDialog::Command(id, msg);
 }
@@ -1017,32 +1000,34 @@ Bool ActiveObjectDialog::CoreMessage(Int32 id, const BaseContainer& msg)
 	switch (id)
 	{
 		case EVMSG_DOCUMENTRECALCULATED:
-			if (CheckCoreMessage(msg) && !lock)
+		{
+			if (CheckCoreMessage(msg) && !_lock)
 			{
-				if (gad && GetActiveDocument())
+				if (_gad && GetActiveDocument())
 				{
 					InitValues();
 				}
 			}
 			break;
+		}
 	}
 	return GeDialog::CoreMessage(id, msg);
 }
 
 Bool ActiveObjectDialog::FillTree()
 {
-	if (tree)
+	if (_tree)
 	{
-		root_of_docs.down.FreeList(false);
+		_root_of_docs.down.FreeList(false);
 
 		DebugArray newlist;
-		BuildTree(&root_of_docs, oldlist, newlist, GetActiveDocument()->GetListHead(), String("Documents"), false);
-		oldlist.FlushAll();
-		iferr (oldlist.CopyFrom(newlist))
+		BuildTree(&_root_of_docs, _oldlist, newlist, GetActiveDocument()->GetListHead(), String("Documents"), false);
+		_oldlist.DeleteAll();
+		iferr (_oldlist.CopyFrom(newlist))
 			return false;
-		oldlist.Sort();
-		tree->SetRoot(&root_of_docs, &g_functable, this);
-		tree->Refresh();
+		_oldlist.Sort();
+		_tree->SetRoot(&_root_of_docs, &g_functable, this);
+		_tree->Refresh();
 	}
 	return true;
 }
@@ -1056,11 +1041,9 @@ void UpdateDialog(ActiveObjectDialog* dlg)
 class ActiveObjectDialogCommand : public CommandData
 {
 public:
-	ActiveObjectDialog dlg;
-
 	virtual Bool Execute(BaseDocument* doc, GeDialog* parentManager)
 	{
-		return dlg.Open(DLG_TYPE::ASYNC, ID_ACTIVEOBJECT, -1, -1, 500, 300);
+		return _dlg.Open(DLG_TYPE::ASYNC, ID_ACTIVEOBJECT, -1, -1, 500, 300);
 	}
 
 	virtual Int32 GetState(BaseDocument* doc, GeDialog* parentManager)
@@ -1070,19 +1053,22 @@ public:
 
 	virtual Bool RestoreLayout(void* secret)
 	{
-		return dlg.RestoreLayout(ID_ACTIVEOBJECT, 0, secret);
+		return _dlg.RestoreLayout(ID_ACTIVEOBJECT, 0, secret);
 	}
+
+public:
+	ActiveObjectDialog _dlg;
 };
 
-ActiveObjectDialogCommand* g_cmd;
+static ActiveObjectDialogCommand* g_cmd;
 
 static void ShowObjectProps(BaseList2D* obj)
 {
 	if (!g_cmd)
 		return;
-	if (!g_cmd->dlg.gad)
+	if (!g_cmd->_dlg.GetActiveCustomGui())
 		return;
-	g_cmd->dlg.gad->SetObject(obj);
+	g_cmd->_dlg.GetActiveCustomGui()->SetObject(obj);
 }
 
 Bool RegisterActiveObjectDlg()
