@@ -348,6 +348,14 @@ static Bool BuildTree(DebugNode* parent, DebugArray& oldlist, DebugArray& newlis
 		if (cc)
 			if (!BuildTree(n, oldlist, newlist, cc, String("ISOPARM: "), true))
 				return false;
+
+		if (node->GetInfo() & OBJECT_ISSPLINE)
+		{
+			cc = obj->GetRealSpline();
+			if (cc && (cc != obj))
+				if (!BuildTree(n, oldlist, newlist, cc, String("REALSPLINE: "), true))
+					return false;
+		}
 	}
 
 	if (node->GetDown())

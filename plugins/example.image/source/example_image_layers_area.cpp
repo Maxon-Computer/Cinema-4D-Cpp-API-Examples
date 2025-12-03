@@ -110,8 +110,8 @@ static float* AddAlienBuffer()
 	// The knots of the gradient. We either interpolate from opaque to transparent or vice versa. We 
 	// dip here our toes a bit into the Maxon API with ColorA32 so that we later use its color 
 	// interpolation function.
-	const float alphaA = g_random.Get01() > .5 ? 0.0 : 1.0;
-	const float alphaB = alphaA > 0.5 ? 0.0 : 1.0;
+	const float alphaA = g_random.Get01() > .5 ? 0.0f : 1.0f;
+	const float alphaB = alphaA > 0.5f ? 0.0f : 1.0f;
 	const maxon::ColorA32 gradientColorA(
 		g_random.Get01(), g_random.Get01(), g_random.Get01(), alphaA);
 	const maxon::ColorA32 gradientColorB(

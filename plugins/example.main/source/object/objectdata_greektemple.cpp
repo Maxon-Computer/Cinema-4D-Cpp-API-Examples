@@ -414,7 +414,6 @@ namespace GreekTempleHelpers
 	/// Global function responsible to create the colonnade of the temple using cylinders and bent
 	/// cubes and responsible for managing the columns grid arrangement.
 	/// @brief Global function to create the temple colonnade managing columns grid arrangement.
-	/// @param[out] colonnadeNullRelPtr	Colonnade object. @callerOwnsPointed{base object}
 	/// @param[in] columnNullRelPtr		Column object to be instanced.
 	/// @param[in] topStepWidth				Width of the top-most step.
 	/// @param[in] topStepHeight			Height of the top-most step.
@@ -424,7 +423,7 @@ namespace GreekTempleHelpers
 	/// @param[in] xSpace							Space between columns along the x-axis.
 	/// @param[in] zSpace							Space between columns along the z-axis.
 	/// @param[in] hhPtr							A hierarchy helper for the operation. @callerOwnsPointed{hierarchy helper}
-	/// @return												True if instancing process succeeds.
+	/// @return												Colonnade object or error.
 	//----------------------------------------------------------------------------------------
 	static maxon::Result<BaseObject*> PerformeColumnsInstancing(maxon::UniqueRef<BaseObject> columnNullRelPtr, const Float& topStepWidth, const Float& topStepHeight, const Vector& topStepBLVertexPos, const Vector& columnRadius, const Vector& columnScaleVector, const Float xSpace /*= 0*/, const Float zSpace /*= 0*/, const HierarchyHelp* hhPtr /*= nullptr*/)
 	{
