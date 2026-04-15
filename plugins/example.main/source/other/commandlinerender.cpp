@@ -383,7 +383,7 @@ void CommandLineRendering(C4DPL_CommandLineArgs* args)
 					(data.GetBool(RDATA_MULTIPASS_SAVEIMAGE) && data.GetBool(RDATA_MULTIPASS_ENABLE) &&
 					 data.GetFilename(RDATA_MULTIPASS_FILENAME).IsPopulated()))
 			{
-				MultipassBitmap* bmp2 = MultipassBitmap::Alloc(data.GetInt32(RDATA_XRES), data.GetInt32(RDATA_YRES), COLORMODE::RGB);
+				MultipassBitmap* bmp2 = AllocateRenderBitmap(&data);
 				if (!bmp2)
 				{
 					DiagnosticOutput("Image allocation out of memory (2)"_s);
@@ -392,7 +392,7 @@ void CommandLineRendering(C4DPL_CommandLineArgs* args)
 				}
 
 				starttime = GeGetTimer();
-				res = RenderDocument(doc, data, RenderProgressHook, nullptr, bmp2, RENDERFLAGS::EXTERNAL | RENDERFLAGS::NODOCUMENTCLONE | RENDERFLAGS::SHOWERRORS, nullptr);
+				res = RenderDocument(doc, data, RenderProgressHook, nullptr, bmp2, RENDERFLAGS::AUTO_SETUP | RENDERFLAGS::NODOCUMENTCLONE | RENDERFLAGS::SHOWERRORS, nullptr);
 
 				MultipassBitmap::Free(bmp2);
 			}

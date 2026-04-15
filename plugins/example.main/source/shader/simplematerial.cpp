@@ -237,7 +237,7 @@ Bool SimpleMaterial::Message(GeListNode* node, Int32 type, void* data)
 					bcRender.SetInt32(RDATA_RENDERENGINE, RDATA_RENDERENGINE_PREVIEWHARDWARE);
 				image->pDest->Clear(0, 0, 0);
 				image->lResult = RenderDocument(image->pDoc, bcRender, nullptr, nullptr, image->pDest,
-													 RENDERFLAGS::EXTERNAL | RENDERFLAGS::PREVIEWRENDER, image->pThread);
+													 RENDERFLAGS::AUTO_SETUP | RENDERFLAGS::PREVIEWRENDER, image->pThread);
 			}
 			return true;
 			break;

@@ -660,7 +660,7 @@ public:
 				GeData data;
 				o->GetParameter(ConstDescID(DescLevel((Int32)0xdeadbeef)), data, DESCFLAGS_GET::NONE);
 				maxon::StrongCOWRef<Int>* ref = reinterpret_cast<maxon::StrongCOWRef<Int>*>(data.GetVoid());
-				UInt											refCnt = ref ? (UInt)maxon::details::PrivateGetReferenceCounter(ref->GetPointer()) : 0;
+				UInt											refCnt = ref && ref->GetPointer() ? (UInt)maxon::details::PrivateGetReferenceCounter(ref->GetPointer()) : 0;
 				String										hex = String::UIntToString(refCnt) + "x";
 
 				if (node->isNew)
@@ -765,6 +765,7 @@ public:
 					{
 						bc->InsData(SHOW_OBJECT_INFORMATION, GeData("Show object information..."));
 						bc->InsData(EXTRACT_OBJECT_TO_SCENE, GeData("Extract to scene"));
+						bc->InsData(SHOW_RELATIONSHIP, GeData("Show Relationship"));
 					}
 					else if (link->IsInstanceOf(Tvariable))
 					{
@@ -852,6 +853,42 @@ public:
 				}
 				break;
 			}
+			case SHOW_RELATIONSHIP:
+			{
+				String outString = "Relationship for: "_s;
+				if (link && link->IsInstanceOf(Obase))
+				{
+					const BaseObject* object = static_cast<BaseObject*>(link);
+					const BaseObject* r = nullptr;
+					auto AddObject = [&r, &outString](const String& type)
+					{
+						outString += "|"_s;
+						outString += type;
+						outString += ": "_s;
+						if (r)
+							outString += FormatString("0x@: @", (void*)r, r->GetName());
+						else
+							outString += "nullptr"_s;
+					};
+
+					outString += FormatString("0x@: @|", (void*)object, object->GetName());
+
+					r = object->GetOrigin(false);
+					AddObject("origin"_s);
+
+					r = object->GetOrigin(true);
+					AddObject("origin (safe)"_s);
+
+					r = object->GetCacheParent();
+					AddObject("cache parent"_s);
+				}
+				else
+				{
+					outString += "(no BaseObject)"_s;
+				}
+				GeOutString(outString, GEMB::OK);
+				break;
+			}
 			case SHOW_VARIABLE_TAG_DATA:
 			{
 				if (link && link->IsInstanceOf(Tvariable))
@@ -870,8 +907,9 @@ private:
 	static const Int32 REFRESH_TREE = ID_TREEVIEW_FIRST_NEW_ID + 1;
 	static const Int32 SHOW_OBJECT_INFORMATION = ID_TREEVIEW_FIRST_NEW_ID + 2;
 	static const Int32 EXTRACT_OBJECT_TO_SCENE = ID_TREEVIEW_FIRST_NEW_ID + 3;
-	static const Int32 COPY_ADDRESS = ID_TREEVIEW_FIRST_NEW_ID + 4;
-	static const Int32 SHOW_VARIABLE_TAG_DATA = ID_TREEVIEW_FIRST_NEW_ID + 5;
+	static const Int32 SHOW_RELATIONSHIP = ID_TREEVIEW_FIRST_NEW_ID + 4;
+	static const Int32 COPY_ADDRESS = ID_TREEVIEW_FIRST_NEW_ID + 5;
+	static const Int32 SHOW_VARIABLE_TAG_DATA = ID_TREEVIEW_FIRST_NEW_ID + 6;
 };
 
 Function2 g_functable;

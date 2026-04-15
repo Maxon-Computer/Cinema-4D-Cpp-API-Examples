@@ -42,9 +42,15 @@ maxon::Result<void> GetSetColorValuesInOcioDocuments(cinema::BaseDocument* doc);
 
 /// @brief Read and write the OCIO color spaces associated with #cinema::BaseBitmap instances to change or 
 /// nullify parts of an OCIO conversion path for them.
-/// @etails This makes it for example possible to disable the Display and View transform for a 
+/// @details This makes it for example possible to disable the Display and View transform for a 
 /// singular bitmap when displayed in the Picture Viewer.
 maxon::Result<void> GetSetBitmapOcioProfiles(cinema::BaseDocument* doc);
+
+/// @brief Demonstrates how to render an (OCIO) document to disk and the picture viewer while controlling all
+/// aspects of the rendering manually.
+maxon::Result<void> ComplexRenderDocument(cinema::BaseDocument* doc);
+
+maxon::Result<void> SimpleRenderDocument(cinema::BaseDocument* doc);
 
 /// @brief Realizes a renderer which manipulates the OCIO profiles of an upcoming rendering.
 class OcioAwareRenderer : public cinema::VideoPostData

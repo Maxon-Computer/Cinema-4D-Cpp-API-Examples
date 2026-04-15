@@ -325,7 +325,7 @@ Bool ParticleVolume::Message(GeListNode* node, Int32 type, void* data)
 				image->pDoc->SetTime(bt);
 				image->pDoc->ExecutePasses(image->pThread, true, true, false, BUILDFLAGS::NONE);
 				image->lResult = RenderDocument(image->pDoc, bcRender, nullptr, nullptr, image->pDest,
-													 RENDERFLAGS::EXTERNAL | RENDERFLAGS::PREVIEWRENDER, image->pThread);
+													 RENDERFLAGS::AUTO_SETUP | RENDERFLAGS::PREVIEWRENDER, image->pThread);
 			}
 			return true;
 			break;

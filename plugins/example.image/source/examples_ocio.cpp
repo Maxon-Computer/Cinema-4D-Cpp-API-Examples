@@ -1,9 +1,9 @@
-#include "c4d_thread.h"
 #include "c4d_basebitmap.h"
 #include "c4d_basedraw.h"
 #include "c4d_basematerial.h"
 #include "c4d_general.h"
 #include "c4d_shader.h"
+#include "c4d_thread.h"
 #include "c4d_videopost.h"
 #include "lib_description.h"
 #include "lib_scene_color_converter.h"
@@ -17,14 +17,187 @@
 #include "maxon/gfx_image_pixelformats.h"
 #include "maxon/iostreams.h"
 
+#include "drendersettings.h"
 #include "mmaterial.h"
-#include "obase.h"
 #include "oocionode2025.h"
 #include "vpocioawarerenderer.h"
 
 #include "examples_ocio.h"
 
 using namespace cinema;
+
+//! [ComplexRenderDocument]
+maxon::Result<void> ComplexRenderDocument(cinema::BaseDocument* doc)
+{
+	iferr_scope; // The error handler for this function.
+	
+	if (MAXON_UNLIKELY(!doc))
+		return maxon::NullptrError(MAXON_SOURCE_LOCATION, "Invalid document pointer"_s);
+
+	// This function must be called from the main thread because it attempts to update the
+	// GUI and open the Picture Viewer. RenderDocument itself is not inherently main thread
+	// bound. 
+	if (!MAXON_UNLIKELY(GeIsMainThread()))
+		return maxon::UnexpectedError(
+			MAXON_SOURCE_LOCATION, "This function must be called from the main thread."_s);
+
+	// Declare the bitmaps to render and bake into and also ensure that they are freed
+	// when the function terminates regardless of the exit path.
+	MultipassBitmap* bmp = nullptr;
+	BaseBitmap* bakedBmp = nullptr;
+
+	finally
+	{
+		if (bmp)
+			MultipassBitmap::Free(bmp);
+		if (bakedBmp)
+			BaseBitmap::Free(bakedBmp);
+	};
+
+	// Before we start manually rendering a document, we must understand the purpose of two toggles
+	// in the render settings of a document.
+	//
+	//  RDATA_BAKE_OCIO_VIEW_TRANSFORM_RENDER: Determines if the view transform should be baked into
+	//    the image in memory. This should be disabled for OCIO documents as data in memory should be
+	//    raw linear data in render space.
+	// 
+	//  RDATA_BAKE_OCIO_VIEW_TRANSFORM: Determines if the view transform should be baked into an image
+	//    when saved to disk. This is a setting which can be set by users as "Bake View Transform" in
+	//    the render settings (which only is available when the render format is 32b bit). When Cinema
+	//    4D is rendering, it will always use 32 bit bitmaps. So, when the user has set the rendering
+	//    depth to anything than 32 bit, data must always be baked down. Which also means that OCIO
+	//    transforms are baked into the data when saved to disk (i.e., the output is not linear). When
+	//    this flag is set, also renderings with a 32 bit output format will have their OCIO transforms
+	//    baked down to the color profile of the image. 
+
+	// Check if the document is an OCIO document (default for 2026+ documents) and disable the
+	// RDATA_BAKE_OCIO_VIEW_TRANSFORM_RENDER flag accordingly. Also draw a copy of the render
+	// settings so that we can modify them without changing the actual settings of the document.
+	const Bool isOcioDocument = (doc->GetDataInstanceRef().GetInt32(DOCUMENT_COLOR_MANAGEMENT) == 
+															DOCUMENT_COLOR_MANAGEMENT_OCIO);
+	BaseContainer renderSettings = BaseContainer(doc->GetActiveRenderData()->GetDataInstanceRef());
+	if (isOcioDocument)
+		renderSettings.SetBool(RDATA_BAKE_OCIO_VIEW_TRANSFORM_RENDER, false);
+
+	// Allocate the render bitmap always as a 32 bit float bitmap, no matter what the user has set
+	// in the render settings. Also add an alpha channel to the bitmap.
+	const maxon::Int32 xRes = renderSettings.GetInt32(RDATA_XRES);
+  const maxon::Int32 yRes = renderSettings.GetInt32(RDATA_YRES);
+	bmp = MultipassBitmap::Alloc(xRes, yRes, COLORMODE::RGBf);
+	if (!bmp)
+		return maxon::OutOfMemoryError(MAXON_SOURCE_LOCATION, "Failed to allocate render bitmap."_s);
+	if (!bmp->AddChannel(true, true))
+		return maxon::OutOfMemoryError(MAXON_SOURCE_LOCATION, "Failed to add alpha channel."_s);
+
+	// Setup a progress hook to receive progress updates during rendering, we just print inside the
+	// DURINGRENDERING phase the progress to the console (there are also other phases).
+	auto progressHook = [](Float p, RENDERPROGRESSTYPE type, void* context) -> void
+	{
+		if (type == RENDERPROGRESSTYPE::DURINGRENDERING)
+			ApplicationOutput("Render progress: @", p);
+	};
+
+	// Render the image. This call is blocking, but the actual rendering happens in a dedicated
+	// render thread.
+	StatusSetText("Rendering document..."_s);
+	StatusSetSpin();
+	const RENDERRESULT res = RenderDocument(
+		doc, renderSettings, progressHook, nullptr, bmp, RENDERFLAGS::EXTERNAL, nullptr);
+	StatusClear();
+
+	if (res != RENDERRESULT::OK)
+		return maxon::UnexpectedError(
+			MAXON_SOURCE_LOCATION, FormatString("Rendering failed with error code: @", Int32(res)));
+
+	// #bmp is a 32 bit image at this point, i.e., data in the render space of the document when
+	// #doc is an OCIO document. We can just send this image as is to the Picture Viewer to display
+	// it. It will correctly have setup a render, view transform, and display color profile which
+	// is then used by the picture viewer.
+	ShowBitmap(bmp, "SDK Rendered Image");
+
+	// Here we could start manipulating the image data in #bmp in render space.
+	// ...
+	
+	// But when we want to save the image to disk, and want to emulate what Cinema usually does
+	// when saving an image to disk, we must bake OCIO data. The only scenario where no baking is
+	// required, is when this rendering was a native OCIO rendering and the user did not select
+	// "Bake View Transform" in the render settings.
+
+	// We must convert the RDATA_FORMATDEPTH in the render settings to the corresponding save bit 
+	// flag (there is no dedicated 8 bit save bit flag, None is 8 bit).
+	const Int32 format = renderSettings.GetInt32(RDATA_FORMATDEPTH);
+	const SAVEBIT savebit = format == RDATA_FORMATDEPTH_16 ? SAVEBIT::USE16BITCHANNELS :
+													format == RDATA_FORMATDEPTH_32 ? SAVEBIT::USE32BITCHANNELS : SAVEBIT::NONE;
+
+	// Now we can call #BakeOcioViewToBitmap with our bitmap, render settings, and save flags to
+	// bake down our image if necessary.The function will return nullptr when no baking was necessary.
+	bakedBmp = BakeOcioViewToBitmap(bmp, renderSettings, savebit) iferr_return;
+
+	// Now we save the file to the desktop as "SDK_RENDERING.psd".
+	const Filename filePath = GeGetC4DPath(C4D_PATH_DESKTOP) + "SDK_RENDERING.psd";
+	if ((bakedBmp ? bakedBmp : bmp)->Save(filePath, FILTER_PSD, nullptr, savebit) != IMAGERESULT::OK)
+		return maxon::UnexpectedError(MAXON_SOURCE_LOCATION, "Failed to save rendered image to disk."_s);
+
+	return maxon::OK;
+}
+//! [ComplexRenderDocument]
+
+//! [SimpleRenderDocument]
+maxon::Result<void> SimpleRenderDocument(cinema::BaseDocument* doc)
+{
+	iferr_scope; // The error handler for this function.
+
+	if (MAXON_UNLIKELY(!doc))
+		return maxon::NullptrError(MAXON_SOURCE_LOCATION, "Invalid document pointer"_s);
+
+	// Allocate two bitmaps to render into and also ensure they are freed once the function returns.
+	const BaseContainer& settings = doc->GetActiveRenderData()->GetDataInstanceRef();
+	MultipassBitmap* bmp1 = AllocateRenderBitmap(&settings);
+	MultipassBitmap* bmp2 = AllocateRenderBitmap(&settings);
+
+	finally 
+	{ 
+		MultipassBitmap::Free(bmp1); 
+		MultipassBitmap::Free(bmp2);
+	};
+
+	if (MAXON_UNLIKELY(!bmp1 || !bmp2))
+		return maxon::OutOfMemoryError(
+			MAXON_SOURCE_LOCATION, "Failed to allocate one or more render bitmaps."_s);
+
+	// Render the document into #bmp1 with AUTO_SETUP flags, which is an alias for OCIO_RAW_RENDERING
+	// | EXTERNAL. This call is equivalent to the path taken in the complex example which
+	// puts the bitmap into the picture viewer.
+	if (RenderDocument(
+		doc, settings, nullptr, nullptr, bmp1, RENDERFLAGS::AUTO_SETUP, nullptr) != RENDERRESULT::OK)
+		return maxon::UnexpectedError(MAXON_SOURCE_LOCATION, "Rendering failed."_s);
+
+	ShowBitmap(bmp1, "AUTO_SETUP Rendered Image");
+
+	// AUTO_SETUP render the document into #bmp2 and also bake OCIO data when necessary, so that we 
+	// can directly save the image to disk without further processing.
+	const RENDERFLAGS flags = RENDERFLAGS::AUTO_SETUP | RENDERFLAGS::OCIO_BAKE_RENDERING;
+	if (RenderDocument(doc, settings, nullptr, nullptr, bmp2, flags, nullptr) != RENDERRESULT::OK)
+		return maxon::UnexpectedError(MAXON_SOURCE_LOCATION, "Rendering failed."_s);
+
+	// We can also display baked images in the picture viewer and they will display correctly, but
+	// they will not have any OCIO color profiles associated with them anymore, i.e., we view baked
+	// down data (usually sRGB 2.2).
+	ShowBitmap(bmp2, "AUTO_SETUP | OCIO_BAKE_RENDERING Rendered Image");
+
+	// Save the baked image to disk. The conversion from RDATA_FORMATDEPTH to SAVEBIT is 
+	// unfortunately something we must manually do.
+	const Int32 format = settings.GetInt32(RDATA_FORMATDEPTH);
+	const SAVEBIT savebit = format == RDATA_FORMATDEPTH_16 ? SAVEBIT::USE16BITCHANNELS :
+													format == RDATA_FORMATDEPTH_32 ? SAVEBIT::USE32BITCHANNELS : SAVEBIT::NONE;
+
+	const Filename filePath = GeGetC4DPath(C4D_PATH_DESKTOP) + "SDK_SIMPLE_RENDERING.psd";
+	if (bmp2->Save(filePath, FILTER_PSD, nullptr, savebit) != IMAGERESULT::OK)
+		return maxon::UnexpectedError(MAXON_SOURCE_LOCATION, "Failed to save rendered image to disk."_s);
+
+	return maxon::OK;
+}
+//! [SimpleRenderDocument]
 
 //! [ConvertSceneOrElements]
 maxon::Result<void> ConvertSceneOrElements(BaseDocument* doc)

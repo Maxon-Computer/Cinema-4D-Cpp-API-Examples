@@ -372,7 +372,7 @@ Bool BLW_PluginLicenseDialog_Dialog::Command(Int32 id, const BaseContainer & msg
 					EncryptAndWrite(hashedKey, pluginLicString, pluginLicURL) iferr_return;
 					
 					// append to message for dialog box
-					message += pluginLicURL.GetUrl() + "\n"_s;
+					message += pluginLicURL.ToString() + "\n"_s;
 				}
 				
 				// notify about the license generation
@@ -404,7 +404,7 @@ Bool BLW_PluginLicenseDialog_Dialog::Command(Int32 id, const BaseContainer & msg
 				EncryptAndWrite(hashedKey, pluginLicString, pluginLicURL) iferr_return;
 				
 				// allocate the MessageDialog message
-				maxon::String message ("The plugin license has been successfully saved on disk\n\n"_s + pluginLicURL.GetUrl());
+				maxon::String message ("The plugin license has been successfully saved on disk\n\n"_s + pluginLicURL.ToString());
 				
 				// notify about the license generation
 				MessageDialog(message);

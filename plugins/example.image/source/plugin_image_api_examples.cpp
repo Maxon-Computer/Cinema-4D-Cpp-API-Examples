@@ -68,20 +68,37 @@ Bool OcioExamplesCommand::Execute(BaseDocument* doc, GeDialog* parentManager)
 	OpenFlushConsole();
 
 	// Run all OCIO examples; the order is here not irrelevant. The examples will run in any order,
-	// but it makes most sense to run first ConvertSceneOrElements().
-	ConvertSceneOrElements(doc) iferr_return;
-	CopyColorManagementSettings(doc) iferr_return;
-	GetSetColorManagementSettings(doc) iferr_return;
-	ConvertOcioColors(doc) iferr_return;
-	ConvertOcioColorsArbitrarily(doc) iferr_return;
-	GetSetColorValuesInOcioDocuments(doc) iferr_return;
-	GetSetBitmapOcioProfiles(doc) iferr_return;
+	// but it makes most sense to run first ConvertSceneOrElements(), as that ensures that all
+	// following examples work on an OCIO document.
+	 ConvertSceneOrElements(doc) iferr_return;
+	 CopyColorManagementSettings(doc) iferr_return;
+	 GetSetColorManagementSettings(doc) iferr_return;
+	 ConvertOcioColors(doc) iferr_return;
+	 ConvertOcioColorsArbitrarily(doc) iferr_return;
+	 GetSetColorValuesInOcioDocuments(doc) iferr_return;
+	 GetSetBitmapOcioProfiles(doc) iferr_return;
+
+	return true;
+};
+
+Bool OcioRenderDocumentCommand::Execute(BaseDocument* doc, GeDialog* parentManager)
+{
+	iferr_scope_handler
+	{
+		ApplicationOutput("@(): @", MAXON_FUNCTIONNAME, err);
+		return false;
+	};
+
+	OpenFlushConsole();
+	SimpleRenderDocument(doc) iferr_return;
+	ComplexRenderDocument(doc) iferr_return;
 
 	return true;
 };
 
 Bool RegisterImageApiExamples()
 {
+	// Register the command plugins.
 	if (!RegisterCommandPlugin(
 		PID_COLOR_MANAGEMENT_EXAMPLES, GeLoadString(IDS_NME_COLOR_MANAGEMENT_EXAMPLES), PLUGINFLAG_SMALLNODE, nullptr, 
 		GeLoadString(IDS_HLP_COLOR_MANAGEMENT_EXAMPLES), NewObjClear(ColorManagementExamplesCommand)))
@@ -90,6 +107,11 @@ Bool RegisterImageApiExamples()
 	if (!RegisterCommandPlugin(
 		PID_OCIO_EXAMPLES, GeLoadString(IDS_NME_OCIO_EXAMPLES), PLUGINFLAG_SMALLNODE, nullptr,
 		GeLoadString(IDS_HLP_OCIO_EXAMPLES), NewObjClear(OcioExamplesCommand)))
+		ApplicationOutput("Failed to register: @", GeLoadString(IDS_NME_OCIO_EXAMPLES));
+
+	if (!RegisterCommandPlugin(
+		PID_OCIO_RENDERDOCUMENT, GeLoadString(IDS_NME_OCIO_RENDERDOCUMENT), PLUGINFLAG_SMALLNODE, nullptr,
+		GeLoadString(IDS_HLP_OCIO_RENDERDOCUMENT), NewObjClear(OcioRenderDocumentCommand)))
 		ApplicationOutput("Failed to register: @", GeLoadString(IDS_NME_OCIO_EXAMPLES));
 
 	if (!RegisterVideoPostPlugin(

@@ -50,6 +50,14 @@ using namespace cinema;
 
 // --- The dots data type implementation -----------------------------------------------------------
 
+maxon::HashInt DotsData::GetHashCode() const
+{
+	maxon::DefaultHasher hasher;
+	hasher.HashAndCombine(canvasSize);
+	hasher.HashAndCombine(points);
+	return hasher.Finalize();
+}
+
 maxon::Result<maxon::Int32> DotsData::CopyTo(DotsData& dest) const
 {
 	iferr_scope;
@@ -499,6 +507,14 @@ Bool DotsDataClass::CopyData(
 		return false;
 
 	return true;
+}
+
+maxon::HashInt DotsDataClass::GetHashCode(const cinema::CustomDataType* data) const
+{
+	const DotsData* const d = static_cast<const DotsData*>(data);
+	if (!d)
+		return 0;
+	return d->GetHashCode();
 }
 
 Int32 DotsDataClass::Compare(const CustomDataType* d1, const CustomDataType* d2)

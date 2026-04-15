@@ -215,9 +215,6 @@ public:
 	MAXON_METHOD maxon::Result<void> CreateNewPresetSettings(
 		maxon::CreatePresetAssetStruct& args) const;
 
-	// Returns the the asset type this implementation is representing.
-	MAXON_METHOD const maxon::DataType& GetAssetDataType() const;
-
 	// Returns the identifier of the asset type.
 	// 
 	// As explained in the class description, it is important to follow the exact pattern shown here,

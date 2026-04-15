@@ -2,8 +2,10 @@ STRINGTABLE
 {
     IDS_NME_COLOR_MANAGEMENT_EXAMPLES   "C++ SDK: Color Management Examples";
     IDS_HLP_COLOR_MANAGEMENT_EXAMPLES   "Demonstrates how to handle color spaces, profiles, and formats in the Image API.";
-    IDS_NME_OCIO_EXAMPLES               "C++ SDK: OCIO Examples";
+    IDS_NME_OCIO_EXAMPLES               "C++ SDK: Ocio Examples";
     IDS_HLP_OCIO_EXAMPLES               "Demonstrates how interact with the OCIO settings and color spaces of a scene.";
+		IDS_NME_OCIO_RENDERDOCUMENT         "C++ SDK: Ocio RenderDocument Example";
+		IDS_HLP_OCIO_RENDERDOCUMENT         "Demonstrates how to render a document and save the result with Ocio color management applied.";
     IDS_NME_OCIO_AWARE_VIDEOPOST        "C++ SDK: Ocio Aware Renderer";
     IDS_NME_OCIO_NODE_2025              "C++ SDK: Ocio Node 2025";
 }

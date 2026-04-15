@@ -311,7 +311,8 @@ maxon::Result<void> ConvertManyPixelWithColorProfile()
 	// Initialize an input and output buffer for the conversion, #inBufferData holds the values 
 	// [0.1, 0.2, 0.5, 0.6] from the Color Management Manual example, the output buffer is just
 	// resized to match the length of #inBufferData.
-	const maxon::Block<const maxon::Float32> inputBuffer { 0.1f, 0.2f, 0.5f, 0.6f };
+	const maxon::Float32 inputBufferValues[4] = { 0.1f, 0.2f, 0.5f, 0.6f };
+	const maxon::Block<const maxon::Float32> inputBuffer{inputBufferValues};
 
 	maxon::BaseArray<maxon::Float32> nonLinOutputBuffer;
 	nonLinOutputBuffer.Resize(4) iferr_return;

@@ -61,6 +61,12 @@ Bool HybridDataTypeClass::CopyData(const CustomDataType* src, CustomDataType* ds
 	return true;
 }
 
+maxon::HashInt HybridDataTypeClass::GetHashCode(const CustomDataType* data) const
+{
+	const HybridDataType& d = *static_cast<const HybridDataType*>(data);
+	return d.GetHashCode();
+}
+
 Int32 HybridDataTypeClass::Compare(const CustomDataType* a, const CustomDataType* b)
 {
 	const	HybridDataType& dataA = *static_cast<const	HybridDataType*>(a);

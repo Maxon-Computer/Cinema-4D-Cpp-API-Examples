@@ -255,12 +255,6 @@ MAXON_METHOD maxon::Result<void> DotsPresetAssetTypeImpl::CreateNewPresetSetting
 	return maxon::OK;
 }
 
-MAXON_METHOD const maxon::DataType& DotsPresetAssetTypeImpl::GetAssetDataType() const
-{
-	// Return the data type of the asset type as defined by the published objects.
-	return DotsPresetAssetImpl::GetClass().GetDataType();
-}
-
 MAXON_METHOD const maxon::Id& DotsPresetAssetTypeImpl::GetId() const
 {
 	return _typeId;

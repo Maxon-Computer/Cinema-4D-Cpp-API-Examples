@@ -1217,13 +1217,7 @@ void ExampleDialog::DataToConsole(const int id)
 							String output;
 
 							// loop through the DescIDs
-							BrowseConstContainer browse = BrowseConstContainer(&selection);
-
-							const GeData* data = nullptr;
-							Int32 idBC;
-
-							// loop
-							while (browse.GetNext(&idBC, &data))
+							for (auto [idBC, data] : selection)
 							{
 								if (data->GetType() != CUSTOMDATATYPE_DESCID)	
 									continue;

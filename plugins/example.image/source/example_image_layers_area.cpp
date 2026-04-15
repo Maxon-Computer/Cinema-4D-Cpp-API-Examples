@@ -296,8 +296,7 @@ public:
 
 		// Save #texture as a PSD.
 		const MediaOutputUrlRef psd = ImageSaverClasses::Psd().Create() iferr_return;
-		texture.Save(MaxonConvert(
-			file, MAXONCONVERTMODE::NONE), psd, MEDIASESSIONFLAGS::NONE) iferr_return;
+		texture.Save(file.GetUrl(), psd, MEDIASESSIONFLAGS::NONE) iferr_return;
 
 		return OK;
 	}

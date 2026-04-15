@@ -59,6 +59,8 @@ Bool PickObjectTool::MouseInput(BaseDocument* doc, BaseContainer& data, BaseDraw
 	VIEWPORT_PICK_FLAGS flags = VIEWPORT_PICK_FLAGS::ALLOW_OGL | VIEWPORT_PICK_FLAGS::USE_SEL_FILTER;
 	if (data.GetBool(MDATA_PICKOBJECT_ONLY_VISIBLE))
 		flags |= VIEWPORT_PICK_FLAGS::OGL_ONLY_VISIBLE;
+	if (data.GetBool(MDATA_PICKOBJECT_MATERIAL_TAG))
+		flags |= VIEWPORT_PICK_FLAGS::HW_PICK_MATERIAL_TAG;
 	x = msg.GetInt32(BFM_INPUT_X);
 	y = msg.GetInt32(BFM_INPUT_Y);
 	Float64 timer = 0.0;
@@ -83,7 +85,7 @@ Bool PickObjectTool::MouseInput(BaseDocument* doc, BaseContainer& data, BaseDraw
 	{
 		str += FormatString("Picking region from (@, @), size (@, @)|", xr, yr, wr, hr);
 		for (l = 0; l < list->GetCount(); l++)
-			str += "Found Object "_s + MaxonConvert(list->GetObject(l)->GetName()) + FormatString(", z = @{.5}|", list->GetZ(l));
+			str += "Found Object "_s + MaxonConvert(list->GetBaseList2D(l)->GetName()) + FormatString(", z = @{.5}|", list->GetZ(l));
 	}
 	else
 	{
@@ -155,9 +157,10 @@ Bool PickObjectTool::GetCursorInfo(BaseDocument* doc, BaseContainer& data, BaseD
 			maxon::String str;
 			maxon::SquareMatrix4d m;
 			Int32 sampleLocation = 0;
-			ViewportSelect::PickObject(bd, doc, _mouseX, _mouseY, 0, 
-				VIEWPORT_PICK_FLAGS::ALLOW_OGL | VIEWPORT_PICK_FLAGS::USE_SEL_FILTER | VIEWPORT_PICK_FLAGS::OGL_ONLY_TOPMOST | VIEWPORT_PICK_FLAGS::NO_DEPTH_CORRECTION, 
-				nullptr, list, &m, &sampleLocation);
+			VIEWPORT_PICK_FLAGS flags = VIEWPORT_PICK_FLAGS::ALLOW_OGL | VIEWPORT_PICK_FLAGS::USE_SEL_FILTER | VIEWPORT_PICK_FLAGS::OGL_ONLY_TOPMOST | VIEWPORT_PICK_FLAGS::NO_DEPTH_CORRECTION;
+			if (data.GetBool(MDATA_PICKOBJECT_MATERIAL_TAG))
+				flags |= VIEWPORT_PICK_FLAGS::HW_PICK_MATERIAL_TAG;
+			ViewportSelect::PickObject(bd, doc, _mouseX, _mouseY, 0, flags, nullptr, list, &m, &sampleLocation);
 			if (list->GetCount() > 0)
 				z = list->GetZ(0);
 
@@ -166,7 +169,7 @@ Bool PickObjectTool::GetCursorInfo(BaseDocument* doc, BaseContainer& data, BaseD
 				Vector4d clipCoordinates;
 				Vector v = GetWorldCoordinates(bd, m, x, y, z, sampleLocation, clipCoordinates);
 				clipCoordinates.NormalizeW();
-				const BaseObject* obj = list->GetObject(0);
+				const BaseList2D* obj = list->GetBaseList2D(0);
 				String objName = obj ? obj->GetName() : "(null)"_s;
 				str = FormatString("Mouse coordinates: (@, @, @{.6}), normalized clip coordinates: (@{.4}, @{.4}, @{.6}), world coordinates: (@{.4}, @{.4}, @{.4}), obj: 0x@ (@}", 
 					_mouseX, _mouseY, z, clipCoordinates.x, clipCoordinates.y, clipCoordinates.z, v.x, v.y, v.z, (const void*)obj, objName);

@@ -12,7 +12,7 @@
 #include "c4d_basedocument.h"
 
 #include "maxon/asset_keyword.h"
-#include "maxon/assets.h"
+#include "maxon/urlassetrepository.h"
 #include "maxon/category_asset.h"
 #include "maxon/datadescription_string.h"
 #include "maxon/sortedarray.h"
@@ -329,8 +329,8 @@ maxon::Result<void> CreateRepositories(
 		// Create the repository for that database. If the third argument, the database URL,
 		// would point to a directory where no database is being located, Cinema would create the
 		// necessary database structure.
-		maxon::UpdatableAssetRepositoryRef repository = maxon::AssetInterface::CreateRepositoryFromUrl(
-			uuid, maxon::AssetRepositoryTypes::AssetDatabase(), bases, database._dbUrl, true, true, true) iferr_return;
+		maxon::AssetRepositoryRef repository = maxon::UrlAssetRepositoryFactory::CreateStandardRepository(
+			uuid, database._dbUrl, true, false, bases, true) iferr_return;
 
 		// Print out some properties of the newly created repository.
 		maxon::Id id = repository.GetId();

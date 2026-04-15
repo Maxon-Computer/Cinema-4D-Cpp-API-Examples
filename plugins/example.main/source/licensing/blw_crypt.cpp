@@ -59,8 +59,8 @@ maxon::Result<void> StoreC4DLicenseReportOnDisk()
 	maxon::FileUtilities::WriteUtfFile(url, strBuf) iferr_return;
 	
 	// prepare the message
-	maxon::String message ("The C4D license report has been successfully saved on disk.\n\n"_s + url.GetUrl());
-	
+	maxon::String message ("The C4D license report has been successfully saved on disk.\n\n"_s + url.ToString());
+
 	// notify user about the operation being completed
 	MessageDialog(message);
 	

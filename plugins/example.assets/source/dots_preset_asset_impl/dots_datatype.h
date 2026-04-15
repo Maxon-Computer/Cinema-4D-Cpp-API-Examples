@@ -69,6 +69,8 @@ public:
 	// 
 	// @return            The number of points copied.
 	maxon::Result<maxon::Int32> CopyTo(DotsData& dest) const;
+
+	maxon::HashInt GetHashCode() const;
 };
 
 // Represents a gadget which can be added to dialogs that renders an instance of DotsData.
@@ -185,6 +187,7 @@ public:
 	virtual cinema::CustomDataType* AllocData();
 	virtual void FreeData(cinema::CustomDataType* data);
 	virtual cinema::Bool CopyData(const cinema::CustomDataType* src, cinema::CustomDataType* dst, cinema::AliasTrans* aliastrans);
+	virtual maxon::HashInt GetHashCode(const cinema::CustomDataType* data) const;
 	virtual cinema::Int32 Compare(const cinema::CustomDataType* d1, const cinema::CustomDataType* d2);
 	virtual cinema::Bool WriteData(const cinema::CustomDataType* t_d, cinema::HyperFile* hf);
 	virtual cinema::Bool ReadData(cinema::CustomDataType* t_d, cinema::HyperFile* hf, cinema::Int32 level);

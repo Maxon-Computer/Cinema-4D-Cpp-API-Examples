@@ -39,7 +39,19 @@ class OcioExamplesCommand : public cinema::CommandData
 public:
 	static OcioExamplesCommand* Alloc() { return NewObjClear(OcioExamplesCommand); }
 
-	/// @brief Runs all code examples declared in examples_ocio.h.
+	/// @brief Runs all code examples declared in examples_ocio.h (except RenderDocumentToDiskAndPictureViewer).
+	virtual cinema::Bool Execute(cinema::BaseDocument* doc, cinema::GeDialog* parentManager);
+};
+
+/// @brief Provides the command to run the OpenColorIO RenderDocument example.
+class OcioRenderDocumentCommand : public cinema::CommandData
+{
+	INSTANCEOF(OcioRenderDocumentCommand, cinema::CommandData)
+
+public:
+	static OcioRenderDocumentCommand* Alloc() { return NewObjClear(OcioRenderDocumentCommand); }
+
+	/// @brief Runs RenderDocumentToDiskAndPictureViewer() declared in examples_ocio.h.
 	virtual cinema::Bool Execute(cinema::BaseDocument* doc, cinema::GeDialog* parentManager);
 };
 

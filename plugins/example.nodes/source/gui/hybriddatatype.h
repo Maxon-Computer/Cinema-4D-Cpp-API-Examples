@@ -78,6 +78,8 @@ public:
 
 	virtual cinema::Bool CopyData(const cinema::CustomDataType* src, cinema::CustomDataType* dst, cinema::AliasTrans* aliastrans) override;
 
+	virtual maxon::HashInt GetHashCode(const cinema::CustomDataType* data) const override;
+
 	virtual cinema::Int32 Compare(const cinema::CustomDataType* a, const cinema::CustomDataType* b) override;
 
 	virtual cinema::Bool WriteData(const cinema::CustomDataType* t_d, cinema::HyperFile* hf) override;
