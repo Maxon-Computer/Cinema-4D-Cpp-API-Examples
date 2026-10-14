@@ -26,8 +26,8 @@
 	PresetLoadArgs.
 */
 //! [declaration]
-#ifndef SDK_PRESET_ASSET_TYPE_H__
-#define SDK_PRESET_ASSET_TYPE_H__
+#ifndef DOTS_PRESET_ASSET_H__
+#define DOTS_PRESET_ASSET_H__
 
 #include "maxon/apibase.h"
 #include "maxon/assets.h"
@@ -247,5 +247,5 @@ public:
 		const maxon::BasePresetAsset& preset, const maxon::PresetLoadArgs& target) const;
 };
 
-#endif // SDK_PRESET_ASSET_TYPE_H__
+#endif // DOTS_PRESET_ASSET_H__
 //! [declaration]

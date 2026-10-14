@@ -60,7 +60,7 @@ maxon::Result<Float> VertexHandle::GetCurrentAngle(const Int32& vertexIdx)
 	const Float angleOffset = PI / 2;
 
 	// Return the current angle based on the vertex index passed, the delta and the offset.
-	return (angleDelta * vertexIdx + angleOffset);
+	return angleDelta * vertexIdx + angleOffset;
 }
 
 Bool VertexHandle::Init(GeListNode* node, Bool isCloneInit)

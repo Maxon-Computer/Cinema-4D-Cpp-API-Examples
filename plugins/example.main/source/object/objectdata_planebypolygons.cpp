@@ -121,7 +121,7 @@ class PlaneByPolygons : public ObjectData
 	INSTANCEOF(PlaneByPolygons, ObjectData)
 
 public:
-	static NodeData* Alloc()	{ return NewObj(PlaneByPolygons) iferr_ignore("PlaneByPolygons plugin not instanced"); }
+	static NodeData* Alloc()	{ return NewObj(PlaneByPolygons).GetPointer(); }
 	virtual Bool Init(GeListNode* node, Bool isCloneInit);
 	virtual void GetDimension(const BaseObject* op, Vector* mp, Vector* rad) const;
 	virtual BaseObject* GetVirtualObjects(BaseObject* op, const HierarchyHelp* hh);

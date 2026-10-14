@@ -58,11 +58,13 @@ maxon::Result<void> RunActivateDatabase();
 maxon::Result<void> RunAddDatabase();
 
 
+//----------------------------------------------------------------------------------------
 /// Runs the AttachRepositoryObservers() example.
 /// 
-/// @param[in] observerData    The observer data used to exchange data with the example detaching
-///                            repository observers. The data is passed and hold by the dialog 
-///                            executing these example functions.
+/// @param[in] observerData				The observer data used to exchange data with the example detaching
+/// 															repository observers. The data is passed and hold by the dialog 
+/// 															executing these example functions.
+//----------------------------------------------------------------------------------------
 maxon::Result<void> RunAttachRepositoryObservers(
 	maxon::HashMap<maxon::String, maxon::FunctionBaseRef>& observerData);
 
@@ -75,11 +77,13 @@ maxon::Result<void> RunCreateRepositories();
 maxon::Result<void> RunDeactivateDatabase();
 
 
+//----------------------------------------------------------------------------------------
 /// Runs the DetachRepositoryObservers() example.
 /// 
-/// @param[in, out] observerData    The observer data used to exchange data with the example 
-///                                 attaching repository observers. The data is passed and hold by 
-///                                 the dialog executing these example functions.
+/// @param[in,out] observerData		The observer data used to exchange data with the example 
+/// 															attaching repository observers. The data is passed and hold by 
+/// 															the dialog executing these example functions.
+//----------------------------------------------------------------------------------------
 maxon::Result<void> RunDetachRepositoryObservers(
 	maxon::HashMap<maxon::String, maxon::FunctionBaseRef>& observerData);
 

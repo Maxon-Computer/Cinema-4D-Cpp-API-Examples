@@ -34,4 +34,4 @@ public:
 	virtual cinema::BaseObject* GetVirtualObjects(cinema::BaseObject* op, const cinema::HierarchyHelp* hh);
 };
 
-#endif /* BLW_SIMPLEGENERATOR_H__ */
+#endif // BLW_SIMPLEGENERATOR_H__

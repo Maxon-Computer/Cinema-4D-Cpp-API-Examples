@@ -1,5 +1,5 @@
-#ifndef MATPREVIEWSAMPLER_IMPL_H__
-#define MATPREVIEWSAMPLER_IMPL_H__
+#ifndef THUMBNAILGENERATOR_IMPL_H__
+#define THUMBNAILGENERATOR_IMPL_H__
 
 #include "maxon/previewimageprovider.h"
 #include "maxon/range.h"
@@ -70,4 +70,4 @@ private:
 } // namespace renderer
 	
 } // namespace maxonsdk
-#endif // MATPREVIEWSAMPLER_IMPL_H__
+#endif // THUMBNAILGENERATOR_IMPL_H__

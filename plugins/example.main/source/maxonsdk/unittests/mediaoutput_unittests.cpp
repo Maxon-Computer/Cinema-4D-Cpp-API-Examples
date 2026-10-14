@@ -101,6 +101,6 @@ public:
 // ------------------------------------------------------------------------
 /// Register unit test at UnitTestClasses.
 // ------------------------------------------------------------------------
-MAXON_COMPONENT_CLASS_REGISTER(MaxonSDKMediaOutputUnitTest, UnitTestClasses, "net.maxonexample.unittest.mediaoutput");
+MAXON_COMPONENT_CLASS_REGISTER(MaxonSDKMediaOutputUnitTest, UnitTestClasses, "net.maxon.c4d.unittest.example.mediaoutput");
 
 }

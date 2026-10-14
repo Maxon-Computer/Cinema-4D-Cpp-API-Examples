@@ -89,13 +89,13 @@ maxon::LinearCongruentialRandom<maxon::Float32> g_random;
 /// We are going to draw something like this, a horizontal gradient that only covers a portion
 /// of the height of the bitmap buffer, leaving the rest of the buffer entirely transparent.
 ///
-///   ----------------------------------------
+//   ----------------------------------------
 ///
 ///
 ///   @@@@@%%%%#####****+++++====-----::::....
 ///
 ///
-///   ----------------------------------------
+//   ----------------------------------------
 static float* AddAlienBuffer()
 {
 	iferr_scope;

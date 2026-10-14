@@ -204,7 +204,7 @@ class LoftedMesh : public ObjectData
 	INSTANCEOF(LoftedMesh, ObjectData)
 
 public:
-	static NodeData* Alloc(){ return NewObj(LoftedMesh) iferr_ignore("LoftedMesh plugin not instanced"); }
+	static NodeData* Alloc(){ return NewObj(LoftedMesh).GetPointer(); }
 
 	virtual Bool Init(GeListNode* node, Bool isCloneInit);
 	virtual void GetDimension(const BaseObject* op, Vector* mp, Vector* rad) const;
@@ -229,7 +229,7 @@ private:
 	/// @param[in] verticesData				The reference to the 2-dim BaseArray instance.
 	/// @param[in] stepsS							The reference to the number of segments on S.
 	/// @param[in] stepsT							The reference to the number of segments on T.
-	/// @param[in] interpType					The reference to the type of interpolation to be used for section
+	/// @param[in] interpType					The reference to the type of interpolation to be used for section.
 	/// @return												@trueIfOtherwiseFalse{successful}
 	//----------------------------------------------------------------------------------------
 	maxon::Result<void> FillverticesPosition(maxon::BaseArray<maxon::BaseArray<Vector>>& verticesData, const Int32& stepsS, const Int32& stepsT, const SPLINETYPE& interpType);

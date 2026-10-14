@@ -163,7 +163,7 @@ class RevolvedMesh : public ObjectData
 	INSTANCEOF(RevolvedMesh, ObjectData)
 
 public:
-	static NodeData* Alloc() { return NewObj(RevolvedMesh) iferr_ignore("RevolvedMesh plugin not instanced");	}
+	static NodeData* Alloc() { return NewObj(RevolvedMesh).GetPointer();	}
 
 	virtual Bool Init(GeListNode* node, Bool isCloneInit);
 	virtual void GetDimension(const BaseObject* op, Vector* mp, Vector* rad) const;

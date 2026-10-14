@@ -94,7 +94,7 @@ namespace ShufflingParticlesHelpers
 		const Bool IsParticleInsideModifierOnY = ((particleLocalModPosition.y >= -partModSizes.y) && (particleLocalModPosition.y <= partModSizes.y));
 		const Bool IsParticleInsideModifierOnZ = ((particleLocalModPosition.z >= -partModSizes.z) && (particleLocalModPosition.z <= partModSizes.z));
 
-		return (IsParticleInsideModifierOnX && IsParticleInsideModifierOnY && IsParticleInsideModifierOnZ);
+		return IsParticleInsideModifierOnX && IsParticleInsideModifierOnY && IsParticleInsideModifierOnZ;
 	}
 }
 
@@ -107,7 +107,7 @@ class ShufflingParticles : public ObjectData
 	INSTANCEOF(ShufflingParticles, ObjectData)
 
 public:
-	static NodeData* Alloc(){ return NewObj(ShufflingParticles) iferr_ignore("ShufflingParticles plugin not instanced"); }
+	static NodeData* Alloc(){ return NewObj(ShufflingParticles).GetPointer(); }
 
 	virtual Bool Init(GeListNode* node, Bool isCloneInit);
 	virtual void GetDimension(const BaseObject* op, Vector* mp, Vector* rad) const;

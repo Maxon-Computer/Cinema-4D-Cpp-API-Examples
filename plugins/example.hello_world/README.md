@@ -4,7 +4,7 @@ Contains a bare-bones example of a Cinema 4D module with a singular command plug
 
 | Filename | Description |
 |---|---|
-| `project\projectdefinition.txt` | Contains the build configuration of the module. |
+| `project\CMakeLists.txt` | Contains the build configuration of the module. |
 | `source\main.cpp` | Contains all the source code of the module. |
 
 

@@ -18,11 +18,11 @@ class BlendFunctionStepUnitTest : public UnitTestComponent<BlendFunctionStepUnit
 	//----------------------------------------------------------------------------------------
 	/// Internal utility function to perform the blend operation and to compare
 	/// the result to the expected value.
-	/// @param[in] step								BlendFunctionRef object
-	/// @param[in] start							Start value
-	/// @param[in] end								End value
-	/// @param[in] x									Interpolation position
-	/// @param[in] expected						Expected result value
+	/// @param[in] step								BlendFunctionRef object.
+	/// @param[in] start							Start value.
+	/// @param[in] end								End value.
+	/// @param[in] x									Interpolation position.
+	/// @param[in] expected						Expected result value.
 	/// @return												OK if the result equals the expected value.
 	//----------------------------------------------------------------------------------------
 	Result<void> CompareFloatUnitTest(const BlendFunctionRef& step, Float32 start, Float32 end, Float32 x, Float32 expected)
@@ -111,5 +111,5 @@ public:
 // ------------------------------------------------------------------------
 /// Registers the unit test at UnitTestClasses.
 // ------------------------------------------------------------------------
-MAXON_COMPONENT_CLASS_REGISTER(BlendFunctionStepUnitTest, UnitTestClasses, "net.maxonexample.unittest.blendfunctionstep");
+MAXON_COMPONENT_CLASS_REGISTER(BlendFunctionStepUnitTest, UnitTestClasses, "net.maxon.c4d.unittest.example.blendfunctionstep");
 }

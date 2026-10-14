@@ -16,17 +16,18 @@
 #include "xbitmap.h"
 
 #include "maxon/asset_creation.h"
+#include "maxon/asset_downloads.h"
 #include "maxon/asset_keyword.h"
 #include "maxon/assetmanagerinterface.h"
 #include "maxon/category_asset.h"
 #include "maxon/datadescription_nodes.h"
 #include "maxon/datadescription_string.h"
+#include "maxon/graph_helper.h"
 #include "maxon/nodeslib.h"
 #include "maxon/nodetemplate.h"
 #include "maxon/ramdisk.h"
 #include "maxon/stringresource.h"
 #include "maxon/subtype_asset.h"
-#include "maxon/graph_helper.h"
 
 #include "examples_assets.h"
 
@@ -405,10 +406,11 @@ maxon::Result<void> LoadFileAssetsManually(
 		// caching is not required technically, as Cinema 4D will do it on its own when the asset is
 		// being accessed. But the approach shown here can be used to push download times to a more
 		// convenient point of time.
-		if (url.GetScheme() == maxon::URLSCHEME_RAMDISK)
+		auto u = maxon::IsRamDiskUrl(url);
+		if (u.first)
 		{
 			maxon::Tuple<maxon::Bool, maxon::Url> checkResult;
-			checkResult = maxon::RamDiskInterface::IsInCache(url) iferr_return;
+			checkResult = maxon::RamDiskInterface::IsInCache(u.second) iferr_return;
 
 			// There is no cache for the asset yet, so the asset should be cached.
 			if (checkResult.GetSecond().IsEmpty())

@@ -173,6 +173,8 @@ enum
 
 	// Display control tool.
 	IDS_DISPLAY_CONTROL_TOOL,
+	IDS_TOOLHINTS_TOOL,
+	IDS_HELP_TOOLHINTS_TOOL,
 
 // End of symbol definition
 	_DUMMY_ELEMENT_

@@ -41,10 +41,10 @@ static const Int32 g_createcommandid =  1059218;
 
 //----------------------------------------------------------------------------------------
 /// Try to find a muted connection between two nodes.
-/// @param[in] firstNode			The first node to find a muted connection from.
-/// @param[in] secondNode			The second node to find a muted connection from.
-/// @param[in] portDirection	The direction where to look for connection.
-/// @return										true or false if a muted connection was founded.
+/// @param[in] firstNode					The first node to find a muted connection from.
+/// @param[in] secondNode					The second node to find a muted connection from.
+/// @param[in] portDirection			The direction where to look for connection.
+/// @return												True or false if a muted connection was founded.
 //----------------------------------------------------------------------------------------
 static	maxon::Result<Bool> FindMutedConnection(const maxon::GraphNode& firstNode, const maxon::GraphNode& secondNode, const maxon::PORT_DIR& portDirection)
 	{
@@ -67,7 +67,7 @@ static	maxon::Result<Bool> FindMutedConnection(const maxon::GraphNode& firstNode
 
 //----------------------------------------------------------------------------------------
 /// Create the material, insert it inside the document and also create some nodes and connect them.
-/// @return										Tuple of the NodeMaterial pointer, and some GraphNode for the next function.
+/// @return												Tuple of the NodeMaterial pointer, and some GraphNode for the next function.
 //----------------------------------------------------------------------------------------
 static maxon::Result<maxon::Tuple<NodeMaterial*, maxon::HomogenousTupleType<5, maxon::GraphNode>> > CreateMaterial()
 {
@@ -151,8 +151,8 @@ static maxon::Result<maxon::Tuple<NodeMaterial*, maxon::HomogenousTupleType<5, m
 
 //----------------------------------------------------------------------------------------
 /// Manipulate a GraphModel by adding nodes, connect them, group them, mute, unmute connections...
-/// @param[in] parameter			The node where to create the output port.
-/// @return										The error if any.
+/// @param[in] parameter					The node where to create the output port.
+/// @return												The error if any.
 //----------------------------------------------------------------------------------------
 static maxon::Result<void> ManipulatingNodeMaterial(maxon::Tuple<NodeMaterial*, maxon::HomogenousTupleType<5, maxon::GraphNode>>& parameter)
 {
@@ -327,7 +327,7 @@ class CreateMaterialCommandData : public CommandData
 Bool RegisterCreateMaterialExample();
 Bool RegisterCreateMaterialExample()
 {
-	return RegisterCommandPlugin(g_createcommandid, "C++ SDK Example: create a node material"_s, 0, nullptr, "Create a node material and several nodes"_s, NewObjClear(CreateMaterialCommandData));
+	return RegisterCommandPlugin(g_createcommandid, "C++ SDK - Create Node Material"_s, 0, nullptr, "Create a node material and several nodes"_s, NewObjClear(CreateMaterialCommandData));
 	
 }
 } // namespace maxonsdk

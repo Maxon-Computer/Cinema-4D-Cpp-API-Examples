@@ -189,5 +189,5 @@ public:
 // ------------------------------------------------------------------------
 /// Registers the unit test at UnitTestClasses.
 // ------------------------------------------------------------------------
-MAXON_COMPONENT_CLASS_REGISTER(MaxonSDKMediaInputUnitTest, UnitTestClasses, "net.maxonexample.unittest.mediainput");
+MAXON_COMPONENT_CLASS_REGISTER(MaxonSDKMediaInputUnitTest, UnitTestClasses, "net.maxon.c4d.unittest.example.mediainput");
 }

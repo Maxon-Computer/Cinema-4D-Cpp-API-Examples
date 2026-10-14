@@ -1,5 +1,5 @@
-#ifndef NODE_DESCRIPTIONS_H__
-#define NODE_DESCRIPTIONS_H__
+#ifndef CUSTOMNODE_CUSTOMNODESPACE_DESCRIPTIONS_H__
+#define CUSTOMNODE_CUSTOMNODESPACE_DESCRIPTIONS_H__
 
 #include "maxon/fid.h"
 #include "maxon/url.h"
@@ -250,4 +250,4 @@ namespace NODESPACE
 #include "customnode-customnodespace_descriptions2.hxx"
 
 
-#endif // NODE_DESCRIPTIONS_H__
+#endif // CUSTOMNODE_CUSTOMNODESPACE_DESCRIPTIONS_H__

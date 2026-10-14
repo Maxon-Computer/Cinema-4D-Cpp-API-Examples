@@ -109,7 +109,7 @@ Bool DotsUserArea::InputEvent(const BaseContainer& msg)
 //------------
 /// the iCustomGui dialog hosting the user area 
 //------------
-iExampleCustomGUIDots::iExampleCustomGUIDots(const BaseContainer &settings, CUSTOMGUIPLUGIN *plugin) : iCustomGui(settings, plugin)
+iExampleCustomGUIDots::iExampleCustomGUIDots(const BaseContainer &settings, CUSTOMGUIPLUGIN* plugin) : iCustomGui(settings, plugin)
 {
 	_tristate = false;
 };
@@ -195,7 +195,7 @@ TriState<GeData> iExampleCustomGUIDots::GetData()
 
 iCustomDataTypeDots::iCustomDataTypeDots(const maxon::BaseArray<Vector> &points)
 {
-	_points.CopyFrom(points) iferr_ignore("do not return any error inside the constructor"_s);
+	_points.CopyFrom(points) iferr_ignore("do not return any error inside the constructor");
 };
 
 //------------
@@ -204,7 +204,7 @@ iCustomDataTypeDots::iCustomDataTypeDots(const maxon::BaseArray<Vector> &points)
 
 iCustomDataTypeDots::iCustomDataTypeDots(const iCustomDataTypeDots& cdtd)
 {
-	_points.CopyFrom(cdtd._points) iferr_ignore("do not return any error inside the constructor"_s);
+	_points.CopyFrom(cdtd._points) iferr_ignore("do not return any error inside the constructor");
 };
 
 maxon::Result<void> iCustomDataTypeDots::DescribeIO(const maxon::DataSerializeInterface& stream)
@@ -230,7 +230,7 @@ maxon::BaseArray<Vector> iCustomDataTypeDots::GetValue() const
 void iCustomDataTypeDots::SetValue(const maxon::BaseArray<Vector> &value)
 {
 	_points.Flush();
-	_points.CopyFrom(value) iferr_ignore("the array is already empty."_s);
+	_points.CopyFrom(value) iferr_ignore("the array is already empty.");
 }
 
 // Register the customDataTypeDot as a Maxon Data for the Node API example.
@@ -249,7 +249,7 @@ CDialog* SDKExampleCustomGUIDots::Alloc(const BaseContainer& settings)
 	iferr (iExampleCustomGUIDots* const dlg = NewObj(iExampleCustomGUIDots, settings, GetPlugin()))
 		return nullptr;
   
-  CDialog *cdlg = dlg->Get();
+  CDialog* cdlg = dlg->Get();
 
   if (!cdlg) 
 		return nullptr;
@@ -377,20 +377,31 @@ Bool DotsCustomDataTypeClass::ReadData(CustomDataType* t_d, HyperFile* hf, Int32
 	if (level > 0)
 	{
 		// get number of points
-		Int64 length = 0;
-		if (hf->ReadInt64(&length))
+		Int64 vertexCnt = 0;
+		if (hf->ReadInt64(&vertexCnt))
 		{
-			// read points
-			for (Int64 i = 0; i < length; ++i)
-			{
-				Vector vec;
-				if (hf->ReadVector(&vec))
+			// Reserve uninitialized memory for vectors.
+			iferr (Vector* dst = d->_points.Append(maxon::Block<Vector>(nullptr, vertexCnt)))
+				return false;
+				
+			// It would have been more efficient if an array of vectors had been written instead of single vectors.
+			// Using ReadArrayOptimizedMultipleStruct() calls will keep the file structure compatible but is way faster than single ReadFloat64() calls.
+			// Read vectors and copy them into the destination buffer.
+			HYPERFILEVALUE types[] = {HYPERFILEVALUE::VECTOR};
+			auto setValue =	[&dst](Int startIdx, Int blockSize, void* dataPtr) -> maxon::Result<void>
 				{
-					iferr (d->_points.Append(vec))
-            return false;
-				}
+					const Vector* src = static_cast<const Vector*>(dataPtr);
+					for (Int i = 0; i < blockSize; i++)
+						dst[startIdx + i] = src[i];
+					return maxon::OK;
+				};
+			if (hf->ReadArrayOptimizedMultipleStruct(types, vertexCnt, 1, setValue) == false)
+			{
+				// Shrink back the array on read failure.
+				d->_points.Resize(d->_points.GetCount() - vertexCnt) iferr_cannot_fail("Shrinking array");
+				return false;
 			}
-		}		
+		}
 	}
 	return true;
 }

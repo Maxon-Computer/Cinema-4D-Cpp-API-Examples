@@ -86,8 +86,9 @@ void MorphMixerObject::MagpieImport(BaseObject* op)
 	if (!f.FileSelect(FILESELECTTYPE::ANYTHING, FILESELECT::LOAD, GeLoadString(IDS_MORPHSELECT)))
 		return;
 
-	auto bf = maxon::UniqueRef<BaseFile>::Create() iferr_ignore("Error is handled manually");
-	if (!bf || !bf->Open(f))
+	iferr (auto bf = maxon::UniqueRef<BaseFile>::Create())
+		goto error;
+	if (!bf->Open(f))
 		goto error;
 
 	ReadLine(bf, &line);

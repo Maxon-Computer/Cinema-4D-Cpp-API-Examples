@@ -27,7 +27,7 @@ class CircleShape : public ObjectData
 	INSTANCEOF(CircleShape, ObjectData)
 
 public:
-	static NodeData* Alloc(){ return NewObj(CircleShape) iferr_ignore("Caller handles nullptr"); }
+	static NodeData* Alloc(){ return NewObj(CircleShape).GetPointer(); }
 
 	/// @brief Initializes the object with default settings.
 	virtual Bool Init(GeListNode* node, Bool isCloneInit)
@@ -129,7 +129,7 @@ private:
 		// Set the number of CVs and closure status for the only one segment existing.
 		segment = { (Int32) cnt, true };
 
-		Float approxTangent = 0.415 * 4 / cnt;
+		Float approxTangent = 0.415 * 4 / (Float)cnt;
 		for (Int i = 0; i < cnt; i++)
 		{
 			// Calculate the sine and cosine of the angle.

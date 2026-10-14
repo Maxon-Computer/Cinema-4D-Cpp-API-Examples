@@ -55,13 +55,13 @@ class EvenOddNumberInterface : MAXON_INTERFACE_BASES(SimpleNumberInterface)
 public:
 	//----------------------------------------------------------------------------------------
 	/// Returns true if the stored number is even.
-	/// @return												true if even.
+	/// @return												True if even.
 	//----------------------------------------------------------------------------------------
 	MAXON_METHOD maxon::Bool IsEven() const;
 
 	//----------------------------------------------------------------------------------------
 	/// Returns true if the stored number is odd.
-	/// @return												true if odd.
+	/// @return												True if odd.
 	//----------------------------------------------------------------------------------------
 	MAXON_FUNCTION maxon::Bool IsOdd() const
 	{
@@ -81,7 +81,7 @@ public:
 	//----------------------------------------------------------------------------------------
 	/// Adds the given number to the internal array.
 	/// @param[in] number							The value to add.
-	/// @return												maxon::OK on success.
+	/// @return												Maxon::OK on success.
 	//----------------------------------------------------------------------------------------
 	MAXON_METHOD maxon::Result<void> AddNumber(maxon::Float number);
 	//----------------------------------------------------------------------------------------

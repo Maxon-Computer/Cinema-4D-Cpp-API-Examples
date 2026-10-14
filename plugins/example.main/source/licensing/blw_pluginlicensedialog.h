@@ -75,4 +75,4 @@ private:
 	BLW_PluginLicenseDialog_Dialog _dialog;
 };
 
-#endif /* BLW_PLUGINLICENSEDIALOG_H__ */
+#endif // BLW_PLUGINLICENSEDIALOG_H__

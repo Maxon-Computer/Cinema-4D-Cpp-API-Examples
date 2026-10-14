@@ -8,8 +8,8 @@
 
 	Provides the command plugins to run the Image API examples.
 */
-#ifndef IMAGE_API_EXAMPLES_PLUGIN_H__
-#define IMAGE_API_EXAMPLES_PLUGIN_H__
+#ifndef PLUGIN_IMAGE_API_EXAMPLES_H__
+#define PLUGIN_IMAGE_API_EXAMPLES_H__
 
 #include "c4d_commandplugin.h"
 #include "c4d_general.h"
@@ -58,4 +58,4 @@ public:
 /// Called to register the Image API example plugin.
 cinema::Bool RegisterImageApiExamples();
 
-#endif // IMAGE_API_EXAMPLES_PLUGIN_H__
+#endif // PLUGIN_IMAGE_API_EXAMPLES_H__

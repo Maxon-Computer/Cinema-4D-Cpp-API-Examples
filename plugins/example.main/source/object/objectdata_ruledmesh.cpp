@@ -163,7 +163,7 @@ class RuledMesh : public ObjectData
 	INSTANCEOF(RuledMesh, ObjectData)
 
 public:
-	static NodeData* Alloc(){ return NewObj(RuledMesh) iferr_ignore("RuledMesh plugin not instanced"); }
+	static NodeData* Alloc(){ return NewObj(RuledMesh).GetPointer(); }
 
 	virtual Bool Init(GeListNode* node, Bool isCloneInit);
 	virtual void GetDimension(const BaseObject *op, Vector *mp, Vector *rad) const;

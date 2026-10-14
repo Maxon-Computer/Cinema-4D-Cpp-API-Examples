@@ -27,22 +27,27 @@ namespace maxon::ASSETMETADATA
 //! [declare_custom_metadata_attribute]
  
 
+//----------------------------------------------------------------------------------------
 /// Accesses the data attached to an asset description.
 /// 
 /// Highlights the meta information provided by an asset description for its asset that is not 
 /// being accessed with the asset metadata container.
 /// 
-/// @param[in] assetDescription    The asset description to access data for.
+/// @param[in] assetDescription		The asset description to access data for.
+//----------------------------------------------------------------------------------------
 maxon::Result<void> AccessAssetDescriptionData(const maxon::AssetDescription& assetDescription);
 
 
+//----------------------------------------------------------------------------------------
 /// Adds a version to a file asset of subtype object that only contains a sphere object.
 /// 
-/// @param[in] asset    The asset description of the asset to add a version to.
-/// @return             The new version of the asset.
+/// @param[in] asset							The asset description of the asset to add a version to.
+/// @return												The new version of the asset.
+//----------------------------------------------------------------------------------------
 maxon::Result<maxon::AssetDescription> AddAssetVersion(const maxon::AssetDescription& asset);
 
 
+//----------------------------------------------------------------------------------------
 /// Finds a all category assets with a given name and category.
 /// 
 /// Category names are not unique as there can be two assets named 'B' within the asset category
@@ -57,18 +62,20 @@ maxon::Result<maxon::AssetDescription> AddAssetVersion(const maxon::AssetDescrip
 /// details on retrieving asset identifiers in the Asset Browser. See Asset API Metadata - 
 /// GenerateAssetIdentifiers() for details on determinsitic Asset identifier generation.
 /// 
-/// @param[in] repository      The repository which contains the categories.
-/// @param[in, out] results    The found category assets. This can be prepopulated with category ids 
-///                            which should be ignored.
-/// @param[in] serachName      The category name to match.
-/// @param[in] category        The parent category to match.
-/// @param[in] testCategory    If to test for parent category.
+/// @param[in] repository					The repository which contains the categories.
+/// @param[in,out] results				The found category assets. This can be prepopulated with category ids 
+/// 															which should be ignored.
+/// @param[in] serachName					The category name to match.
+/// @param[in] category						The parent category to match.
+/// @param[in] testCategory				If to test for parent category.
+//----------------------------------------------------------------------------------------
 maxon::Result<void> FindCategoryAssetsByName(
 	const maxon::AssetRepositoryRef& repository, maxon::BaseArray<maxon::AssetDescription>& results,
 	const maxon::String& serachName, const maxon::Id& category = maxon::Id(),
 	const maxon::Bool& testCategory = false);
 
 
+//----------------------------------------------------------------------------------------
 /// Finds all category assets that match a given category path.
 /// 
 /// Categories within the path must be separated by forward slashes. The category path 'A/B/C' will
@@ -81,11 +88,12 @@ maxon::Result<void> FindCategoryAssetsByName(
 /// details on retrieving asset identifiers in the Asset Browser. See Asset API Metadata - 
 /// GenerateAssetIdentifiers() for details on determinsitic Asset identifier generation.
 /// 
-/// @param[in] repository      The repository which contains the categories.
-/// @param[out] results        The found category assets.
-/// @param[in] categoryPath    The path to the categories.
-/// @param[in] relativePath    If true, the search can start anywhere in the tree. If false, the 
-///                            search always does start at the root.
+/// @param[in] repository					The repository which contains the categories.
+/// @param[out] results						The found category assets.
+/// @param[in] categoryPath				The path to the categories.
+/// @param[in] relativePath				If true, the search can start anywhere in the tree. If false, the 
+/// 															search always does start at the root.
+//----------------------------------------------------------------------------------------
 
 maxon::Result<void> FindCategoryAssetsByPath(
 	const maxon::AssetRepositoryRef& repository, maxon::BaseArray<maxon::AssetDescription>& results,
@@ -103,20 +111,26 @@ maxon::Result<void> FindCategoryAssetsByPath(
 maxon::Result<void> GenerateAssetIdentifiers();
 
 
+//----------------------------------------------------------------------------------------
 /// Iterates over all existing entries in an AssetMetadata instance. 
 /// 
-/// @param[in] assetDescription    The asset description to print out the metadata for.
+/// @param[in] assetDescription		The asset description to print out the metadata for.
+//----------------------------------------------------------------------------------------
 maxon::Result<void> IterateAssetMetadata(const maxon::AssetDescription& assetDescription);
 
 
+//----------------------------------------------------------------------------------------
 /// Reads the metadata of an asset that are commonly required to be read. 
 /// 
-/// @param[in] assetDescription    The asset description to read the metadata for.
+/// @param[in] assetDescription		The asset description to read the metadata for.
+//----------------------------------------------------------------------------------------
 maxon::Result<void> ReadAssetMetadata(const maxon::AssetDescription& assetDescription);
 
 
+//----------------------------------------------------------------------------------------
 /// Writes the metadata of an asset that are commonly required to be written. 
 /// 
-/// @param[in] assetDescription    The asset description to write the metadata for.
+/// @param[in] assetDescription		The asset description to write the metadata for.
+//----------------------------------------------------------------------------------------
 maxon::Result<void> WriteAssetMetadata(const maxon::AssetDescription& assetDescription);
 #endif // EXAMPLES_METADATA_H__

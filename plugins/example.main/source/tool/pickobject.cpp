@@ -171,7 +171,7 @@ Bool PickObjectTool::GetCursorInfo(BaseDocument* doc, BaseContainer& data, BaseD
 				clipCoordinates.NormalizeW();
 				const BaseList2D* obj = list->GetBaseList2D(0);
 				String objName = obj ? obj->GetName() : "(null)"_s;
-				str = FormatString("Mouse coordinates: (@, @, @{.6}), normalized clip coordinates: (@{.4}, @{.4}, @{.6}), world coordinates: (@{.4}, @{.4}, @{.4}), obj: 0x@ (@}", 
+				str = FormatString("Mouse coordinates: (@, @, @{.6}), normalized clip coordinates: (@{.4}, @{.4}, @{.6}), world coordinates: (@{.4}, @{.4}, @{.4}), obj: 0x@ (@)", 
 					_mouseX, _mouseY, z, clipCoordinates.x, clipCoordinates.y, clipCoordinates.z, v.x, v.y, v.z, (const void*)obj, objName);
 			}
 			else

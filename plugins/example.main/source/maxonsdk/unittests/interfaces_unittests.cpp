@@ -20,7 +20,7 @@ class InterfacesUnitTest : public maxon::UnitTestComponent<InterfacesUnitTest>
 	/// @param[in] expectedInt				Expected internal value.
 	/// @param[in] expectedFloat			Expected internal value as maxon::Float.
 	/// @param[in] number							The SimpleNumberRef object to test.
-	/// @return												maxon::OK on success.
+	/// @return												Maxon::OK on success.
 	//----------------------------------------------------------------------------------------
 	maxon::Result<void> TestSimpleNumberRef(maxon::Int expectedInt, maxon::Float expectedFloat, const maxonsdk::SimpleNumberRef& number)
 	{
@@ -42,7 +42,7 @@ class InterfacesUnitTest : public maxon::UnitTestComponent<InterfacesUnitTest>
 	/// @param[in] expectedFloat			Expected internal value as maxon::Float.
 	/// @param[in] expectedEven				Expected parity. true if even.
 	/// @param[in] number							The EvenOddNumberRef object to test.
-	/// @return												maxon::OK on success.
+	/// @return												Maxon::OK on success.
 	//----------------------------------------------------------------------------------------
 	maxon::Result<void> TestEvenOddNumberRef(maxon::Int expectedInt, maxon::Float expectedFloat, maxon::Bool expectedEven, const maxonsdk::EvenOddNumberRef& number)
 	{
@@ -68,7 +68,7 @@ class InterfacesUnitTest : public maxon::UnitTestComponent<InterfacesUnitTest>
 	/// @param[in] sequence						Array of float values.
 	/// @param[in] expectedResult			Expected result of the operation.
 	/// @param[in] operation					The SequenceOperationRef object to test.
-	/// @return												maxon::OK on success.
+	/// @return												Maxon::OK on success.
 	//----------------------------------------------------------------------------------------
 	maxon::Result<void> TestSequenceOperationRef(maxon::BaseArray<maxon::Float>& sequence, maxon::Float expectedResult, const maxonsdk::SequenceOperationRef& operation)
 	{
@@ -287,5 +287,5 @@ public:
 // ------------------------------------------------------------------------
 /// Registers the unit test at UnitTestClasses.
 // ------------------------------------------------------------------------
-MAXON_COMPONENT_CLASS_REGISTER(InterfacesUnitTest, maxon::UnitTestClasses, "net.maxonexample.unittest.interfaces");
+MAXON_COMPONENT_CLASS_REGISTER(InterfacesUnitTest, maxon::UnitTestClasses, "net.maxon.c4d.unittest.example.interfaces");
 }

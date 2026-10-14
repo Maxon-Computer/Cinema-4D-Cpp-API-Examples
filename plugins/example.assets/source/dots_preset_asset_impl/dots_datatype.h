@@ -33,8 +33,8 @@
 	and drop events are being handled in a similar fashion in DotsGui::Message().
 */
 //! [declaration]
-#ifndef CUSTOMDATA_CUSTOMGUI_H__
-#define CUSTOMDATA_CUSTOMGUI_H__
+#ifndef DOTS_DATATYPE_H__
+#define DOTS_DATATYPE_H__
 
 #include "c4d_baselist.h"
 #include "c4d_customdatatype.h"
@@ -199,5 +199,5 @@ public:
 // Registers the dots datatype and GUI
 cinema::Bool RegisterDotsDataAndGui();
 
-#endif // CUSTOMDATA_CUSTOMGUI_H__
+#endif // DOTS_DATATYPE_H__
 //! [declaration]

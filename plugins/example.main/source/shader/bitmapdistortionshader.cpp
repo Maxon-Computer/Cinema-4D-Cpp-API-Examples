@@ -60,12 +60,6 @@ Bool BitmapData::Init(GeListNode* node, Bool isCloneInit)
 
 Bool BitmapData::Read(GeListNode* node, HyperFile* hf, Int32 level)
 {
-	if (hf->GetFileVersion() < 8300)
-	{
-		if (!hf->ReadChannelConvert(node, BITMAPDISTORTIONSHADER_TEXTURE))
-			return false;		// convert old basechannel
-	}
-
 	return true;
 }
 

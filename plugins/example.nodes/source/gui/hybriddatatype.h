@@ -45,6 +45,11 @@ public:
 		return maxon::DefaultCompare::GetHashCode(_value);
 	}
 
+	maxon::UniqueHash GetUniqueHashCode() const
+	{
+		return maxon::DefaultCompare::GetUniqueHashCode(_value);
+	}
+
 	// This method is used to persist static, non-animated data.
 	// This includes the storage of the default value inside the JSON file.
 	// Key-framed data is stored via the Cinema API ReadData/WriteData functions on HybridDataTypeClass.

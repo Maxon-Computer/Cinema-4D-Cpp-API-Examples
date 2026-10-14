@@ -26,7 +26,7 @@ namespace GreekTempleHelpers
 	//----------------------------------------------------------------------------------------
 	/// Global helper function returning the scaling factor of the value passed based on modulo and
 	/// base unit.
-	/// @brief Global helper function to compute the scale factor upon a modulo, a base unit and a scaling value
+	/// @brief Global helper function to compute the scale factor upon a modulo, a base unit and a scaling value.
 	/// @param[in] modulo							Multiplier of the base unit.
 	/// @param[in] baseUnit						Base value of the scaling.
 	/// @param[in] value							Original value to scale.
@@ -127,7 +127,7 @@ namespace GreekTempleHelpers
 	}
 
 	//----------------------------------------------------------------------------------------
-	/// Global function responsible to create the roof temple booleans decorations
+	/// Global function responsible to create the roof temple booleans decorations.
 	/// @param[out] roofNullObjPtr		Object provided to store created geometry. @callerOwnsPointed{base object}
 	/// @param[in] extrudeRoofGenRelPtr	Extruded roof object. @callerOwnsPointed{base object}
 	/// @param[in] baseUnit						Base value for geometry construction.
@@ -606,7 +606,7 @@ class GreekTemple : public ObjectData
 	INSTANCEOF(GreekTemple, ObjectData)
 
 public:
-	static NodeData* Alloc(){ return NewObj(GreekTemple) iferr_ignore("Error handled in C4D."); }
+	static NodeData* Alloc(){ return NewObj(GreekTemple).GetPointer(); }
 
 	virtual Bool Init(GeListNode* node, Bool isCloneInit);
 	virtual void GetDimension(const BaseObject* op, Vector* mp, Vector* rad) const;

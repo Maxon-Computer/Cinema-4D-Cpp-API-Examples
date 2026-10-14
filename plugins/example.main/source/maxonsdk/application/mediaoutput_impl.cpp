@@ -33,7 +33,7 @@ public:
 
 	// Since we define a destructor, a copy constructor is created by the compiler.
 	// However the default copy constructor would not work for this class, so we delete it.
-	MaxonSDKImageSaverImpl& operator=(const MaxonSDKImageSaverImpl& other) = delete;
+	MaxonSDKImageSaverImpl& operator =(const MaxonSDKImageSaverImpl& other) = delete;
 
 	// ------------------------------------------------------------------------
 	/// Finalizes internal data.
@@ -159,7 +159,7 @@ public:
 	//----------------------------------------------------------------------------------------
 	/// Saves the image data to the given file.
 	/// @param[in] file								Url of the target file.
-	/// @param[in] props							Media stream properties
+	/// @param[in] props							Media stream properties.
 	/// @return												OK on success.
 	// ------------------------------------------------------------------------
 	//----------------------------------------------------------------------------------------
@@ -246,7 +246,7 @@ public:
 
 	// ------------------------------------------------------------------------
 	//----------------------------------------------------------------------------------------
-	/// Writes a line into the file
+	/// Writes a line into the file.
 	/// @param[in] row								RGB U8 pixel data.
 	/// @param[in] fileStream					FileStream to write into.
 	/// @return												OK on success.

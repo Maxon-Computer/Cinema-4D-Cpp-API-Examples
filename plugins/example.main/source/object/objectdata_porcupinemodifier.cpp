@@ -23,7 +23,7 @@ namespace PorcupineModifierHelpers
 	/// Global helper function to check if a transformation matrix is an identity matrix.
 	/// @brief Global helper function to check if a transformation matrix is an identity matrix.
 	/// @param[in] mat								The matrix to be verified.
-	/// @return												True if matrix produces no offset, rotation and scaling
+	/// @return												True if matrix produces no offset, rotation and scaling.
 	//----------------------------------------------------------------------------------------
 	static maxon::Result<Bool> IsMatrixIdentity(const Matrix& mat);
 	static maxon::Result<Bool> IsMatrixIdentity(const Matrix& mat)
@@ -68,7 +68,7 @@ class PorcupineModifier : public ObjectData
 	INSTANCEOF(PorcupineModifier, ObjectData)
 
 public:
-	static NodeData* Alloc() { return NewObj(PorcupineModifier) iferr_ignore("PorcupineModifier plugin not instanced"); }
+	static NodeData* Alloc() { return NewObj(PorcupineModifier).GetPointer(); }
 
 	virtual void GetDimension(const BaseObject* op, Vector* mp, Vector* rad) const;
 	virtual Bool Init(GeListNode* node, Bool isCloneInit);
@@ -79,7 +79,7 @@ protected:
 private:
 	//----------------------------------------------------------------------------------------
 	/// Private helper method responsible to allocate the arrays responsible to store noise data,
-	/// normal data per vertex, and the change status of the vertexes
+	/// normal data per vertex, and the change status of the vertexes.
 	/// @param[in] currentArraySize		Current size to be used to allocate arrays.
 	/// @param[in] previousArraySize	Previous size of the allocated arrays (might be zero).
 	/// @return												True if successful.
@@ -88,7 +88,7 @@ private:
 
 	//----------------------------------------------------------------------------------------
 	/// Private helper method responsible to compute and store the vertexes normal data
-	/// normal data per vertex, and the change status of the vertexes
+	/// normal data per vertex, and the change status of the vertexes.
 	/// @param[in] objectPolysPtrR		Array of CPolygon for the current object.
 	/// @param[in] objectPolysCount		Number of polygons belonging to the current object.
 	/// @return												True if successful.
@@ -97,8 +97,8 @@ private:
 
 	//----------------------------------------------------------------------------------------
 	/// Private helper method responsible to displace the vertices affected by the
-	/// normal data per vertex, and the change status of the vertexes
-	/// @param[in] changeablePntsCount	Number of vertices to be displaced
+	/// normal data per vertex, and the change status of the vertexes.
+	/// @param[in] changeablePntsCount	Number of vertices to be displaced.
 	/// @param[in] pntsCount					Number of vertices present on the current object.
 	/// @param[in] bt									Pointer to the BaseThread object.
 	/// @param[in] randomGen					Reference to the Random object.

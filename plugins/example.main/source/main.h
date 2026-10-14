@@ -31,6 +31,7 @@ cinema::Bool RegisterSubDialog();
 cinema::Bool RegisterSpherify();
 cinema::Bool RegisterRoundedTube();
 cinema::Bool RegisterAssetContainerObjectData();
+cinema::Bool RegisterObjectTreeData();
 cinema::Bool RegisterTriangulate();
 cinema::Bool RegisterVPTest();
 cinema::Bool RegisterVPInvertImage();
@@ -109,6 +110,7 @@ cinema::Bool RegisterParticlesShuffling();
 cinema::Bool RegisterVertexHandle();
 cinema::Bool RegisterCustomDataTagDescription();
 cinema::Bool RegisterCustomDataTagCommand();
+cinema::Bool RegisterToolHintTool();
 
 cinema::Bool RegisterPaintTool();
 cinema::Bool RegisterPaintObject();

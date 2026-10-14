@@ -9,8 +9,8 @@
 
 	Does not have to be read or understood when seeking information about 2024 API changes.
 */
-#ifndef MIGRATION_EXAMPLE_PLUGIN_H__
-#define MIGRATION_EXAMPLE_PLUGIN_H__
+#ifndef _MIGRATION_EXAMPLE_PLUGIN_H__
+#define _MIGRATION_EXAMPLE_PLUGIN_H__
 
 #include "c4d_commandplugin.h"
 #include "c4d_general.h"
@@ -33,4 +33,4 @@ public:
 cinema::Bool RegisterChangeExamplesCommand();
 cinema::Bool RegisterBoundingBoxObject();
 
-#endif // MIGRATION_EXAMPLE_PLUGIN_H__
+#endif // _MIGRATION_EXAMPLE_PLUGIN_H__

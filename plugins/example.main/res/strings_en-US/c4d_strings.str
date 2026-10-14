@@ -71,6 +71,8 @@ STRINGTABLE
 	IDS_PICKOBJECT_SDK		"C++ SDK - Pick Object Tool";
 	IDS_HELP_PICKOBJECT_SDK	"Demonstrates how to use ViewportSelect::PickObject";
 	IDS_DISPLAY_CONTROL_TOOL	"C++ SDK - DisplayControl Tool";
+	IDS_TOOLHINTS_TOOL "C++ SDK - Toolhints Tool";
+	IDS_HELP_TOOLHINTS_TOOL	"Demonstrates how to use tool hints";
 
 	IDS_LAYER_SHADER_BROWSER      "C++ SDK - Layer Shader Browser";
 

@@ -284,14 +284,14 @@ maxon::Result<void> DetachRepositoryObservers(const maxon::AssetRepositoryRef& r
 	// Attempt to remove the ObservableAssetStored observer that has been attached by the other 
 	// example and remove its entry in the HashMap to reflect the new state.
 	key = "ObservableAssetStored"_s;
-	func = observerData.FindValue(key).GetValue() iferr_return;
+	func = observerData.FindValue(key).ToResult() iferr_return;
 	repository.ObservableAssetStored(false).RemoveObserver(func);
 	observerData.Erase(key) iferr_return;
 	ApplicationOutput(msg, func, key, repository.GetId());
 
 	// Do the same for the ObservableMetaDataStored observer.
 	key = "ObservableMetaDataStored"_s;
-	func = observerData.FindValue(key).GetValue() iferr_return;
+	func = observerData.FindValue(key).ToResult() iferr_return;
 	repository.ObservableMetaDataStored(false).RemoveObserver(func);
 	observerData.Erase(key) iferr_return;
 	ApplicationOutput(msg, func, key, repository.GetId());

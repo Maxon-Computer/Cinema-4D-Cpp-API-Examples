@@ -51,7 +51,7 @@ public:
 		return true;
 	}
 	
-	static CommandData* Alloc() { return NewObj(CustomErrorExample) iferr_ignore("Unexpected failure on allocating CustomErrorExample plugin."_s); }
+	static CommandData* Alloc() { return NewObj(CustomErrorExample).GetPointer(); }
 };
 
 Bool RegisterCustomErrorExample();

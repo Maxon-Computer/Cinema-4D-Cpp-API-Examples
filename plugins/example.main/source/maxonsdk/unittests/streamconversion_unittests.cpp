@@ -116,5 +116,5 @@ public:
 // ------------------------------------------------------------------------
 /// Register unit test at UnitTestClasses.
 // ------------------------------------------------------------------------
-MAXON_COMPONENT_CLASS_REGISTER(CaesarCipherUnitTest, UnitTestClasses, "net.maxonexample.unittest.caesar");
+MAXON_COMPONENT_CLASS_REGISTER(CaesarCipherUnitTest, UnitTestClasses, "net.maxon.c4d.unittest.example.caesar");
 }

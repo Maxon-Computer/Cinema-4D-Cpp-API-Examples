@@ -1011,7 +1011,7 @@ void ExampleDialog::ReadData()
 }
 
 //----------------------------------------------------------------------------------------
-/// Reads the data from the currently displayed dynamic gadget to the dialog console
+/// Reads the data from the currently displayed dynamic gadget to the dialog console.
 /// @param[in] id									The ID of the currently displayed gadget type.
 //----------------------------------------------------------------------------------------
 void ExampleDialog::DataToConsole(const int id)

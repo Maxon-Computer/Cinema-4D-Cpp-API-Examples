@@ -16,12 +16,15 @@
 #include "maxon/apibase.h"
 #include "maxon/assets.h"
 
+//----------------------------------------------------------------------------------------
 /// Inserts a null-object containing a DotsData user data parameter into the passed document.
 /// 
-/// @param doc    The document to insert the null object into.
+/// @param[in] doc								The document to insert the null object into.
+//----------------------------------------------------------------------------------------
 maxon::Result<void> InsertDotsDataNull(cinema::BaseDocument* doc);
 
 
+//----------------------------------------------------------------------------------------
 /// Demonstrates how to instantiate a preset asset with its data type.
 /// 
 /// How a preset asset can be instantiated from their targeted data type depends on the 
@@ -29,10 +32,12 @@ maxon::Result<void> InsertDotsDataNull(cinema::BaseDocument* doc);
 /// example and some native preset asset types of Cinema 4D, but there is no guarantee that all 
 /// preset asset types directly wrap their data type in the PresetSaveArgs.
 /// 
-/// @return    The asset description for the new Dots preset asset.
+/// @return												The asset description for the new Dots preset asset.
+//----------------------------------------------------------------------------------------
 maxon::Result<maxon::AssetDescription> InstantiateDotsPresetAsset();
 
 
+//----------------------------------------------------------------------------------------
 /// Showcases how to access the implementation of an asset type from an asset description.
 /// 
 /// An asset thumbnail can be updated with AssetCreationInterface::AddPreviewRenderAsset in a more
@@ -43,10 +48,11 @@ maxon::Result<maxon::AssetDescription> InstantiateDotsPresetAsset();
 /// attribute called DOTS_SCALE. The example showcases how to write that attribute and how to 
 /// manually update the preview image by calling the dots preset asset implementation.
 /// 
-/// @param[in, out] assetDescription    The asset to update the preview thumbnail for.
-/// @param[in] dotScaleDelta            The difference in the dot scale to the old value. Pass in 
-///                                     negative values for decreasing the scale and positive values
-///                                     for increasing it.
+/// @param[in,out] assetDescription	The asset to update the preview thumbnail for.
+/// @param[in] dotScaleDelta			The difference in the dot scale to the old value. Pass in 
+/// 															negative values for decreasing the scale and positive values
+/// 															for increasing it.
+//----------------------------------------------------------------------------------------
 maxon::Result<void> UpdatePreviewThumbnail(
 	maxon::AssetDescription& assetDescription, maxon::Float32 dotScaleDelta);
 

@@ -26,7 +26,7 @@ class HeartShape : public ObjectData
 	INSTANCEOF(HeartShape, ObjectData)
 
 public:
-	static NodeData* Alloc(){ return NewObj(HeartShape) iferr_ignore("HeartShape plugin not instanced"); }
+	static NodeData* Alloc(){ return NewObj(HeartShape).GetPointer(); }
 
 	virtual Bool Init(GeListNode* node, Bool isCloneInit)
 	{

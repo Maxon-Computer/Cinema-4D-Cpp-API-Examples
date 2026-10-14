@@ -47,6 +47,6 @@ public:
 #include "customerror_interface2.hxx"
 
 
-#endif /* CUSTOMERROR_INTERFACE_H__ */
+#endif // CUSTOMERROR_INTERFACE_H__
 
 

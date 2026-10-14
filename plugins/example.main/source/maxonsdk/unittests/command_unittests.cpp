@@ -22,7 +22,7 @@ class MeanCommandsUnitTest : public maxon::UnitTestComponent<MeanCommandsUnitTes
 	/// @param[in] expectedValueResult	Expected mean value.
 	/// @param[in] expectedCommandResult	Expected command return value.
 	/// @param[in] command						The command to execute.
-	/// @return												maxon::OK on success.
+	/// @return												Maxon::OK on success.
 	//----------------------------------------------------------------------------------------
 	maxon::Result<void> TestCommand(maxon::BaseArray<maxon::Float>& values, maxon::Float expectedValueResult, maxon::COMMANDRESULT expectedCommandResult, const maxon::CommandClass& command)
 	{
@@ -133,6 +133,6 @@ public:
 // ------------------------------------------------------------------------
 /// Registers the unit test at UnitTestClasses.
 // ------------------------------------------------------------------------
-MAXON_COMPONENT_CLASS_REGISTER(MeanCommandsUnitTest, maxon::UnitTestClasses, "net.maxonexample.unittest.meancommands");
+MAXON_COMPONENT_CLASS_REGISTER(MeanCommandsUnitTest, maxon::UnitTestClasses, "net.maxon.c4d.unittest.example.meancommands");
 }
 

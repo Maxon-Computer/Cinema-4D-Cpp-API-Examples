@@ -1,0 +1,7 @@
+STRINGTABLE Oobjecttree
+{
+	Oobjecttree "Object Tree";
+
+	OBJECTTREE_ITEMTREE "";
+	OBJECTTREE_ADD_EXAMPLE "Add Example";
+}

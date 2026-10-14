@@ -309,6 +309,8 @@ Bool PluginStart()
 
 	if (!RegisterAssetContainerObjectData())
 		return false;
+	if (!RegisterObjectTreeData())
+		return false;
 
 	// register a custom description for float custom data tag
 	if (!RegisterCustomDataTagDescription())
@@ -325,6 +327,9 @@ Bool PluginStart()
 		return false;
 
 	if (!RegisterPolyExample())
+		return false;
+
+	if (!RegisterToolHintTool())
 		return false;
 	
 	return true;

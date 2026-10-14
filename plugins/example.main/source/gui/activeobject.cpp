@@ -9,12 +9,16 @@ using namespace cinema;
 
 /// A unique plugin ID. You must obtain this from developers.maxon.net.
 static constexpr const Int32 ID_ACTIVEOBJECT = 1000472;
+static constexpr const Int32 ID_ACTIVEOBJECT_SEARCH = 450000289;
 
 class ListHeader;
 class ActiveObjectDialog;
+class ActiveObjectDialogSearchDialog;
 
 static void ShowObjectProps(BaseList2D* obj);
 static void UpdateDialog(ActiveObjectDialog* dlg);
+static void CreateAndOpenSearchDialog(ActiveObjectDialog* parent, ActiveObjectDialogSearchDialog*& dlg);
+static Bool CheckFilter(const ActiveObjectDialog* dlg, const void* object);
 
 //---------------------------------------------
 class ListObj
@@ -150,8 +154,6 @@ Int32 ListHeader::GetCount()
 	return count;
 }
 //---------------------------------------------
-
-
 
 
 struct DebugNode : public ListObj
@@ -369,7 +371,7 @@ static Bool BuildTree(DebugNode* parent, DebugArray& oldlist, DebugArray& newlis
 	}
 
 	maxon::BufferedBaseArray<BranchInfo, 20> info;
-	node->GetBranchInfo(info, GETBRANCHINFO::NONE) iferr_ignore("GetBranchInfo");
+	node->GetBranchInfo(info, GETBRANCHINFO::DEBUGINFO) iferr_ignore("GetBranchInfo");
 	for (Int i = 0; i < info.GetCount(); i++)
 	{
 		if (info[i].name.IsPopulated())
@@ -531,7 +533,10 @@ public:
 		}
 		else if (col == 'addr' || col == 'drtL')
 		{
-			return pArea->DrawGetTextWidth("0x8888888888888888"_s) + 12;
+			pArea->DrawSetFont(FONT_MONOSPACED);
+			Int32 width = pArea->DrawGetTextWidth("0x8888888888888888"_s) + 12;
+			pArea->DrawSetFont(FONT_STANDARD);
+			return width;
 		}
 		else if (col == 'type')
 		{
@@ -647,10 +652,11 @@ public:
 			else
 				drawinfo->frame->DrawSetTextCol(COLOR_TEXT_DISABLED, bgColor);
 
-			GeListNode* o = link ? link : node->ptr;
+			const GeListNode* o = link ? link : node->ptr;
 			String hex = String::HexToString((UInt)o);
-			hex = String::HexToString((UInt)o);
+			drawinfo->frame->DrawSetFont(FONT_MONOSPACED);
 			drawinfo->frame->DrawText(hex, wx, wy);
+			drawinfo->frame->DrawSetFont(FONT_STANDARD);
 		}
 		else if (col == 'refc')
 		{
@@ -744,6 +750,23 @@ public:
 		}
 	}
 
+	virtual void GetBackgroundColor(void* root, void* userdata, void* obj, Int32 line, GeData* col)
+	{
+		const GeDialog* dlg = static_cast<const GeDialog*>(userdata);
+		Bool needsHighlight = CheckFilter(static_cast<const ActiveObjectDialog*>(userdata), obj);
+		if (needsHighlight)
+		{
+			Vector backgroundColor(0.0, 0.0, 1.0);
+			Int32 oldColor = (line & 1) ? COLOR_SB_TEXTHG1 : COLOR_SB_TEXTHG2;
+			Int32 r, g, b;
+			dlg->GetColorRGB(oldColor, r, g, b);
+			backgroundColor.x = Float(r) / 255.0;
+			backgroundColor.y = Float(g) / 255.0;
+			backgroundColor.z = maxon::Blend(backgroundColor.z, Float(b) / 255.0, 0.8);
+			col->SetVector(backgroundColor);
+		}
+	}
+
 	virtual void CreateContextMenu(void* root, void* userdata, void* obj, Int32 lColumn, BaseContainer* bc)
 	{
 		bc->FlushAll();
@@ -769,7 +792,11 @@ public:
 					}
 					else if (link->IsInstanceOf(Tvariable))
 					{
-						bc->InsData(SHOW_VARIABLE_TAG_DATA, GeData("Show variable tag dat"));
+						bc->InsData(SHOW_VARIABLE_TAG_DATA, GeData("Show variable tag data"));
+					}
+					if (link->IsInstanceOf(Tuvw))
+					{
+						bc->InsData(EXTRACT_OBJECT_TO_SCENE, GeData("Extract to scene"));
 					}
 				}
 
@@ -820,30 +847,42 @@ public:
 			case EXTRACT_OBJECT_TO_SCENE:
 			{
 				Bool needsEventAdd = false;
-				if (link && link->IsInstanceOf(Obase))
+				if (link)
 				{
-					BaseObject* object = static_cast<BaseObject*>(link);
-					C4DAtom* clone = object->GetClone(COPYFLAGS::NONE, nullptr);
-					if (clone)
+					const BaseObject* object = nullptr;
+					if (link->IsInstanceOf(Obase))
 					{
-						BaseDocument* document = object->GetDocument();
-						if (!document)
-						{
-							BaseObject* cacheParent = object->GetCacheTopParent();
-							if (cacheParent)
-								document = cacheParent->GetDocument();
-						}
-						if (!document)
-							document = GetActiveDocument();
+						object = static_cast<BaseObject*>(link);
+					}
+					else if (link->IsInstanceOf(Tuvw))
+					{
+						object = static_cast<UVWTag*>(link)->GetUVWObjectR();
+					}
 
-						if (document)
+					if (object)
+					{
+						C4DAtom* clone = object->GetClone(COPYFLAGS::NONE, nullptr);
+						if (clone)
 						{
-							BaseObject* cloneObject = static_cast<BaseObject*>(clone);
-							// BIT_EDITOBJECT is set internally to hide the polygon object in certain cases (e.g. if the object is under a SDS). 
-							// Remove the flag here, otherwise the clone would not be visible in the viewport.
-							cloneObject->DelBit(BIT_EDITOBJECT);
-							document->InsertObject(cloneObject, nullptr, nullptr);
-							needsEventAdd = true;
+							BaseDocument* document = const_cast<BaseDocument*>(object->GetDocument());
+							if (!document)
+							{
+								const BaseObject* cacheParent = object->GetCacheTopParent();
+								if (cacheParent)
+									document = const_cast<BaseDocument*>(cacheParent->GetDocument());
+							}
+							if (!document)
+								document = GetActiveDocument();
+
+							if (document)
+							{
+								BaseObject* cloneObject = static_cast<BaseObject*>(clone);
+								// BIT_EDITOBJECT is set internally to hide the polygon object in certain cases (e.g. if the object is under a SDS). 
+								// Remove the flag here, otherwise the clone would not be visible in the viewport.
+								cloneObject->DelBit(BIT_EDITOBJECT);
+								document->InsertObject(cloneObject, nullptr, nullptr);
+								needsEventAdd = true;
+							}
 						}
 					}
 				}
@@ -914,14 +953,6 @@ private:
 
 Function2 g_functable;
 
-enum
-{
-	IDC_AO_LOCK_ELEMENT = 1001,
-	IDC_AO_DESCRIPTION	= 10000,
-	IDC_AO_TREEVIEW			= 10001
-};
-
-
 class ActiveObjectDialog : public GeDialog
 {
 public:
@@ -940,23 +971,88 @@ public:
 
 	DescriptionCustomGui* GetActiveCustomGui() { return _gad; }
 
+	enum
+	{
+		IDC_AO_LOCK_ELEMENT = 1001,
+		IDM_SEARCH = 1002,
+
+		IDC_AO_DESCRIPTION	= 10000,
+		IDC_AO_TREEVIEW			= 10001
+	};
+
+	enum class HIGHLIGHT_FILTER : maxon::UChar
+	{
+		NONE = 0,
+		NAME = 1 << 0,
+		ADDRESS = 1 << 1,
+	} MAXON_ENUM_FLAGS_CLASS(HIGHLIGHT_FILTER);
+	enum class HIGHLIGHT_COMPARE_MODE : maxon::UChar
+	{
+		FULL_WORD = 0,
+		STARTS_WITH = 1,
+		CONTAINS = 2,
+		ENDS_WITH = 3
+	} MAXON_ENUM_LIST_CLASS(HIGHLIGHT_COMPARE_MODE);
+	struct HighlightInfo
+	{
+		HIGHLIGHT_FILTER filter = HIGHLIGHT_FILTER::NONE;
+		HIGHLIGHT_COMPARE_MODE compareMode = HIGHLIGHT_COMPARE_MODE::CONTAINS;
+		Bool caseSensitive;
+		maxon::String str;
+	};
+	void SetHighlightInfo(const HighlightInfo& info);
+	const HighlightInfo& GetHighlightInfo();
+	Bool CheckFilter(const void* object) const;
+	void ShowAllHighlightedObjects();
+
 private:
 	DescriptionCustomGui* _gad = nullptr;
 	Bool _lock = false;
 	TreeViewCustomGui* _tree = nullptr;
-	DebugNode _root_of_docs;
+	DebugNode _rootOfDocs;
 	DebugArray _oldlist;
+	ActiveObjectDialogSearchDialog* _searchDialog = nullptr;
+	HighlightInfo _highlightInfo;
+};
+
+class ActiveObjectDialogSearchDialog : public GeDialog
+{
+public:
+	explicit ActiveObjectDialogSearchDialog(ActiveObjectDialog* parent);
+
+	virtual Bool CreateLayout();
+	virtual Bool InitValues();
+	virtual void DestroyWindow();
+	virtual Bool Command(Int32 id, const BaseContainer& msg);
+	virtual Bool CoreMessage(Int32 id, const BaseContainer& msg);
+
+	void SetHighlightInfo();
+
+private:
+	enum
+	{
+		IDC_SEARCH_EDIT = 1001,
+		IDC_MODE_COMBO,
+		IDC_CASE_SENSITIVE_CHK,
+		IDC_OPEN_ALL_BTN,
+		IDC_SEARCH_NAME_CHK,
+		IDC_SEARCH_ADDRESS_CHK,
+	};
+	ActiveObjectDialog* _parent = nullptr;
+	ActiveObjectDialog::HighlightInfo _highlightInfo;
 };
 
 void ActiveObjectDialog::DestroyWindow()
 {
 	_tree = nullptr;
 	_gad = nullptr;
+	if (_searchDialog)
+		DeleteObj(_searchDialog);
 }
 
 Bool ActiveObjectDialog::CreateLayout()
 {
-	// first call the parent instance
+	// First call the parent instance.
 	Bool res = GeDialog::CreateLayout();
 	if (res == false)
 		return res;
@@ -973,6 +1069,7 @@ Bool ActiveObjectDialog::CreateLayout()
 	treedata.SetBool(TREEVIEW_BORDER, true);
 	treedata.SetBool(TREEVIEW_HAS_HEADER, true);
 	treedata.SetBool(TREEVIEW_FIXED_LAYOUT, true);
+	treedata.SetBool(TREEVIEW_ALTERNATE_BG, true);
 	_tree = (TreeViewCustomGui*)AddCustomGui(IDC_AO_TREEVIEW, CUSTOMGUI_TREEVIEW, String(), BFH_SCALEFIT | BFV_SCALEFIT, 0, 0, treedata);
 	// you can also write "TREEVIEW id { BORDER; } in the resource file
 	GroupEnd();
@@ -1015,6 +1112,12 @@ Bool ActiveObjectDialog::CreateLayout()
 		_tree->SetLayout(19, layout);
 	}
 
+	MenuFlushAll();
+		MenuSubBegin("Menu"_s);
+			MenuAddString(IDM_SEARCH, "Search..."_s);
+		MenuSubEnd();
+	MenuFinished();
+
 	return res;
 }
 
@@ -1035,6 +1138,11 @@ Bool ActiveObjectDialog::Command(Int32 id, const BaseContainer& msg)
 		{
 			_lock = msg.GetInt32(BFM_ACTION_VALUE) != 0;
 			CoreMessage(EVMSG_CHANGE, BaseContainer());
+			break;
+		}
+		case IDM_SEARCH:
+		{
+			CreateAndOpenSearchDialog(this, _searchDialog);
 			break;
 		}
 	}
@@ -1064,18 +1172,245 @@ Bool ActiveObjectDialog::FillTree()
 {
 	if (_tree)
 	{
-		_root_of_docs.down.FreeList(false);
+		_rootOfDocs.down.FreeList(false);
 
 		DebugArray newlist;
-		BuildTree(&_root_of_docs, _oldlist, newlist, GetActiveDocument()->GetListHead(), String("Documents"), false);
+		BuildTree(&_rootOfDocs, _oldlist, newlist, GetActiveDocument()->GetListHead(), String("Documents"), false);
 		_oldlist.DeleteAll();
 		iferr (_oldlist.CopyFrom(newlist))
 			return false;
 		_oldlist.Sort();
-		_tree->SetRoot(&_root_of_docs, &g_functable, this);
+		_tree->SetRoot(&_rootOfDocs, &g_functable, this);
 		_tree->Refresh();
 	}
 	return true;
+}
+
+void ActiveObjectDialog::SetHighlightInfo(const HighlightInfo& info)
+{
+	_highlightInfo = info;
+	if (_tree)
+		_tree->Redraw();
+}
+
+const ActiveObjectDialog::HighlightInfo& ActiveObjectDialog::GetHighlightInfo()
+{
+	return _highlightInfo;
+}
+
+Bool ActiveObjectDialog::CheckFilter(const void* object) const
+{
+	if (_highlightInfo.filter == HIGHLIGHT_FILTER::NONE)
+		return false;
+
+	const DebugNode* node = (DebugNode*)object;
+
+	auto CheckString = [this](const maxon::String& searchInString, maxon::STRINGCOMPARISON stringCompareMode) -> Bool
+	{
+		switch (_highlightInfo.compareMode)
+		{
+			case HIGHLIGHT_COMPARE_MODE::FULL_WORD:
+			{
+				if (searchInString.Compare(_highlightInfo.str, stringCompareMode) == maxon::COMPARERESULT::EQUAL)
+					return true;
+				break;
+			}
+			case HIGHLIGHT_COMPARE_MODE::STARTS_WITH:
+			{
+				Int nameLength = searchInString.GetLength();
+				Int highlightLength = _highlightInfo.str.GetLength();
+				if (nameLength >= highlightLength && 
+						searchInString.ComparePart(_highlightInfo.str, stringCompareMode, 0, highlightLength) == maxon::COMPARERESULT::EQUAL)
+					return true;
+				break;
+			}
+			case HIGHLIGHT_COMPARE_MODE::ENDS_WITH:
+			{
+				Int nameLength = searchInString.GetLength();
+				Int highlightLength = _highlightInfo.str.GetLength();
+				if (nameLength >= highlightLength && 
+						searchInString.ComparePart(_highlightInfo.str, stringCompareMode, nameLength - highlightLength, highlightLength) == maxon::COMPARERESULT::EQUAL)
+					return true;
+				break;
+			}
+			case HIGHLIGHT_COMPARE_MODE::CONTAINS:
+			{
+				if (_highlightInfo.caseSensitive)
+				{
+					if (searchInString.Find(_highlightInfo.str, nullptr, 0))
+						return true;
+				}
+				else
+				{
+					if (searchInString.FindUpper(_highlightInfo.str.ToUpper(), nullptr, 0))
+						return true;
+				}
+				break;
+			}
+		}
+		return false;
+	};
+
+	if (_highlightInfo.filter & HIGHLIGHT_FILTER::NAME)
+	{
+		const maxon::String& name = MaxonConvert(node->name);
+		maxon::STRINGCOMPARISON stringCompareMode = _highlightInfo.caseSensitive ? maxon::STRINGCOMPARISON::MEMORY : maxon::STRINGCOMPARISON::CASEINSENSITIVE;
+		if (CheckString(name, stringCompareMode))
+			return true;
+	}
+	if (_highlightInfo.filter & HIGHLIGHT_FILTER::ADDRESS)
+	{
+		const GeListNode* link = node->link.Get();
+		const GeListNode* o = link ? link : node->ptr;
+		maxon::String hex = MaxonConvert(String::HexToString((UInt)o));
+		if (CheckString(hex, maxon::STRINGCOMPARISON::CASEINSENSITIVE))
+			return true;
+	}
+
+	return false;
+}
+
+static Bool CheckFilter(const ActiveObjectDialog* dlg, const void* object)
+{
+	return dlg->CheckFilter(object);
+}
+
+void ActiveObjectDialog::ShowAllHighlightedObjects()
+{
+	maxon::BufferedBaseArray<void*, 100> stack;
+	void* root = g_functable.GetFirst(&_rootOfDocs, this);
+	stack.Append(root) iferr_cannot_fail("This is the first element in a buffered array");
+	while (stack.IsPopulated())
+	{
+		Int stackIndex = stack.GetCount() - 1;
+		void* last = stack[stackIndex];
+		if (!last)
+		{
+			stack.Pop();
+			continue;
+		}
+		void* down = g_functable.GetDown(&_rootOfDocs, this, last);
+		if (down)
+		{
+			iferr (stack.Append(down))
+				return;
+		}
+		if (CheckFilter(last))
+			_tree->MakeVisible(last);
+		last = g_functable.GetNext(&_rootOfDocs, this, last);
+		stack[stackIndex] = last;
+	}
+}
+
+ActiveObjectDialogSearchDialog::ActiveObjectDialogSearchDialog(ActiveObjectDialog* parent) :
+	GeDialog(),
+	_parent(parent)
+{
+}
+
+Bool ActiveObjectDialogSearchDialog::CreateLayout()
+{
+	// First call the parent instance.
+	if (!GeDialog::CreateLayout())
+		return false;
+
+	SetTitle("C++SDK Demo - Active Object Search"_s);
+	GroupBegin(0, BFH_SCALEFIT | BFV_TOP, 0, 1, String(), 0);
+		AddStaticText(0, BFH_LEFT, 0, 0, "Search:"_s, 0);
+		AddEditText(IDC_SEARCH_EDIT, BFH_SCALEFIT);
+	GroupEnd();
+
+	GroupBegin(0, BFH_SCALEFIT | BFV_TOP, 0, 1, String(), 0);
+		GroupBegin(0, BFH_SCALEFIT | BFV_TOP, 0, 1, String(), 0);
+			GroupBorderSpace(4, 4, 4, 4);
+			AddComboBox(IDC_MODE_COMBO, BFH_LEFT);
+			AddChild(IDC_MODE_COMBO, (Int32)ActiveObjectDialog::HIGHLIGHT_COMPARE_MODE::FULL_WORD, "Full word"_s);
+			AddChild(IDC_MODE_COMBO, (Int32)ActiveObjectDialog::HIGHLIGHT_COMPARE_MODE::STARTS_WITH, "Starts with"_s);
+			AddChild(IDC_MODE_COMBO, (Int32)ActiveObjectDialog::HIGHLIGHT_COMPARE_MODE::CONTAINS, "Contains"_s);
+			AddChild(IDC_MODE_COMBO, (Int32)ActiveObjectDialog::HIGHLIGHT_COMPARE_MODE::ENDS_WITH, "Ends with"_s);
+			AddCheckbox(IDC_CASE_SENSITIVE_CHK, BFH_LEFT, 0, 0, "Case sensitive"_s);
+		GroupEnd();
+		GroupBegin(0, BFH_RIGHT, 0, 1, String(), 0);
+			GroupBorderSpace(4, 4, 4, 4);
+			AddButton(IDC_OPEN_ALL_BTN, BFH_RIGHT, 0, 0, "Show all"_s);
+		GroupEnd();
+	GroupEnd();
+
+	GroupBegin(0, BFH_SCALEFIT | BFV_TOP, 0, 1, String(), 0);
+		AddCheckbox(IDC_SEARCH_NAME_CHK, 0, 0, 0, "Name"_s);
+		AddCheckbox(IDC_SEARCH_ADDRESS_CHK, 0, 0, 0, "Address"_s);
+	GroupEnd();
+
+	return true;
+}
+
+Bool ActiveObjectDialogSearchDialog::InitValues()
+{
+	// First call the parent instance.
+	if (!GeDialog::InitValues())
+		return false;
+
+	SetString(IDC_SEARCH_EDIT, _highlightInfo.str);
+	SetBool(IDC_SEARCH_NAME_CHK, (Bool)(_highlightInfo.filter & ActiveObjectDialog::HIGHLIGHT_FILTER::NAME));
+	SetBool(IDC_SEARCH_ADDRESS_CHK, (Bool)(_highlightInfo.filter & ActiveObjectDialog::HIGHLIGHT_FILTER::ADDRESS));
+
+	return true;
+}
+
+void ActiveObjectDialogSearchDialog::DestroyWindow()
+{
+}
+
+Bool ActiveObjectDialogSearchDialog::Command(Int32 id, const BaseContainer& msg)
+{
+	switch (id)
+	{
+		case IDC_SEARCH_EDIT:
+			_highlightInfo.str = msg.GetString(BFM_ACTION_VALUE);
+			_parent->SetHighlightInfo(_highlightInfo);
+			break;
+		case IDC_MODE_COMBO:
+			_highlightInfo.compareMode = (ActiveObjectDialog::HIGHLIGHT_COMPARE_MODE)msg.GetInt32(BFM_ACTION_VALUE);
+			_parent->SetHighlightInfo(_highlightInfo);
+			break;
+		case IDC_CASE_SENSITIVE_CHK:
+			_highlightInfo.caseSensitive = msg.GetInt32(BFM_ACTION_VALUE) != 0;
+			_parent->SetHighlightInfo(_highlightInfo);
+			break;
+		case IDC_OPEN_ALL_BTN:
+			_parent->ShowAllHighlightedObjects();
+			break;
+		case IDC_SEARCH_NAME_CHK:
+			maxon::SetFlag(_highlightInfo.filter, ActiveObjectDialog::HIGHLIGHT_FILTER::NAME, msg.GetInt32(BFM_ACTION_VALUE) != 0);
+			_parent->SetHighlightInfo(_highlightInfo);
+			break;
+		case IDC_SEARCH_ADDRESS_CHK:
+			maxon::SetFlag(_highlightInfo.filter, ActiveObjectDialog::HIGHLIGHT_FILTER::ADDRESS, msg.GetInt32(BFM_ACTION_VALUE) != 0);
+			_parent->SetHighlightInfo(_highlightInfo);
+			break;
+	}
+	return GeDialog::Command(id, msg);
+}
+
+Bool ActiveObjectDialogSearchDialog::CoreMessage(Int32 id, const BaseContainer& msg)
+{
+	return GeDialog::CoreMessage(id, msg);
+}
+
+void ActiveObjectDialogSearchDialog::SetHighlightInfo()
+{
+	_highlightInfo = _parent->GetHighlightInfo();
+}
+
+void CreateAndOpenSearchDialog(ActiveObjectDialog* parent, ActiveObjectDialogSearchDialog*& dlg)
+{
+	if (!dlg)
+	{
+		iferr (dlg = NewObj(ActiveObjectDialogSearchDialog, parent))
+			return;
+	}
+	dlg->SetHighlightInfo();
+	dlg->Open(DLG_TYPE::ASYNC_TOOLBAR, ID_ACTIVEOBJECT_SEARCH, -1, -1, 400, 0);
 }
 
 void UpdateDialog(ActiveObjectDialog* dlg)
@@ -1112,9 +1447,10 @@ static void ShowObjectProps(BaseList2D* obj)
 {
 	if (!g_cmd)
 		return;
-	if (!g_cmd->_dlg.GetActiveCustomGui())
+	DescriptionCustomGui* activeCustomGUI = g_cmd->_dlg.GetActiveCustomGui();
+	if (!activeCustomGUI)
 		return;
-	g_cmd->_dlg.GetActiveCustomGui()->SetObject(obj);
+	activeCustomGUI->SetObject(obj);
 }
 
 Bool RegisterActiveObjectDlg()
@@ -1122,4 +1458,3 @@ Bool RegisterActiveObjectDlg()
 	g_cmd = NewObjClear(ActiveObjectDialogCommand);
 	return RegisterCommandPlugin(ID_ACTIVEOBJECT, GeLoadString(IDS_ACTIVEOBJECT), 0, nullptr, String("C++ SDK Active Object"), g_cmd);
 }
-

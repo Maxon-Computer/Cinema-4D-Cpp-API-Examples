@@ -574,17 +574,28 @@ Bool DotsDataClass::ReadData(CustomDataType* t_d, HyperFile* hf, Int32 level)
 		Int64 length = 0;
 		if (hf->ReadInt64(&length))
 		{
-			// read points
-			for (Int64 i = 0; i < length; ++i)
-			{
-				Vector vec;
-				if (hf->ReadVector(&vec))
+			// Reserve uninitialized memory for vectors.
+			iferr (Vector* dst = d->points.Append(maxon::Block<Vector>(nullptr, length)))
+				return false;
+				
+			// It would have been more efficient if an array of vectors had been written instead of single vectors.
+			// Using ReadArrayOptimizedMultipleStruct() calls will keep the file structure compatible but is way faster than single ReadFloat64() calls.
+			// Read vectors and copy them into the destination buffer.
+			HYPERFILEVALUE types[] = {HYPERFILEVALUE::VECTOR};
+			auto setValue =	[&dst](Int startIdx, Int blockSize, void* dataPtr) -> maxon::Result<void>
 				{
-					iferr (d->points.Append(vec))
-						return false;
-				}
+					const Vector* src = static_cast<const Vector*>(dataPtr);
+					for (Int i = 0; i < blockSize; i++)
+						dst[startIdx + i] = src[i];
+					return maxon::OK;
+				};
+			if (hf->ReadArrayOptimizedMultipleStruct(types, length, 1, setValue) == false)
+			{
+				// Shrink back the array on read failure.
+				d->points.Resize(d->points.GetCount() - length) iferr_cannot_fail("Shrinking array");
+				return false;
 			}
-		}		
+		}
 	}
 	return true;
 }

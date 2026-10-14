@@ -53,7 +53,7 @@ public:
 	void operator =(const iCustomDataTypeDots& b)
 	{
 		_points.Flush();
-		_points.CopyFrom(b._points) iferr_ignore("Simply ignore copy from error"_s);
+		_points.CopyFrom(b._points) iferr_ignore("Simply ignore copy from error");
 	}
 		
 	MAXON_OPERATOR_EQUALITY(iCustomDataTypeDots, _points);

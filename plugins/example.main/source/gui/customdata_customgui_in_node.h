@@ -1,6 +1,6 @@
 
-#ifndef _CUSTOMDATA_CUSTOMGUI_IN_NODE_H__
-#define _CUSTOMDATA_CUSTOMGUI_IN_NODE_H__
+#ifndef CUSTOMDATA_CUSTOMGUI_IN_NODE_H__
+#define CUSTOMDATA_CUSTOMGUI_IN_NODE_H__
 
 
 
@@ -21,4 +21,4 @@ namespace UiConversions
 
 
 
-#endif
+#endif // CUSTOMDATA_CUSTOMGUI_IN_NODE_H__

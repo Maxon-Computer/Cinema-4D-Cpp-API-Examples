@@ -111,7 +111,7 @@ maxon::Result<void> GetColorProfileMetadata(
 	for (const maxon::String& key : collection.GetKeys())
 	{
 		// Get the profile associated with the key.
-		const maxon::ColorProfile& profile = collection.FindValue(key).GetValue() iferr_return;
+		const maxon::ColorProfile& profile = collection.FindValue(key).ToResult() iferr_return;
 
 		// The metadata associated with the profile. The model and manufacturer fields are often not 
 		// populated, and the name and description field often have the same value.
@@ -242,8 +242,8 @@ maxon::Result<void> ConvertSinglePixelWithColorProfile(
 	iferr_scope;
 
 	// Get the two ICC profiles loaded in the GetColorProfiles() example.
-	maxon::ColorProfile srgbProfile = collection.FindValue("sRGB2014"_s).GetValue() iferr_return;
-	maxon::ColorProfile xyzProfile = collection.FindValue("D65_XYZ"_s).GetValue() iferr_return;
+	maxon::ColorProfile srgbProfile = collection.FindValue("sRGB2014"_s).ToResult() iferr_return;
+	maxon::ColorProfile xyzProfile = collection.FindValue("D65_XYZ"_s).ToResult() iferr_return;
 
 	// Select a pixel format for the conversion, the XYZ profile operates internally in RGB format
 	// and in this case also no memory layout conversion is desired, so the same pixel format can be
@@ -403,7 +403,7 @@ maxon::Result<void> ConvertTextureWithColorProfile(
 
 	// Define a new color profile and pixel format for the conversion target, in this case the
 	// sRGB2014.icc profile loaded by the GetColorProfiles() example.
-	maxon::ColorProfile srgbProfile = collection.FindValue("sRGB2014"_s).GetValue() iferr_return;
+	maxon::ColorProfile srgbProfile = collection.FindValue("sRGB2014"_s).ToResult() iferr_return;
 	const maxon::PixelFormat rgbFormat = maxon::PixelFormats::RGB::F32();
 
 	// Initialize an ImageInterface to write the converted pixel data to. ImageTexture cannot be 

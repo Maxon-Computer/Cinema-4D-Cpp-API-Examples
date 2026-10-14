@@ -1,0 +1,16 @@
+STRINGTABLE
+{
+	IDS_EXAMPLE_HINT_BASE "No qualifiers, no mouse buttons";
+	IDS_EXAMPLE_HINT_ESCAPE "Esc to finish the operation";
+	IDS_EXAMPLE_HINT_LEFT_MOUSE_BUTTON "Left mouse button";
+	IDS_EXAMPLE_HINT_MIDDLE_MOUSE_BUTTON "Middle mouse button";
+	IDS_EXAMPLE_HINT_RIGHT_MOUSE_BUTTON "Right mouse button";
+	IDS_EXAMPLE_HINT_ALT_LEFT_MOUSE_BUTTON "Alt + Left mouse button";
+	IDS_EXAMPLE_HINT_SHIFT_LEFT_MOUSE_BUTTON "Shift + Left mouse button";
+	IDS_EXAMPLE_HINT_SHIFT_CTRL_RIGHT_MOUSE_BUTTON "Shift + Ctrl + Right mouse button";
+	IDS_EXAMPLE_HINT_ONLY_POINTS "Only visible in point mode";
+	IDS_EXAMPLE_HINT_ONLY_EDGES_AND_POLYGONS "Only visible in edge and polygon mode";
+	IDS_EXAMPLE_HINT_NOT_IN_EDGE_MODE "Not visible in edge mode";
+	IDS_EXAMPLE_HINT_LEFT_MOUSE_BUTTON_HORIZONTAL "Left mouse button horizontal";
+	IDS_EXAMPLE_HINT_RIGHT_MOUSE_BUTTON_VERTICAL "Ctrl + Right mouse button vertical";
+}

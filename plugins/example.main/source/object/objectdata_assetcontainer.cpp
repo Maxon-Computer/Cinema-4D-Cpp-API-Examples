@@ -362,11 +362,13 @@ public:
 
 	/// --- Custom Methods (not part of NodeData/ObjectData) ----------------------------------------
 	
+	//----------------------------------------------------------------------------------------
 	/// @brief Returns a list of pointers to the internalized assets.
 	/// 
-	/// @param[out] assets		The asset pointers to retrieve.
-	/// @return								If the operation has been successful. 
+	/// @param[out] assets						The asset pointers to retrieve.
+	/// @return												If the operation has been successful. 
 	// ----------------------------------------------------------------------------------------------
+	//----------------------------------------------------------------------------------------
 	bool GetAssetPointers(maxon::BaseArray<const BaseObject*>& assets) const
 	{
 		iferr_scope_handler
@@ -387,15 +389,17 @@ public:
 		return true;
 	}
 
+	//----------------------------------------------------------------------------------------
 	/// @brief Returns a copy of the asset at the given #index.
 	/// 
 	/// @details We implement this so that our cache does not use the same data as stored in the 
 	/// Oassetcontainer branch, as ObjectData::GetVirtualObjects should always return an object
 	/// tree that is not already part of a document.
 	/// 
-	/// @param[in] index		The index of the asset to copy.
-	/// @return							The copied asset or the nullptr on error.
+	/// @param[in] index							The index of the asset to copy.
+	/// @return												The copied asset or the nullptr on error.
 	// ----------------------------------------------------------------------------------------------
+	//----------------------------------------------------------------------------------------
 	BaseObject* GetAssetCopy(const Int32 index)
 	{
 		BaseObject* asset = _assetHead ? static_cast<BaseObject*>(_assetHead->GetFirst()) : nullptr;
@@ -416,6 +420,7 @@ public:
 		return nullptr;
 	}
 
+	//----------------------------------------------------------------------------------------
 	/// @brief Copies the given #asset and adds it to the internal asset data branch.
 	/// 
 	/// @details In a production environment, we should be more precise in what we copy and what not. 
@@ -427,9 +432,10 @@ public:
 	/// editable polygon object and with that all its content. So, internalizing "assets" in such 
 	/// manner will require good book-keeping in practice of what is needed and what not.
 	/// 
-	/// @param[in] asset		The asset to add.
-	/// @return							If the operation has been successful.
+	/// @param[in] asset							The asset to add.
+	/// @return												If the operation has been successful.
 	// ----------------------------------------------------------------------------------------------
+	//----------------------------------------------------------------------------------------
 	bool AddAsset(const BaseObject* asset)
 	{
 		if (!_assetHead)

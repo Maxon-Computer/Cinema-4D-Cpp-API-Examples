@@ -145,7 +145,7 @@ namespace LatticePlaneModifierHelper
 
 	//----------------------------------------------------------------------------------------
 	/// EvaluateMainAxes evaluates the orthonormal basis given the bounding box min and max points retrieved from a BaseObject instance.
-	/// @brief EvaluateMainAxes evaluates the orthonormal basis of a bounding box
+	/// @brief EvaluateMainAxes evaluates the orthonormal basis of a bounding box.
 	/// @param[out] axisA							The Vector instance returning the first main axis of the modifier cage.
 	/// @param[out] axisB							The Vector instance returning the second main axis of the modifier cage.
 	/// @param[out] axisC							The Vector instance returning the third main axis of the modifier cage.
@@ -246,7 +246,7 @@ class LatticePlaneModifier : public ObjectData
 	INSTANCEOF(LatticePlaneModifier, ObjectData)
 
 public:
-	static NodeData* Alloc() { return NewObj(LatticePlaneModifier) iferr_ignore("LatticePlaneModifier plugin not instanced"); }
+	static NodeData* Alloc() { return NewObj(LatticePlaneModifier).GetPointer(); }
 
 	virtual Bool Init(GeListNode* node, Bool isCloneInit);
 	virtual Bool SetDParameter(GeListNode* node, const DescID& id, const GeData& t_data, DESCFLAGS_SET& flags);

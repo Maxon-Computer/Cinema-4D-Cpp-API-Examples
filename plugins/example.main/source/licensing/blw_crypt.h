@@ -42,26 +42,26 @@ struct CinemaLicenseData
 };
 
 //----------------------------------------------------------------------------------------
-/// Store the disclosable license information from Cinema 4D on disk
-/// @return                                 maxon::OK on success.
+/// Store the disclosable license information from Cinema 4D on disk.
+/// @return												Maxon::OK on success.
 //----------------------------------------------------------------------------------------
 maxon::Result<void> StoreC4DLicenseReportOnDisk();
 //----------------------------------------------------------------------------------------
 /// Retrieve the MD5 checksum of a given string.
-/// @param[in] in_string                    The string to compute the MD5 checksum for.
-/// @return                                 Error code if fail else the MD5 string.
+/// @param[in] in_string					The string to compute the MD5 checksum for.
+/// @return												Error code if fail else the MD5 string.
 //----------------------------------------------------------------------------------------
 maxon::Result<maxon::String> CreateMD5FromString(const maxon::String& in_string);
 //----------------------------------------------------------------------------------------
 /// Read JSON file from the given url and return the JSON data in a maxon::DataDictionary.
-/// @param[in] in_url						The URL for the JSON file to read.
-/// @return											Error code if fail else the DataDictionary.
+/// @param[in] in_url							The URL for the JSON file to read.
+/// @return												Error code if fail else the DataDictionary.
 //----------------------------------------------------------------------------------------
 maxon::Result<maxon::DataDictionary> ImportJSONFromUrl(const maxon::Url& in_url);
 //----------------------------------------------------------------------------------------
 /// Parse a given JSON string and return the JSON data in a maxon::DataDictionary.
-/// @param[in] in_string				The string containing a JSON representation.
-/// @return											Error code if fail else the DataDictionary.
+/// @param[in] in_string					The string containing a JSON representation.
+/// @return												Error code if fail else the DataDictionary.
 //----------------------------------------------------------------------------------------
 maxon::Result<maxon::DataDictionary> ImportJSONFromString(const maxon::String& in_string);
 //----------------------------------------------------------------------------------------
@@ -90,11 +90,11 @@ maxon::Result<maxon::DataDictionary> CreateEncryptionSettings(const maxon::Id& i
 maxon::Result<maxon::String> ReadAndDecrypt(const maxon::String& in_keyString, const maxon::Url& in_inputFile);
 //----------------------------------------------------------------------------------------
 /// Encrypt the given string using AES encryption with the given key-string and write the
-/// result on disk
+/// result on disk.
 /// @param[in] in_keyString				The key-string.
 /// @param[in] in_pluginLic				The string containing the JSON license data.
 /// @param[in] in_outputFile			The URL of the output file to write.
 /// @return												Error code if fail else OK.
 //----------------------------------------------------------------------------------------
 maxon::Result<void> EncryptAndWrite(const maxon::String& in_keyString, const maxon::String& in_pluginLic, const maxon::Url& in_outputFile);
-#endif 
+#endif // BLW_CRYPT_H__
